@@ -1,0 +1,17 @@
+project(engine)
+
+# ---- BUILD GLFW ----
+
+set(GLFW contrib/glfw/)
+
+add_subdirectory(${GLFW})
+
+# ---- BUILD ENGINE ----
+
+find_package(Vulkan REQUIRED)
+
+add_library(engine SHARED
+        src/Window.cpp
+        include/Window.h)
+target_include_directories(engine PUBLIC include/ ${Vulkan_INCLUDE_DIRS} ${GLFW}/include/ contrib/glm/)
+target_link_libraries(engine glfw ${Vulkan_LIBRARIES})
