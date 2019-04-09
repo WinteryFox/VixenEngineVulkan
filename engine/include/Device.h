@@ -18,6 +18,12 @@ namespace vixen {
         }
     };
     
+    struct SwapChainSupportDetails {
+        VkSurfaceCapabilitiesKHR capabilities;
+        std::vector<VkSurfaceFormatKHR> formats;
+        std::vector<VkPresentModeKHR> presentModes;
+    };
+    
     class Device {
     private:
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -26,21 +32,43 @@ namespace vixen {
         QueueFamilyIndices indices;
         VkQueue graphicsQueue;
         VkQueue presentQueue;
+        VkSwapchainKHR swapChain;
+    
+        SwapChainSupportDetails swapChainSupportDetails;
         
         std::string deviceName;
     
         const std::vector<const char *> validationLayers = {
                 "VK_LAYER_LUNARG_standard_validation"
         };
+    
+        const std::vector<const char *> deviceExtensions = {
+                VK_KHR_SWAPCHAIN_EXTENSION_NAME
+        };
         
         void pickPhysicalDevice(VkSurfaceKHR surface, Instance *instance);
+    
         bool isDeviceSuitable(VkSurfaceKHR surface, VkPhysicalDevice device);
+    
         void createLogicalDevice();
     
-        void findQueueFamilies(VkSurfaceKHR surface, VkPhysicalDevice device);
+        bool checkDeviceExtensionSupported(VkPhysicalDevice device);
         
+        void findQueueFamilies(VkSurfaceKHR surface, VkPhysicalDevice device);
+    
+        void querySwapChainSupport(VkSurfaceKHR surface, VkPhysicalDevice device);
+    
+        void createSwapChain(VkSurfaceKHR surface, GLFWwindow *window);
+    
+        VkPresentModeKHR chooseSwapPresentMode(VkSurfaceKHR surface);
+    
+        VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
+    
+        VkExtent2D chooseSwapExtent(GLFWwindow *window, const VkSurfaceCapabilitiesKHR &capabilities);
+    
     public:
-        explicit Device(VkSurfaceKHR surface, Instance *instance);
+        explicit Device(GLFWwindow *window, VkSurfaceKHR surface, Instance *instance);
+        
         ~Device();
     };
 }
