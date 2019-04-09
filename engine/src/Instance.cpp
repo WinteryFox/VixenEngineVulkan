@@ -113,7 +113,7 @@ namespace vixen {
     VkBool32 Instance::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                      VkDebugUtilsMessageTypeFlagsEXT messageType,
                                      const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
-        if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) {
+        if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
             switch (messageSeverity) {
                 case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
                     std::cout << "Source: VERBOSE";
@@ -122,10 +122,10 @@ namespace vixen {
                     std::cout << "Source: INFO";
                     break;
                 case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-                    std::cerr << "Source: WARNING";
+                    std::cout << "Source: WARNING";
                     break;
                 case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-                    std::cerr << "Source: ERROR";
+                    std::cout << "Source: ERROR";
                     break;
                 default:
                     break;
