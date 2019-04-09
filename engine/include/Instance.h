@@ -7,27 +7,22 @@
 #include <stdexcept>
 #include <iostream>
 #include <cstring>
+#include <optional>
 
 namespace vixen {
     class Instance {
     private:
-        VkInstance instance = VK_NULL_HANDLE;
         VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
-        VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-        
-        std::string deviceName;
-        
-        bool debug = true;
-    
-        const std::vector<const char *> validationLayers = {
-                "VK_LAYER_LUNARG_standard_validation"
-        };
     
         void createInstance();
     
         bool checkValidationLayerSupport();
     
         std::vector<const char *> getRequiredExtensions();
+    
+        const std::vector<const char *> validationLayers = {
+                "VK_LAYER_LUNARG_standard_validation"
+        };
     
         static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
                 VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -36,11 +31,11 @@ namespace vixen {
                 void *pUserData
         );
         void setupDebug();
-        void pickPhysicalDevice();
-        bool isDeviceSuitable(VkPhysicalDevice device);
         
     public:
         Instance();
         ~Instance();
+    
+        VkInstance instance = VK_NULL_HANDLE;
     };
 }

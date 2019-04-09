@@ -17,6 +17,11 @@ set(SKIP_INSTALL_ALL ON)
 # ---- OPTIONS ----
 
 option(VIXEN_BUILD_TEST "Build the test executable" ON)
+option(VIXEN_DEBUG "Debug output" ON)
+
+if (VIXEN_DEBUG)
+    add_compile_definitions(VIXEN_DEBUG)
+endif (VIXEN_DEBUG)
 
 # ---- BUILD ENGINE ----
 
