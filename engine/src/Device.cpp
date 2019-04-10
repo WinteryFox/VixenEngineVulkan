@@ -5,6 +5,7 @@ namespace vixen {
         pickPhysicalDevice(surface, instance);
         createLogicalDevice();
         createSwapChain(surface, window);
+        createImageViews();
     }
     
     Device::~Device() {
@@ -233,6 +234,15 @@ namespace vixen {
         if (vkCreateSwapchainKHR(logicalDevice, &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create swap chain!");
         }
+    
+        uint32_t swapCount;
+        vkGetSwapchainImagesKHR(logicalDevice, swapChain, &swapCount, nullptr);
+    
+        images.resize(swapCount);
+        vkGetSwapchainImagesKHR(logicalDevice, swapChain, &swapCount, images.data());
+    
+        swapChainFormat = surfaceFormat.format;
+        swapChainExtent = extent;
     }
     
     VkPresentModeKHR Device::chooseSwapPresentMode(VkSurfaceKHR surface) {
@@ -256,5 +266,9 @@ namespace vixen {
         }
         
         return bestMode;
+    }
+    
+    void Device::createImageViews() {
+    
     }
 }

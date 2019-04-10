@@ -32,9 +32,12 @@ namespace vixen {
         QueueFamilyIndices indices;
         VkQueue graphicsQueue;
         VkQueue presentQueue;
-        VkSwapchainKHR swapChain;
     
+        VkSwapchainKHR swapChain;
         SwapChainSupportDetails swapChainSupportDetails;
+        std::vector<VkImage> images;
+        VkFormat swapChainFormat;
+        VkExtent2D swapChainExtent;
         
         std::string deviceName;
     
@@ -66,6 +69,8 @@ namespace vixen {
     
         VkExtent2D chooseSwapExtent(GLFWwindow *window, const VkSurfaceCapabilitiesKHR &capabilities);
     
+        void createImageViews();
+        
     public:
         explicit Device(GLFWwindow *window, VkSurfaceKHR surface, Instance *instance);
         

@@ -23,7 +23,9 @@ void destroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
 namespace vixen {
     Instance::Instance() {
         createInstance();
+#ifdef VIXEN_DEBUG
         setupDebug();
+#endif
     }
     
     Instance::~Instance() {
@@ -75,8 +77,8 @@ namespace vixen {
     bool Instance::checkValidationLayerSupport() {
         uint32_t layerCount = 0;
         vkEnumerateInstanceExtensionProperties(nullptr, &layerCount, nullptr);
-        
-        std::vector <VkLayerProperties> availableLayers(layerCount);
+    
+        std::vector<VkLayerProperties> availableLayers(layerCount);
         vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
         
         for (const char *layerName : validationLayers) {
@@ -104,7 +106,7 @@ namespace vixen {
         std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
 #ifdef VIXEN_DEBUG
-            extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
         
         return extensions;
@@ -113,7 +115,18 @@ namespace vixen {
     VkBool32 Instance::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                      VkDebugUtilsMessageTypeFlagsEXT messageType,
                                      const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
-        if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
+        VkDebugUtilsMessageSeverityFlagBitsEXT severity;
+
+#if VIXEN_DEBUG_LEVEL == 0
+        severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
+#elif VIXEN_DEBUG_LEVEL == 1
+        severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
+#elif VIXEN_DEBUG_LEVEL == 2
+        severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
+#elif VIXEN_DEBUG_LEVEL == 3
+       severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+#endif
+        if (messageSeverity >= severity) {
             switch (messageSeverity) {
                 case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
                     std::cout << "Source: VERBOSE";

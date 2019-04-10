@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 if (WIN32)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++ -static-libgcc")
-endif ()
+endif (WIN32)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -16,12 +16,16 @@ set(SKIP_INSTALL_ALL ON)
 
 # ---- OPTIONS ----
 
-option(VIXEN_BUILD_TEST "Build the test executable" ON)
-option(VIXEN_DEBUG "Debug output" ON)
+if (CMAKE_BUILD_TYPE MATCHES "Debug")
+    option(VIXEN_DEBUG "Debug output" ON)
+else ()
+    option(VIXEN_DEBUG "Debug output" OFF)
+endif ()
 
-if (VIXEN_DEBUG)
-    add_compile_definitions(VIXEN_DEBUG)
-endif (VIXEN_DEBUG)
+set(VIXEN_DEBUG_LEVEL "VERBOSE" CACHE STRING "")
+set_property(CACHE VIXEN_DEBUG_LEVEL PROPERTY STRINGS "VERBOSE;INFO;WARNING;ERROR")
+
+option(VIXEN_BUILD_TEST "Build the test executable" ON)
 
 # ---- BUILD ENGINE ----
 
