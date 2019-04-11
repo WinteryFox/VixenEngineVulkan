@@ -26,6 +26,7 @@ set(VIXEN_DEBUG_LEVEL "VERBOSE" CACHE STRING "")
 set_property(CACHE VIXEN_DEBUG_LEVEL PROPERTY STRINGS "VERBOSE;INFO;WARNING;ERROR")
 
 option(VIXEN_BUILD_TEST "Build the test executable" ON)
+option(VIXEN_WITH_GLFW "Build the engine with GLFW" ON)
 
 # ---- BUILD ENGINE ----
 

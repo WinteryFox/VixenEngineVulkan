@@ -4,13 +4,15 @@ project(engine)
 
 set(GLFW contrib/glfw/)
 
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "")
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "")
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "")
-set(GLFW_INSTALL OFF CACHE BOOL "")
-set(BUILD_SHARED_LIBS ON CACHE BOOL "")
+if (VIXEN_WITH_GLFW)
+    set(GLFW_BUILD_DOCS OFF CACHE BOOL "")
+    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "")
+    set(GLFW_BUILD_TESTS OFF CACHE BOOL "")
+    set(GLFW_INSTALL OFF CACHE BOOL "")
+    set(BUILD_SHARED_LIBS ON CACHE BOOL "")
 
-add_subdirectory(${GLFW})
+    add_subdirectory(${GLFW})
+endif (VIXEN_WITH_GLFW)
 
 # ---- BUILD ENGINE ----
 
