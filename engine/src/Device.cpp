@@ -102,6 +102,11 @@ namespace vixen {
         }
     }
     
+    /**
+     * Queries the Vulkan API for the supported swap chain formats
+     * @param surface The surface to query for
+     * @param device The device to query for
+     */
     void Device::querySwapChainSupport(VkSurfaceKHR surface, VkPhysicalDevice device) {
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &swapChainSupportDetails.capabilities);
         
@@ -123,6 +128,9 @@ namespace vixen {
         }
     }
     
+    /**
+     * Creates the Vulkan (logical) device
+     */
     void Device::createLogicalDevice() {
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
         std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value()};
@@ -162,6 +170,11 @@ namespace vixen {
         vkGetDeviceQueue(logicalDevice, indices.presentFamily.value(), 0, &presentQueue);
     }
     
+    /**
+     * Chooses the swap surface format
+     * @param availableFormats The available formats to pick from
+     * @return Returns the picked surface format
+     */
     VkSurfaceFormatKHR Device::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats) {
         if (availableFormats.size() == 1 && availableFormats[0].format == VK_FORMAT_UNDEFINED) {
             return {VK_FORMAT_B8G8R8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
@@ -177,6 +190,12 @@ namespace vixen {
         return availableFormats[0];
     }
     
+    /**
+     * Chooses the swap chain extent
+     * @param window The window to choose for
+     * @param capabilities The capabilities to choose for
+     * @return Returns the swap chain extent
+     */
     VkExtent2D Device::chooseSwapExtent(GLFWwindow *window, const VkSurfaceCapabilitiesKHR &capabilities) {
         if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
             return capabilities.currentExtent;
@@ -195,6 +214,11 @@ namespace vixen {
         }
     }
     
+    /**
+     * Creates the swap chain, picks the present mode, the surface format and the queue
+     * @param surface The surface to create the swap chain for
+     * @param window The window to create the swap chain for
+     */
     void Device::createSwapChain(VkSurfaceKHR surface, GLFWwindow *window) {
         VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupportDetails.formats);
         
@@ -249,6 +273,11 @@ namespace vixen {
         swapChainExtent = extent;
     }
     
+    /**
+     * Picks the best available swap chain mode
+     * @param surface The surface to choose the mode for
+     * @return The swap chain present mode
+     */
     VkPresentModeKHR Device::chooseSwapPresentMode(VkSurfaceKHR surface) {
         uint32_t presentModeCount;
         vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, nullptr);
@@ -272,6 +301,9 @@ namespace vixen {
         return bestMode;
     }
     
+    /**
+     * Creates the image view for each image and stores them
+     */
     void Device::createImageViews() {
         imageViews.resize(images.size());
         
