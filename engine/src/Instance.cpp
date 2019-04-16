@@ -133,42 +133,51 @@ namespace vixen {
 #elif VIXEN_DEBUG_LEVEL == 3
        severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 #endif
+        std::string message;
+
         if (messageSeverity >= severity) {
+            message + "---- DEBUG MESSAGE ----\n";
             switch (messageSeverity) {
                 case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-                    std::cout << "Source: VERBOSE";
+                    message + "Source: VERBOSE";
                     break;
                 case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-                    std::cout << "Source: INFO";
+                    message + "Source: INFO";
                     break;
                 case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-                    std::cout << "Source: WARNING";
+                    message + "Source: WARNING";
                     break;
                 case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-                    std::cout << "Source: ERROR";
+                    message + "Source: ERROR";
                     break;
                 default:
                     break;
             }
-            std::cout << std::endl;
+            message + "\n";
             
             switch (messageType) {
                 case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT:
-                    std::cout << "Type: GENERAL";
+                    message + "Type: GENERAL";
                     break;
                 case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT:
-                    std::cout << "Type: VALIDATION";
+                    message + "Type: VALIDATION";
                     break;
                 case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT:
-                    std::cout << "Type: PERFORMANCE";
+                    message + "Type: PERFORMANCE";
                     break;
                 default:
                     break;
             }
-            std::cout << std::endl;
-            
-            std::cout << pCallbackData->pMessage << std::endl;
-            std::cout << "---------------------" << std::endl;
+            message + "\n";
+    
+            message + pCallbackData->pMessage + "\n";
+            message + "---- END DEBUG MESSAGE ----" + "\n";
+    
+            if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+                std::cerr << message << std::endl;
+            } else {
+                std::cout << message << std::endl;
+            }
         }
         
         return VK_FALSE;
