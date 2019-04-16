@@ -49,7 +49,7 @@ namespace vixen {
         // TODO: Score each device and pick device with highest score
         
         deviceName = deviceProperties.deviceName;
-    
+        
         querySwapChainSupport(surface, device);
         
         findQueueFamilies(surface, device);
@@ -83,13 +83,13 @@ namespace vixen {
         
         std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-    
+        
         uint32_t i = 0;
         for (const auto &queueFamily : queueFamilies) {
             if (queueFamily.queueCount > 0 && queueFamily.queueFlags && VK_QUEUE_GRAPHICS_BIT) {
                 indices.graphicsFamily = i;
             }
-        
+            
             auto presentSupport = static_cast<VkBool32>(false);
             vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
             
@@ -161,11 +161,11 @@ namespace vixen {
 #else
         createInfo.enabledLayerCount = 0;
 #endif
-    
+        
         if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &logicalDevice) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create logical device!");
         }
-    
+        
         vkGetDeviceQueue(logicalDevice, indices.graphicsFamily.value(), 0, &graphicsQueue);
         vkGetDeviceQueue(logicalDevice, indices.presentFamily.value(), 0, &presentQueue);
     }
@@ -262,13 +262,13 @@ namespace vixen {
         if (vkCreateSwapchainKHR(logicalDevice, &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create swap chain!");
         }
-    
+        
         uint32_t swapCount;
         vkGetSwapchainImagesKHR(logicalDevice, swapChain, &swapCount, nullptr);
-    
+        
         images.resize(swapCount);
         vkGetSwapchainImagesKHR(logicalDevice, swapChain, &swapCount, images.data());
-    
+        
         swapChainFormat = surfaceFormat.format;
         swapChainExtent = extent;
     }

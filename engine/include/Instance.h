@@ -1,7 +1,8 @@
 #pragma once
 
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include <vulkan/vulkan.h>
+
 #include <stdlib.h>
 #include <vector>
 #include <stdexcept>
@@ -13,29 +14,33 @@ namespace vixen {
     class Instance {
     private:
         VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
-    
+        
         void createInstance();
-    
-        bool checkValidationLayerSupport();
-    
+        
         std::vector<const char *> getRequiredExtensions();
-    
+
+#ifdef VIXEN_DEBUG
+        bool checkValidationLayerSupport();
+        
         const std::vector<const char *> validationLayers = {
                 "VK_LAYER_LUNARG_standard_validation"
         };
-    
+        
         static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
                 VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                 VkDebugUtilsMessageTypeFlagsEXT messageType,
-                const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+                const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
                 void *pUserData
         );
-        void setupDebug();
         
+        void setupDebug();
+#endif
+    
     public:
         Instance();
+        
         ~Instance();
-    
+        
         VkInstance instance = VK_NULL_HANDLE;
     };
 }

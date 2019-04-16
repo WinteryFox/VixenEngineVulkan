@@ -1,5 +1,6 @@
 #include <Instance.h>
 
+#ifdef VIXEN_DEBUG
 VkResult createDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
                                       const VkAllocationCallbacks *pAllocator,
                                       VkDebugUtilsMessengerEXT *pDebugMessenger) {
@@ -19,6 +20,7 @@ void destroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
         func(instance, debugMessenger, pAllocator);
     }
 }
+#endif
 
 namespace vixen {
     Instance::Instance() {
@@ -29,7 +31,9 @@ namespace vixen {
     }
     
     Instance::~Instance() {
+#ifdef VIXEN_DEBUG
         destroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+#endif
         vkDestroyInstance(instance, nullptr);
     }
     
@@ -70,14 +74,15 @@ namespace vixen {
             throw std::runtime_error("failed to create instance!");
         }
     }
-    
+
+#ifdef VIXEN_DEBUG
     /**
      * Check if the requested validation layers are supported
      */
     bool Instance::checkValidationLayerSupport() {
         uint32_t layerCount = 0;
         vkEnumerateInstanceExtensionProperties(nullptr, &layerCount, nullptr);
-    
+        
         std::vector<VkLayerProperties> availableLayers(layerCount);
         vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
         
@@ -97,6 +102,7 @@ namespace vixen {
         
         return true;
     }
+#endif
     
     std::vector<const char *> Instance::getRequiredExtensions() {
         uint32_t glfwExtensionCount = 0;
@@ -111,7 +117,8 @@ namespace vixen {
         
         return extensions;
     }
-    
+
+#ifdef VIXEN_DEBUG
     VkBool32 Instance::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                      VkDebugUtilsMessageTypeFlagsEXT messageType,
                                      const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
@@ -166,7 +173,9 @@ namespace vixen {
         
         return VK_FALSE;
     }
-    
+#endif
+
+#ifdef VIXEN_DEBUG
     void Instance::setupDebug() {
         VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -182,4 +191,5 @@ namespace vixen {
             throw std::runtime_error("Failed to set up debug messenger!");
         }
     }
+#endif
 }

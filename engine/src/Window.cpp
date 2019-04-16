@@ -25,7 +25,7 @@ namespace vixen {
         if (glfwCreateWindowSurface(instance->instance, window, nullptr, &surface) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create window surface.");
         }
-    
+        
         device = new Device(window, surface, instance);
         
         // Centralize the window on the screen

@@ -1,7 +1,6 @@
 #pragma once
 
 #define GLFW_INCLUDE_VULKAN
-
 #include <GLFW/glfw3.h>
 
 #include <stdexcept>
@@ -17,7 +16,7 @@ namespace vixen {
     class Window {
     private:
         GLFWwindow *window;
-        VkSurfaceKHR surface;
+        VkSurfaceKHR surface{};
         
         Instance *instance;
         Device *device;

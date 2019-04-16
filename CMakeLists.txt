@@ -17,7 +17,7 @@ set(SKIP_INSTALL_ALL ON)
 # ---- OPTIONS ----
 
 if (CMAKE_BUILD_TYPE MATCHES "Debug")
-    option(VIXEN_DEBUG "Debug output" ON)
+    option(VIXEN_DEBUG "Debug output" OFF)
 else ()
     option(VIXEN_DEBUG "Debug output" OFF)
 endif ()
