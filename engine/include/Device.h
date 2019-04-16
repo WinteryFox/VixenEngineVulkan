@@ -36,6 +36,7 @@ namespace vixen {
         VkSwapchainKHR swapChain;
         SwapChainSupportDetails swapChainSupportDetails;
         std::vector<VkImage> images;
+        std::vector<VkImageView> imageViews;
         VkFormat swapChainFormat;
         VkExtent2D swapChainExtent;
         
