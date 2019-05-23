@@ -4,6 +4,9 @@ namespace vixen {
     Window::Window(const std::string &name, bool fullscreen, int width, int height) {
         glfwInit();
         
+        if (glfwVulkanSupported() != GLFW_TRUE)
+            throw std::runtime_error("Vulkan is not supported. Did you install the SDK correctly?");
+        
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_SAMPLES, 4);
         glfwWindowHint(GLFW_REFRESH_RATE, GLFW_DONT_CARE);
@@ -22,9 +25,8 @@ namespace vixen {
         // Create Vulkan instance and device
         instance = new Instance();
         
-        if (glfwCreateWindowSurface(instance->instance, window, nullptr, &surface) != VK_SUCCESS) {
+        if (glfwCreateWindowSurface(instance->instance, window, nullptr, &surface) != VK_SUCCESS)
             throw std::runtime_error("Failed to create window surface.");
-        }
         
         device = new Device(window, surface, instance);
         

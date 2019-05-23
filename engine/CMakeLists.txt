@@ -1,14 +1,5 @@
 project(engine)
 
-# ---- Set Vulkan path for MacOS ----
-
-if (APPLE)
-    set(VULKAN_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/engine/contrib/moltenvk/include CACHE PATH "")
-    set(VULKAN_LIBRARY ${CMAKE_SOURCE_DIR}/engine/contrib/moltenvk/macOS/dynamic/libMoltenVK.dylib CACHE PATH "")
-    set(Vulkan_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/engine/contrib/moltenvk/include CACHE PATH "")
-    set(Vulkan_LIBRARY ${CMAKE_SOURCE_DIR}/engine/contrib/moltenvk/macOS/dynamic/libMoltenVK.dylib CACHE PATH "")
-endif(APPLE)
-
 # ---- BUILD GLFW ----
 
 set(GLFW contrib/glfw/)
@@ -18,15 +9,12 @@ if (VIXEN_WITH_GLFW)
     set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "")
     set(GLFW_BUILD_TESTS OFF CACHE BOOL "")
     set(GLFW_INSTALL OFF CACHE BOOL "")
-    set(BUILD_SHARED_LIBS ON CACHE BOOL "")
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "")
     
     add_subdirectory(${GLFW})
 endif (VIXEN_WITH_GLFW)
 
 # ---- BUILD ENGINE ----
-
-find_package(Threads REQUIRED)
-find_package(Vulkan REQUIRED)
 
 add_library(engine SHARED
         src/Window.cpp
@@ -48,5 +36,8 @@ endif (VIXEN_DEBUG)
 
 set_target_properties(engine PROPERTIES PREFIX "" OUTPUT_NAME "vixenengine")
 
-target_include_directories(engine PUBLIC include/ ${GLFW}/include/ ${Vulkan_INCLUDE_DIR} contrib/glm/)
-target_link_libraries(engine Threads::Threads glfw Vulkan::Vulkan)
+find_package(Threads REQUIRED)
+find_package(Vulkan REQUIRED)
+
+target_include_directories(engine PUBLIC include/ ${Vulkan_INCLUDE_DIR} ${GLFW}/include/ contrib/glm/)
+target_link_libraries(engine Threads::Threads Vulkan::Vulkan glfw)
