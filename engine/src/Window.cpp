@@ -21,15 +21,7 @@ namespace vixen {
             glfwTerminate();
             throw std::runtime_error("Failed to create the window!");
         }
-        
-        // Create Vulkan instance and device
-        instance = new Instance();
-        
-        if (glfwCreateWindowSurface(instance->instance, window, nullptr, &surface) != VK_SUCCESS)
-            throw std::runtime_error("Failed to create window surface.");
-        
-        device = new Device(window, surface, instance);
-        
+
         // Centralize the window on the screen
         const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         glfwSetWindowPos(window, mode->width / 2 - width / 2, mode->height / 2 - height / 2);
@@ -39,8 +31,6 @@ namespace vixen {
     }
     
     Window::~Window() {
-        delete device;
-        delete instance;
         glfwSetWindowShouldClose(window, GLFW_TRUE);
         glfwDestroyWindow(window);
         glfwTerminate();

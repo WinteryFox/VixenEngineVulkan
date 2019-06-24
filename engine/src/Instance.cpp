@@ -1,204 +1,45 @@
-#include <Instance.h>
-
-#ifdef VIXEN_DEBUG
-VkResult createDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
-                                      const VkAllocationCallbacks *pAllocator,
-                                      VkDebugUtilsMessengerEXT *pDebugMessenger) {
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-    if (func != nullptr) {
-        return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-    } else {
-        return VK_ERROR_EXTENSION_NOT_PRESENT;
-    }
-}
-
-void destroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
-                                   const VkAllocationCallbacks *pAllocator) {
-    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance,
-                                                                            "vkDestroyDebugUtilsMessengerEXT");
-    if (func != nullptr) {
-        func(instance, debugMessenger, pAllocator);
-    }
-}
-#endif
+#include "Instance.h"
 
 namespace vixen {
-    Instance::Instance() {
-        createInstance();
-#ifdef VIXEN_DEBUG
-        setupDebug();
-#endif
-    }
-    
-    Instance::~Instance() {
-#ifdef VIXEN_DEBUG
-        destroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
-#endif
-        vkDestroyInstance(instance, nullptr);
-    }
-    
-    /**
-     * Create the Vulkan instance
-     */
-    void Instance::createInstance() {
-#ifdef VIXEN_DEBUG
-        if (!checkValidationLayerSupport()) {
-            throw std::runtime_error("validation layers requested, but not available!");
-        }
-#endif
-        
+    Instance::Instance(const std::string& appName, glm::ivec3 appVersion) {
+        // The application info
         VkApplicationInfo appInfo = {};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        appInfo.pApplicationName = "Hello Triangle";
-        appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.pEngineName = "No Engine";
-        appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.apiVersion = VK_API_VERSION_1_0;
-        
+        appInfo.pApplicationName = appName.c_str();
+        appInfo.applicationVersion = VK_MAKE_VERSION(appVersion.x, appVersion.y, appVersion.z);
+        appInfo.pEngineName = "Vixen Engine";
+        appInfo.engineVersion = VK_MAKE_VERSION(0, 0, 1);
+        appInfo.apiVersion = VK_API_VERSION_1_1;
+
+        std::cout << "Vixen Engine version " << appInfo.engineVersion << " running Vulkan version 1.1" << std::endl;
+        std::cout << "Serving application " << appInfo.pApplicationName << " " << appInfo.applicationVersion << std::endl;
+
+        // Fetch extensions for instance info
+        uint32_t glfwExtensionCount = 0;
+        const char** glfwExtensions;
+        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+        // The instance info
         VkInstanceCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo = &appInfo;
-        
-        auto extensions = getRequiredExtensions();
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-        createInfo.ppEnabledExtensionNames = extensions.data();
-
-#ifdef VIXEN_DEBUG
-        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-        createInfo.ppEnabledLayerNames = validationLayers.data();
-#else
+        createInfo.enabledExtensionCount = glfwExtensionCount;
+        createInfo.ppEnabledExtensionNames = glfwExtensions;
         createInfo.enabledLayerCount = 0;
-#endif
-        
-        if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create instance!");
-        }
+
+        // Attempt to create the instance, throws runtime error if no instance could be made
+        if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
+            throw std::runtime_error("Failed to create Vulkan instance");
+        std::cout << "Successfully created Vulkan instance!" << std::endl;
+
+        // Query and store the supported extensions
+        uint32_t extensionCount = 0;
+        vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+        extensions.resize(extensionCount);
+        vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+        std::cout << extensionCount << " extensions available; ";
+        for (auto const& ext : extensions)
+            std::cout << ext.extensionName << "(" << ext.specVersion << "), ";
+        std::cout << std::endl;
     }
-
-#ifdef VIXEN_DEBUG
-    /**
-     * Check if the requested validation layers are supported
-     */
-    bool Instance::checkValidationLayerSupport() {
-        uint32_t layerCount = 0;
-        vkEnumerateInstanceExtensionProperties(nullptr, &layerCount, nullptr);
-        
-        std::vector<VkLayerProperties> availableLayers(layerCount);
-        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-        
-        for (const char *layerName : validationLayers) {
-            bool layerFound = false;
-            
-            for (const auto &layerProperties : availableLayers) {
-                if (strcmp(layerName, layerProperties.layerName) == 0) {
-                    layerFound = true;
-                    break;
-                }
-            }
-            
-            if (!layerFound)
-                return false;
-        }
-        
-        return true;
-    }
-#endif
-    
-    std::vector<const char *> Instance::getRequiredExtensions() {
-        uint32_t glfwExtensionCount = 0;
-        const char **glfwExtensions;
-        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-        
-        std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-
-#ifdef VIXEN_DEBUG
-        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-#endif
-        
-        return extensions;
-    }
-
-#ifdef VIXEN_DEBUG
-    VkBool32 Instance::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                     VkDebugUtilsMessageTypeFlagsEXT messageType,
-                                     const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
-        VkDebugUtilsMessageSeverityFlagBitsEXT severity;
-
-#if VIXEN_DEBUG_LEVEL == 0
-        severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
-#elif VIXEN_DEBUG_LEVEL == 1
-        severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
-#elif VIXEN_DEBUG_LEVEL == 2
-        severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
-#elif VIXEN_DEBUG_LEVEL == 3
-       severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-#endif
-        std::string message;
-
-        if (messageSeverity >= severity) {
-            message + "---- DEBUG MESSAGE ----\n";
-            switch (messageSeverity) {
-                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-                    message + "Source: VERBOSE";
-                    break;
-                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-                    message + "Source: INFO";
-                    break;
-                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-                    message + "Source: WARNING";
-                    break;
-                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-                    message + "Source: ERROR";
-                    break;
-                default:
-                    break;
-            }
-            message + "\n";
-            
-            switch (messageType) {
-                case VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT:
-                    message + "Type: GENERAL";
-                    break;
-                case VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT:
-                    message + "Type: VALIDATION";
-                    break;
-                case VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT:
-                    message + "Type: PERFORMANCE";
-                    break;
-                default:
-                    break;
-            }
-            message + "\n";
-    
-            message + pCallbackData->pMessage + "\n";
-            message + "---- END DEBUG MESSAGE ----" + "\n";
-    
-            if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-                std::cerr << message << std::endl;
-            } else {
-                std::cout << message << std::endl;
-            }
-        }
-        
-        return VK_FALSE;
-    }
-#endif
-
-#ifdef VIXEN_DEBUG
-    void Instance::setupDebug() {
-        VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-        createInfo.messageSeverity =
-                VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-        createInfo.messageType =
-                VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-        createInfo.pfnUserCallback = debugCallback;
-        
-        if (createDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
-            throw std::runtime_error("Failed to set up debug messenger!");
-        }
-    }
-#endif
 }

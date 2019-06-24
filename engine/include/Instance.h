@@ -2,45 +2,20 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-
-#include <stdlib.h>
-#include <vector>
+#include <glm/glm.hpp>
+#include <string>
 #include <stdexcept>
+#include <vector>
 #include <iostream>
-#include <cstring>
-#include <optional>
 
 namespace vixen {
     class Instance {
-    private:
-        VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
-        
-        void createInstance();
-        
-        std::vector<const char *> getRequiredExtensions();
-
-#ifdef VIXEN_DEBUG
-        bool checkValidationLayerSupport();
-        
-        const std::vector<const char *> validationLayers = {
-                "VK_LAYER_LUNARG_standard_validation"
-        };
-        
-        static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-                VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                VkDebugUtilsMessageTypeFlagsEXT messageType,
-                const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-                void *pUserData
-        );
-        
-        void setupDebug();
-#endif
-    
     public:
-        Instance();
-        
-        ~Instance();
-        
-        VkInstance instance = VK_NULL_HANDLE;
+        std::vector<VkExtensionProperties> extensions;
+
+        Instance(const std::string& appName, glm::ivec3 appVersion);
+
+    private:
+        VkInstance instance;
     };
 }
