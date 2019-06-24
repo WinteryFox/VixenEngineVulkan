@@ -20,7 +20,7 @@ set(
         vixen_HEADERS
         include/Window.h
         include/Instance.h
-)
+        include/Logger.h)
 set(
         vixen_SOURCES
         src/Window.cpp

@@ -11,6 +11,11 @@ namespace vixen {
         queryLayers(); // Query and save the supported layers
         checkExtensions(requiredExtensions);
         createInstance(appName, appVersion, requiredExtensions, requiredLayers); // Create the Vulkan instance
+        registerLogger();
+    }
+
+    Instance::~Instance() {
+        vkDestroyInstance(instance, nullptr);
     }
 
     void Instance::createInstance(
@@ -46,6 +51,9 @@ namespace vixen {
         createInfo.enabledLayerCount = requiredLayers.size();
         createInfo.ppEnabledLayerNames = requiredLayers.data();
 
+        enabledExtensions = totalExtensions;
+        enabledLayers = requiredLayers;
+
         // Attempt to create the instance, throws runtime error if no instance could be made
         VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
         if (result == VK_ERROR_EXTENSION_NOT_PRESENT) {
@@ -74,10 +82,10 @@ namespace vixen {
     void Instance::queryLayers() {
         uint32_t layerCount = 0;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-        layers.resize(layerCount);
-        vkEnumerateInstanceLayerProperties(&layerCount, layers.data());
+        availableLayers.resize(layerCount);
+        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
         std::cout << layerCount << " layers available; ";
-        for (auto const &layer : layers)
+        for (auto const &layer : availableLayers)
             std::cout << layer.layerName << "(" <<
                       VK_VERSION_MAJOR(layer.specVersion) << "." <<
                       VK_VERSION_MINOR(layer.specVersion) << "." <<
@@ -88,10 +96,10 @@ namespace vixen {
     void Instance::queryExtensions() {
         uint32_t extensionCount = 0;
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-        extensions.resize(extensionCount);
-        vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+        availableExtensions.resize(extensionCount);
+        vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, availableExtensions.data());
         std::cout << extensionCount << " extensions available; ";
-        for (auto const &ext : extensions)
+        for (auto const &ext : availableExtensions)
             std::cout << ext.extensionName << "(" <<
                       VK_VERSION_MAJOR(ext.specVersion) << "." <<
                       VK_VERSION_MINOR(ext.specVersion) << "." <<
@@ -102,13 +110,13 @@ namespace vixen {
     void Instance::checkExtensions(const std::vector<const char *> &requiredExtensions) {
         std::vector<const char *> result;
 
-        std::vector<const char *> availableExtensions;
-        for (const auto &extension : extensions)
-            availableExtensions.push_back(extension.extensionName);
+        std::vector<const char *> extensionNames;
+        for (const auto &extension : availableExtensions)
+            extensionNames.push_back(extension.extensionName);
 
         for (const auto &extension : requiredExtensions)
-            if (std::find(availableExtensions.begin(), availableExtensions.end(), extension) !=
-                availableExtensions.end())
+            if (std::find(extensionNames.begin(), extensionNames.end(), extension) !=
+                extensionNames.end())
                 result.push_back(extension);
 
         std::string error = "Missing requested and required extensions; ";
@@ -118,5 +126,20 @@ namespace vixen {
 
             throw std::runtime_error(error);
         }
+    }
+
+    void Instance::registerLogger() {
+        VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+        createInfo.messageSeverity =
+                VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+                VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        createInfo.messageType =
+                VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+        createInfo.pfnUserCallback = debugCallback;
+        createInfo.pUserData = nullptr;
+
+
     }
 }

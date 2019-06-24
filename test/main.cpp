@@ -1,5 +1,6 @@
 #include <Window.h>
 #include <Instance.h>
+#include <Logger.h>
 
 int main() {
     std::vector<const char *> extensions = {
@@ -21,6 +22,7 @@ int main() {
             extensions,
             layers
     );
+    vixen::Logger logger = vixen::Logger();
 
     while (!window->shouldClose()) {
         window->update();
