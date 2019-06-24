@@ -16,15 +16,6 @@ set(SKIP_INSTALL_ALL ON)
 
 # ---- OPTIONS ----
 
-if (CMAKE_BUILD_TYPE MATCHES "Debug")
-    option(VIXEN_DEBUG "Debug output" OFF)
-else ()
-    option(VIXEN_DEBUG "Debug output" OFF)
-endif ()
-
-set(VIXEN_DEBUG_LEVEL "VERBOSE" CACHE STRING "")
-set_property(CACHE VIXEN_DEBUG_LEVEL PROPERTY STRINGS "VERBOSE;INFO;WARNING;ERROR")
-
 option(VIXEN_BUILD_TEST "Build the test executable" ON)
 option(VIXEN_WITH_GLFW "Build the engine with GLFW" ON)
 
