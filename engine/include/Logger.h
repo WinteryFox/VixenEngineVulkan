@@ -14,10 +14,7 @@ namespace vixen {
     class Logger {
     public:
         Logger() {
-            if (mkdir("./logs") != 0 && errno != EEXIST)
-                throw std::runtime_error("Failed to create logs directory");
-
-            stream.open("./logs/" + std::to_string(std::time(nullptr)), std::ofstream::out | std::ofstream::app);
+            stream.open("latest.log", std::ofstream::out | std::ofstream::app);
         }
 
         ~Logger() {
