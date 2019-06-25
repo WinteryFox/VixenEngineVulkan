@@ -16,10 +16,6 @@ endif (VIXEN_WITH_GLFW)
 
 # ---- BUILD ENGINE ----
 
-if (CMAKE_BUILD_TYPE MATCHES DEBUG)
-    add_compile_definitions(VIXEN_DEBUG=1)
-endif (CMAKE_BUILD_TYPE MATCHES DEBUG)
-
 set(
         vixen_HEADERS
         include/Window.h
