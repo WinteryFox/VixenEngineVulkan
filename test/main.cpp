@@ -2,7 +2,19 @@
 #include <Instance.h>
 #include <Logger.h>
 
+#ifdef __WIN32__
+
+#include <windows.h>
+
+#endif
+
 int main() {
+#ifdef __WIN32__
+#ifndef VIXEN_DEBUG
+    FreeConsole();
+#endif
+#endif
+
     std::vector<const char *> extensions = {
             VK_EXT_DEBUG_UTILS_EXTENSION_NAME
     };
