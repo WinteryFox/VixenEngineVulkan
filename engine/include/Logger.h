@@ -1,12 +1,8 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-
-#include <GLFW/glfw3.h>
-#include <iostream>
 #include <fstream>
-#include <io.h>
 #include <ctime>
+#include <iomanip>
 
 #define DEBUG_LEVEL 4
 
@@ -53,24 +49,30 @@ namespace vixen {
             if (DEBUG_LEVEL < severity)
                 return;
 
+            time_t time = std::time(nullptr);
+            const auto &stamp = std::put_time(std::localtime(&time), "%c");
+            std::cout << stamp;
+            stream << stamp;
             switch (severity) {
                 case TRACE:
-                    std::cout << glfwGetTime() << " [TRACE] " << message << std::endl;
-                    stream << glfwGetTime() << " [TRACE] " << message << std::endl;
+                    std::cout << " [TRACE] ";
+                    stream << " [TRACE] ";
                     break;
                 case INFO:
-                    std::cout << glfwGetTime() << " [INFO] " << message << std::endl;
-                    stream << glfwGetTime() << " [INFO] " << message << std::endl;
+                    std::cout << " [INFO] ";
+                    stream << " [INFO] ";
                     break;
                 case WARNING:
-                    std::cerr << glfwGetTime() << " [WARNING] " << message << std::endl;
-                    stream << glfwGetTime() << " [WARNING] " << message << std::endl;
+                    std::cerr << " [WARNING] ";
+                    stream << " [WARNING] ";
                     break;
                 case ERROR:
-                    std::cerr << glfwGetTime() << " [ERROR] " << message << std::endl;
-                    stream << glfwGetTime() << " [ERROR] " << message << std::endl;
+                    std::cerr << " [ERROR] ";
+                    stream << " [ERROR] ";
                     break;
             }
+            std::cout << message << std::endl;
+            stream << message << std::endl;
         }
     };
 }
