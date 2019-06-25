@@ -1,6 +1,30 @@
 #include "Instance.h"
 
 namespace vixen {
+    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+            VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+            VkDebugUtilsMessageTypeFlagsEXT messageType,
+            const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
+            void *pUserData
+    ) {
+        switch (messageSeverity) {
+            case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+                Logger().trace("[VULKAN] " + std::string(pCallbackData->pMessage));
+                break;
+            case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+                Logger().info("[VULKAN] " + std::string(pCallbackData->pMessage));
+                break;
+            case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+                Logger().warning("[VULKAN] " + std::string(pCallbackData->pMessage));
+                break;
+            case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+                Logger().error("[VULKAN] " + std::string(pCallbackData->pMessage));
+                break;
+        }
+
+        return VK_FALSE;
+    }
+
     Instance::Instance(
             const std::string &appName,
             glm::ivec3 appVersion,
@@ -15,6 +39,11 @@ namespace vixen {
     }
 
     Instance::~Instance() {
+        auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance,
+                                                                                "vkDestroyDebugUtilsMessengerEXT");
+        if (func != nullptr)
+            func(instance, debugMessenger, nullptr);
+
         vkDestroyInstance(instance, nullptr);
     }
 
@@ -64,19 +93,19 @@ namespace vixen {
             throw std::runtime_error("Failed to create Vulkan instance, unknown error!");
         }
 
-        std::cout << "Vixen Engine version "
-                  << VK_VERSION_MAJOR(appInfo.engineVersion) << "."
-                  << VK_VERSION_MINOR(appInfo.engineVersion) << "."
-                  << VK_VERSION_PATCH(appInfo.engineVersion)
-                  << " running Vulkan version "
-                  << VK_VERSION_MAJOR(appInfo.apiVersion) << "."
-                  << VK_VERSION_MINOR(appInfo.apiVersion) << "."
-                  << VK_VERSION_PATCH(appInfo.apiVersion) << std::endl;
-        std::cout << "Serving application "
-                  << appInfo.pApplicationName << " "
-                  << VK_VERSION_MAJOR(appVersion.x) << "."
-                  << VK_VERSION_MINOR(appVersion.y) << "."
-                  << VK_VERSION_PATCH(appVersion.z) << std::endl;
+        Logger().info("Vixen Engine version "
+                      + std::to_string(VK_VERSION_MAJOR(appInfo.engineVersion)) + "."
+                      + std::to_string(VK_VERSION_MINOR(appInfo.engineVersion)) + "."
+                      + std::to_string(VK_VERSION_PATCH(appInfo.engineVersion))
+                      + " running Vulkan version "
+                      + std::to_string(VK_VERSION_MAJOR(appInfo.apiVersion)) + "."
+                      + std::to_string(VK_VERSION_MINOR(appInfo.apiVersion)) + "."
+                      + std::to_string(VK_VERSION_PATCH(appInfo.apiVersion)));
+        Logger().info("Serving application "
+                      + std::string(appInfo.pApplicationName) + " "
+                      + std::to_string(VK_VERSION_MAJOR(appVersion.x)) + "."
+                      + std::to_string(VK_VERSION_MINOR(appVersion.y)) + "."
+                      + std::to_string(VK_VERSION_PATCH(appVersion.z)));
     }
 
     void Instance::queryLayers() {
@@ -84,13 +113,13 @@ namespace vixen {
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
         availableLayers.resize(layerCount);
         vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-        std::cout << layerCount << " layers available; ";
+        std::string output(std::to_string(layerCount) + " layers available; ");
         for (auto const &layer : availableLayers)
-            std::cout << layer.layerName << "(" <<
-                      VK_VERSION_MAJOR(layer.specVersion) << "." <<
-                      VK_VERSION_MINOR(layer.specVersion) << "." <<
-                      VK_VERSION_PATCH(layer.specVersion) << ") ";
-        std::cout << std::endl;
+            output += std::string(layer.layerName) + "(" +
+                      std::to_string(VK_VERSION_MAJOR(layer.specVersion)) + "." +
+                      std::to_string(VK_VERSION_MINOR(layer.specVersion)) + "." +
+                      std::to_string(VK_VERSION_PATCH(layer.specVersion)) + ") ";
+        Logger().trace(output);
     }
 
     void Instance::queryExtensions() {
@@ -98,13 +127,13 @@ namespace vixen {
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
         availableExtensions.resize(extensionCount);
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, availableExtensions.data());
-        std::cout << extensionCount << " extensions available; ";
-        for (auto const &ext : availableExtensions)
-            std::cout << ext.extensionName << "(" <<
-                      VK_VERSION_MAJOR(ext.specVersion) << "." <<
-                      VK_VERSION_MINOR(ext.specVersion) << "." <<
-                      VK_VERSION_PATCH(ext.specVersion) << ") ";
-        std::cout << std::endl;
+        std::string output(std::to_string(extensionCount) + " extensions available; ");
+        for (auto const &extension : availableExtensions)
+            output += std::string(extension.extensionName) + "(" +
+                      std::to_string(VK_VERSION_MAJOR(extension.specVersion)) + "." +
+                      std::to_string(VK_VERSION_MINOR(extension.specVersion)) + "." +
+                      std::to_string(VK_VERSION_PATCH(extension.specVersion)) + ") ";
+        Logger().trace(output);
     }
 
     void Instance::checkExtensions(const std::vector<const char *> &requiredExtensions) {
@@ -128,6 +157,27 @@ namespace vixen {
         }
     }
 
+    void Instance::checkLayers(const std::vector<const char *> &requiredLayers) {
+        std::vector<const char *> result;
+
+        std::vector<const char *> layerNames;
+        for (const auto &layer : availableLayers)
+            layerNames.push_back(layer.layerName);
+
+        for (const auto &layer : requiredLayers)
+            if (std::find(layerNames.begin(), layerNames.end(), layer) !=
+                layerNames.end())
+                result.push_back(layer);
+
+        std::string error = "Missing requested and required layers; ";
+        if (!result.empty()) {
+            for (const char *extension : result)
+                error += std::string(extension) + " ";
+
+            throw std::runtime_error(error);
+        }
+    }
+
     void Instance::registerLogger() {
         VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -140,6 +190,12 @@ namespace vixen {
         createInfo.pfnUserCallback = debugCallback;
         createInfo.pUserData = nullptr;
 
-
+        auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance,
+                                                                               "vkCreateDebugUtilsMessengerEXT");
+        if (func != nullptr) {
+            func(instance, &createInfo, nullptr, &debugMessenger);
+        } else {
+            std::cerr << "Validation layers not present, Vulkan debugging is OFF!" << std::endl;
+        }
     }
 }

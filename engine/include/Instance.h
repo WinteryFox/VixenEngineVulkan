@@ -31,6 +31,8 @@ namespace vixen {
         ~Instance();
 
     private:
+        VkDebugUtilsMessengerEXT debugMessenger;
+
         void queryLayers();
 
         void queryExtensions();

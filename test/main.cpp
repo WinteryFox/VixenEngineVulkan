@@ -22,8 +22,6 @@ int main() {
             extensions,
             layers
     );
-    vixen::Logger logger = vixen::Logger();
-
     while (!window->shouldClose()) {
         window->update();
 
