@@ -11,6 +11,17 @@ namespace vixen {
         std::vector<VkPhysicalDevice> devices(deviceCount);
         vkEnumeratePhysicalDevices(instance.instance, &deviceCount, devices.data());
 
+        std::string output = "Found " + std::to_string(devices.size()) + " physical devices; ";
+        for (const auto &physicalDevice : devices) {
+            VkPhysicalDeviceProperties properties;
+            vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+            output += std::string(properties.deviceName) + "(" +
+                      std::to_string(VK_VERSION_MAJOR(properties.apiVersion)) + "." +
+                      std::to_string(VK_VERSION_MINOR(properties.apiVersion)) + "." +
+                      std::to_string(VK_VERSION_PATCH(properties.apiVersion)) + ") ";
+        }
+        Logger().trace(output);
+
         device = pickDevice(devices);
         if (device == VK_NULL_HANDLE)
             throw std::runtime_error("Failed to find a suitable GPU");
@@ -18,7 +29,10 @@ namespace vixen {
         vkGetPhysicalDeviceProperties(device, &deviceProperties);
         vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 
-        Logger().info("Allocated a GPU with name " + std::string(deviceProperties.deviceName));
+        Logger().info("Allocated a GPU with name " + std::string(deviceProperties.deviceName) + "(" +
+                      std::to_string(VK_VERSION_MAJOR(deviceProperties.apiVersion)) + "." +
+                      std::to_string(VK_VERSION_MINOR(deviceProperties.apiVersion)) + "." +
+                      std::to_string(VK_VERSION_PATCH(deviceProperties.apiVersion)) + ") ");
     }
 
     PhysicalDevice::PhysicalDevice(VkPhysicalDevice device) {
@@ -28,7 +42,10 @@ namespace vixen {
         vkGetPhysicalDeviceProperties(device, &deviceProperties);
         vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 
-        Logger().info("Allocated a GPU with name " + std::string(deviceProperties.deviceName));
+        Logger().info("Allocated a GPU with name " + std::string(deviceProperties.deviceName) + "(" +
+                      std::to_string(VK_VERSION_MAJOR(deviceProperties.apiVersion)) + "." +
+                      std::to_string(VK_VERSION_MINOR(deviceProperties.apiVersion)) + "." +
+                      std::to_string(VK_VERSION_PATCH(deviceProperties.apiVersion)) + ") ");
     }
 
     VkPhysicalDevice PhysicalDevice::pickDevice(const std::vector<VkPhysicalDevice> &devices) {
