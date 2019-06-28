@@ -34,6 +34,7 @@ namespace vixen {
         queryExtensions(); // Query and save the supported extensions
         queryLayers(); // Query and save the supported layers
         checkExtensions(requiredExtensions);
+        checkLayers(requiredLayers);
         createInstance(appName, appVersion, requiredExtensions, requiredLayers); // Create the Vulkan instance
         registerLogger();
     }
