@@ -8,11 +8,10 @@ namespace vixen {
     public:
         VkPhysicalDevice device;
         VkPhysicalDeviceProperties deviceProperties;
+        VkPhysicalDeviceDriverPropertiesKHR driverProperties;
         VkPhysicalDeviceFeatures deviceFeatures;
 
         explicit PhysicalDevice(const Instance &instance);
-
-        explicit PhysicalDevice(VkPhysicalDevice device);
 
     private:
         VkPhysicalDevice pickDevice(const std::vector<VkPhysicalDevice> &devices);

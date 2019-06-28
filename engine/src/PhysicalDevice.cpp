@@ -26,26 +26,26 @@ namespace vixen {
         if (device == VK_NULL_HANDLE)
             throw std::runtime_error("Failed to find a suitable GPU");
 
-        vkGetPhysicalDeviceProperties(device, &deviceProperties);
         vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+        vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+        driverProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES_KHR;
+        driverProperties.pNext = nullptr;
+
+        VkPhysicalDeviceProperties2 deviceProperties2;
+        deviceProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+        deviceProperties2.properties = deviceProperties;
+        deviceProperties2.pNext = &driverProperties;
+
+        vkGetPhysicalDeviceProperties2(device, &deviceProperties2);
 
         Logger().info("Allocated a GPU with name " + std::string(deviceProperties.deviceName) + "(" +
                       std::to_string(VK_VERSION_MAJOR(deviceProperties.apiVersion)) + "." +
                       std::to_string(VK_VERSION_MINOR(deviceProperties.apiVersion)) + "." +
-                      std::to_string(VK_VERSION_PATCH(deviceProperties.apiVersion)) + ") ");
-    }
-
-    PhysicalDevice::PhysicalDevice(VkPhysicalDevice device) {
-        if (device == VK_NULL_HANDLE)
-            throw std::runtime_error("Failed to find a suitable GPU");
-
-        vkGetPhysicalDeviceProperties(device, &deviceProperties);
-        vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-
-        Logger().info("Allocated a GPU with name " + std::string(deviceProperties.deviceName) + "(" +
-                      std::to_string(VK_VERSION_MAJOR(deviceProperties.apiVersion)) + "." +
-                      std::to_string(VK_VERSION_MINOR(deviceProperties.apiVersion)) + "." +
-                      std::to_string(VK_VERSION_PATCH(deviceProperties.apiVersion)) + ") ");
+                      std::to_string(VK_VERSION_PATCH(deviceProperties.apiVersion)) + ") " +
+                      "using driver " +
+                      driverProperties.driverName + " " +
+                      driverProperties.driverInfo);
     }
 
     VkPhysicalDevice PhysicalDevice::pickDevice(const std::vector<VkPhysicalDevice> &devices) {
@@ -55,15 +55,15 @@ namespace vixen {
         for (const auto &physicalDevice : devices) {
             int score = 0;
 
-            VkPhysicalDeviceProperties deviceProperties;
-            VkPhysicalDeviceFeatures deviceFeatures;
-            vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
-            vkGetPhysicalDeviceFeatures(physicalDevice, &deviceFeatures);
+            VkPhysicalDeviceProperties physicalDeviceProperties;
+            VkPhysicalDeviceFeatures physicalDeviceFeatures;
+            vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+            vkGetPhysicalDeviceFeatures(physicalDevice, &physicalDeviceFeatures);
 
-            if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+            if (physicalDeviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
                 score += 1000;
 
-            score += deviceProperties.limits.maxImageDimension2D;
+            score += physicalDeviceProperties.limits.maxImageDimension2D;
 
             if (score > currentScore) {
                 currentScore = score;
