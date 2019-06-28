@@ -39,13 +39,12 @@ namespace vixen {
 
         vkGetPhysicalDeviceProperties2(device, &deviceProperties2);
 
-        Logger().info("Allocated a GPU with name " + std::string(deviceProperties.deviceName) + "(" +
+        Logger().info("Allocated a GPU with name " + std::string(driverProperties.driverName) + " " +
+                      std::string(deviceProperties.deviceName) + " " + driverProperties.driverInfo +
+                      " running Vulkan version " +
                       std::to_string(VK_VERSION_MAJOR(deviceProperties.apiVersion)) + "." +
                       std::to_string(VK_VERSION_MINOR(deviceProperties.apiVersion)) + "." +
-                      std::to_string(VK_VERSION_PATCH(deviceProperties.apiVersion)) + ") " +
-                      "using driver " +
-                      driverProperties.driverName + " " +
-                      driverProperties.driverInfo);
+                      std::to_string(VK_VERSION_PATCH(deviceProperties.apiVersion)));
     }
 
     VkPhysicalDevice PhysicalDevice::pickDevice(const std::vector<VkPhysicalDevice> &devices) {
