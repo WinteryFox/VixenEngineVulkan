@@ -1,6 +1,7 @@
 #include <Window.h>
 #include <Instance.h>
 #include <Logger.h>
+#include <PhysicalDevice.h>
 
 #ifdef __WIN32__
 
@@ -33,6 +34,9 @@ int main() {
             glm::ivec3(0, 0, 1),
             extensions,
             layers
+    );
+    std::unique_ptr physicalDevice = std::make_unique<vixen::PhysicalDevice>(
+            *instance
     );
     while (!window->shouldClose()) {
         window->update();

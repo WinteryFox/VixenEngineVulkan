@@ -21,12 +21,12 @@ set(
         include/Window.h
         include/Instance.h
         include/Logger.h
-)
+        include/PhysicalDevice.h)
 set(
         vixen_SOURCES
         src/Window.cpp
         src/Instance.cpp
-)
+        src/PhysicalDevice.cpp)
 
 add_library(
         engine
