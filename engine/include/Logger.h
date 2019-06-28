@@ -50,7 +50,7 @@ namespace vixen {
                 return;
 
             time_t time = std::time(nullptr);
-            const auto &stamp = std::put_time(std::localtime(&time), "%c");
+            const auto &stamp = std::put_time(std::localtime(&time), "%Y-%m-%d %H:%M:%S");
             std::cout << stamp;
             stream << stamp;
             switch (severity) {

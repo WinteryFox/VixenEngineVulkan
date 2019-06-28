@@ -27,7 +27,7 @@ namespace vixen {
 
     Instance::Instance(
             const std::string &appName,
-            glm::ivec3 appVersion,
+            const glm::ivec3 appVersion,
             const std::vector<const char *> &requiredExtensions,
             const std::vector<const char *> &requiredLayers
     ) {
