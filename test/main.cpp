@@ -20,11 +20,14 @@ int main() {
             VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
             "VK_KHR_get_physical_device_properties2"
     };
+
     std::vector<const char *> layers = {
+#ifdef VIXEN_DEBUG
             "VK_LAYER_KHRONOS_validation",
             "VK_LAYER_LUNARG_parameter_validation",
             "VK_LAYER_LUNARG_core_validation",
             "VK_LAYER_LUNARG_object_tracker"
+#endif
     };
 
     std::unique_ptr window = std::make_unique<vixen::Window>(
