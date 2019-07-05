@@ -87,11 +87,11 @@ namespace vixen {
         // Attempt to create the instance, throws runtime error if no instance could be made
         VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
         if (result == VK_ERROR_EXTENSION_NOT_PRESENT) {
-            throw std::runtime_error("Failed to create Vulkan instance, extension not present!");
+            Logger().fatal("Failed to create Vulkan instance, extension not present!");
         } else if (result == VK_ERROR_LAYER_NOT_PRESENT) {
-            throw std::runtime_error("Failed to create Vulkan instance, layer not present!");
+            Logger().fatal("Failed to create Vulkan instance, layer not present!");
         } else if (result != VK_SUCCESS) {
-            throw std::runtime_error("Failed to create Vulkan instance, unknown error!");
+            Logger().fatal("Failed to create Vulkan instance, unknown error!");
         }
 
         Logger().info("Vixen Engine version "
@@ -154,7 +154,7 @@ namespace vixen {
             for (const char *extension : result)
                 error += std::string(extension) + " ";
 
-            throw std::runtime_error(error);
+            Logger().fatal(error);
         }
     }
 
@@ -175,7 +175,7 @@ namespace vixen {
             for (const char *extension : result)
                 error += std::string(extension) + " ";
 
-            throw std::runtime_error(error);
+            Logger().fatal(error);
         }
     }
 

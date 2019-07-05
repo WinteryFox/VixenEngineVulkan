@@ -9,6 +9,7 @@
 #include <vector>
 #include <cstring>
 #include <memory>
+#include "Logger.h"
 
 namespace vixen {
     class Window {

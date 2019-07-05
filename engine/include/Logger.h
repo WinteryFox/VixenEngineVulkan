@@ -4,7 +4,13 @@
 #include <ctime>
 #include <iomanip>
 
-#define DEBUG_LEVEL 4
+#ifdef __WIN32__
+
+#include <windows.h>
+
+#endif
+
+#define DEBUG_LEVEL 5
 
 namespace vixen {
     class Logger {
@@ -19,34 +25,48 @@ namespace vixen {
         }
 
         void trace(const std::string &message) {
-            log(TRACE, message);
+            log(SEVERITY::TRACE, message);
         }
 
         void info(const std::string &message) {
-            log(INFO, message);
+            log(SEVERITY::INFO, message);
         }
 
         void warning(const std::string &message) {
-            log(WARNING, message);
+            log(SEVERITY::WARNING, message);
         }
 
         void error(const std::string &message) {
-            log(ERROR, message);
+            log(SEVERITY::ERR, message);
+        }
+
+        void fatal(const std::string &message) {
+#ifdef __WIN32__
+            MessageBox(
+                    nullptr,
+                    message.c_str(),
+                    "Fatal error occurred",
+                    MB_ICONERROR | MB_OK | MB_DEFBUTTON2
+            );
+#endif
+            log(SEVERITY::FATAL, message);
+            exit(0x1);
         }
 
     private:
         std::ofstream stream;
 
-        enum SEVERITY {
-            TRACE = 4,
-            INFO = 3,
-            WARNING = 2,
-            ERROR = 1,
+        enum class SEVERITY : int {
+            TRACE = 5,
+            INFO = 4,
+            WARNING = 3,
+            ERR = 2,
+            FATAL = 1,
             NONE = 0
         };
 
         void log(SEVERITY severity, const std::string &message) {
-            if (DEBUG_LEVEL < severity)
+            if (DEBUG_LEVEL < (int) severity)
                 return;
 
             time_t time = std::time(nullptr);
@@ -54,23 +74,29 @@ namespace vixen {
             std::cout << stamp;
             stream << stamp;
             switch (severity) {
-                case TRACE:
+                case SEVERITY::TRACE:
                     std::cout << " [TRACE] ";
                     stream << " [TRACE] ";
                     break;
-                case INFO:
+                case SEVERITY::INFO:
                     std::cout << " [INFO] ";
                     stream << " [INFO] ";
                     break;
-                case WARNING:
+                case SEVERITY::WARNING:
                     std::cerr << " [WARNING] ";
                     stream << " [WARNING] ";
                     break;
-                case ERROR:
+                case SEVERITY::ERR:
                     std::cerr << " [ERROR] ";
                     stream << " [ERROR] ";
                     break;
+                case SEVERITY::FATAL:
+                    std::cerr << " [FATAL] ";
+                    stream << " [FATAL] ";
+                case SEVERITY::NONE:
+                    break;
             }
+
             std::cout << message << std::endl;
             stream << message << std::endl;
         }
