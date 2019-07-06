@@ -6,7 +6,8 @@ namespace vixen {
         vkEnumeratePhysicalDevices(instance.instance, &deviceCount, nullptr);
 
         if (deviceCount == 0)
-            Logger().fatal("There are no Vulkan supported GPUs available, consider updating your drivers.");
+            Logger().fatal(
+                    "There are no Vulkan supported GPUs available, updating your graphics drivers may fix this.");
 
         std::vector<VkPhysicalDevice> devices(deviceCount);
         vkEnumeratePhysicalDevices(instance.instance, &deviceCount, devices.data());
@@ -24,7 +25,7 @@ namespace vixen {
 
         device = pickDevice(devices);
         if (device == VK_NULL_HANDLE)
-            Logger().fatal("Failed to find a suitable GPU");
+            Logger().fatal("No suitable GPU found.");
 
         vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
         vkGetPhysicalDeviceProperties(device, &deviceProperties);

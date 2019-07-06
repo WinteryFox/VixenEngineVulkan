@@ -3,12 +3,6 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include <stdexcept>
-#include <iostream>
-#include <string>
-#include <vector>
-#include <cstring>
-#include <memory>
 #include "Logger.h"
 
 namespace vixen {
@@ -17,7 +11,7 @@ namespace vixen {
         GLFWwindow *window;
 
     public:
-        Window(const std::string &name, bool fullscreen, int width = 1960, int height = 1080);
+        explicit Window(const std::string &name, GLFWmonitor *monitor = nullptr, int width = 1280, int height = 720);
         
         ~Window();
         

@@ -6,10 +6,10 @@
 namespace vixen {
     class PhysicalDevice {
     public:
-        VkPhysicalDevice device;
-        VkPhysicalDeviceProperties deviceProperties;
-        VkPhysicalDeviceDriverPropertiesKHR driverProperties;
-        VkPhysicalDeviceFeatures deviceFeatures;
+        VkPhysicalDevice device = VK_NULL_HANDLE;
+        VkPhysicalDeviceProperties deviceProperties{};
+        VkPhysicalDeviceDriverPropertiesKHR driverProperties{};
+        VkPhysicalDeviceFeatures deviceFeatures{};
 
         explicit PhysicalDevice(const Instance &instance);
 

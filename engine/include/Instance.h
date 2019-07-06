@@ -20,12 +20,8 @@ namespace vixen {
         std::vector<const char *> enabledExtensions;
         std::vector<const char *> enabledLayers;
 
-        Instance(
-                const std::string &appName,
-                glm::ivec3 appVersion,
-                const std::vector<const char *> &requiredExtensions,
-                const std::vector<const char *> &requiredLayers
-        );
+        Instance(const std::string &appName, glm::ivec3 appVersion, const std::vector<const char *> &requiredExtensions,
+                 const std::vector<const char *> &requiredLayers);
 
         ~Instance();
 
@@ -36,12 +32,9 @@ namespace vixen {
 
         void queryExtensions();
 
-        void createInstance(
-                const std::string &appName,
-                glm::ivec3 appVersion,
-                const std::vector<const char *> &requiredExtensions,
-                const std::vector<const char *> &requiredLayers
-        );
+        void createInstance(const std::string &appName, glm::ivec3 appVersion,
+                            const std::vector<const char *> &requiredExtensions,
+                            const std::vector<const char *> &requiredLayers);
 
         void checkExtensions(const std::vector<const char *> &requiredExtensions);
 

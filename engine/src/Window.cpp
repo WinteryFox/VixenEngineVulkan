@@ -1,11 +1,11 @@
 #include "Window.h"
 
 namespace vixen {
-    Window::Window(const std::string &name, bool fullscreen, int width, int height) {
+    Window::Window(const std::string &name, GLFWmonitor *monitor, int width, int height) {
         glfwInit();
         
         if (glfwVulkanSupported() != GLFW_TRUE)
-            Logger().fatal("Vulkan is not supported. Did you install the SDK correctly?");
+            Logger().fatal("Vulkan is not supported, updating your graphics drivers may fix this.");
         
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_SAMPLES, 4);
@@ -16,10 +16,10 @@ namespace vixen {
         glfwSwapInterval(0);
         
         // Create window
-        window = glfwCreateWindow(width, height, name.c_str(), fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
+        window = glfwCreateWindow(width, height, name.c_str(), monitor, nullptr);
         if (!window) {
             glfwTerminate();
-            Logger().fatal("Failed to create the window!");
+            Logger().fatal("GLFW failed to create the window!");
         }
 
         // Centralize the window on the screen

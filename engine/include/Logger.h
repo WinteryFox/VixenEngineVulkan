@@ -1,15 +1,16 @@
 #pragma once
 
-#include <fstream>
-#include <ctime>
-#include <iomanip>
-#include <io.h>
-
 #ifdef __WIN32__
 
 #include <windows.h>
 
 #endif
+
+#include <io.h>
+#include <ctime>
+#include <iomanip>
+#include <fstream>
+#include <iostream>
 
 namespace vixen {
     class Logger {
@@ -44,6 +45,7 @@ namespace vixen {
         }
 
         void fatal(const std::string &message) {
+            log(SEVERITY::FATAL, message);
 #ifdef __WIN32__
             MessageBox(
                     nullptr,
@@ -52,8 +54,7 @@ namespace vixen {
                     MB_ICONERROR | MB_OK | MB_DEFBUTTON2
             );
 #endif
-            log(SEVERITY::FATAL, message);
-            exit(0x1);
+            exit(EXIT_FAILURE);
         }
 
     private:

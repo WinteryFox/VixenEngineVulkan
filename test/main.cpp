@@ -31,10 +31,7 @@ int main() {
     };
 
     std::unique_ptr window = std::make_unique<vixen::Window>(
-            "Vixen Engine Test Application",
-            false,
-            970,
-            680
+            "Vixen Engine Test Application"
     );
     std::unique_ptr instance = std::make_unique<vixen::Instance>(
             "Vixen Engine Test Application",
