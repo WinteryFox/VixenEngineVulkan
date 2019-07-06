@@ -43,5 +43,5 @@ endif (NOT VIXEN_WITH_GLFW)
 find_package(Threads REQUIRED)
 find_package(Vulkan REQUIRED)
 
-target_include_directories(engine PUBLIC include contrib/log4cpp/include ${Vulkan_INCLUDE_DIR} ${GLFW}/include/ contrib/glm/)
+target_include_directories(engine PUBLIC include ${Vulkan_INCLUDE_DIR} ${GLFW}/include/ contrib/glm/)
 target_link_libraries(engine Threads::Threads Vulkan::Vulkan glfw)

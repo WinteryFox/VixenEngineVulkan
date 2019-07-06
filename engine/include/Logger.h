@@ -10,8 +10,6 @@
 
 #endif
 
-#define DEBUG_LEVEL 5
-
 namespace vixen {
     class Logger {
     public:
@@ -66,7 +64,7 @@ namespace vixen {
         };
 
         void log(SEVERITY severity, const std::string &message) {
-            if (DEBUG_LEVEL < (int) severity)
+            if (VIXEN_DEBUG_LEVEL < (int) severity)
                 return;
 
             time_t time = std::time(nullptr);

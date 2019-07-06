@@ -20,6 +20,23 @@ set(SKIP_INSTALL_ALL ON)
 option(VIXEN_BUILD_TEST "Build the test executable" ON)
 option(VIXEN_WITH_GLFW "Build the engine with GLFW" ON)
 
+set(VIXEN_LOGGER_MODE "VIXEN_TRACE" CACHE STRING "The desired logger mode")
+set_property(CACHE VIXEN_LOGGER_MODE PROPERTY STRINGS "VIXEN_FATAL" "VIXEN_ERROR" "VIXEN_WARNING" "VIXEN_INFO" "VIXEN_TRACE" "VIXEN_NONE")
+
+if (VIXEN_LOGGER_MODE STREQUAL "VIXEN_NONE")
+    add_compile_definitions(VIXEN_DEBUG_LEVEL=0)
+elseif (VIXEN_LOGGER_MODE STREQUAL "VIXEN_FATAL")
+    add_compile_definitions(VIXEN_DEBUG_LEVEL=1)
+elseif (VIXEN_LOGGER_MODE STREQUAL "VIXEN_ERROR")
+    add_compile_definitions(VIXEN_DEBUG_LEVEL=2)
+elseif (VIXEN_LOGGER_MODE STREQUAL "VIXEN_WARNING")
+    add_compile_definitions(VIXEN_DEBUG_LEVEL=3)
+elseif (VIXEN_LOGGER_MODE STREQUAL "VIXEN_INFO")
+    add_compile_definitions(VIXEN_DEBUG_LEVEL=4)
+elseif (VIXEN_LOGGER_MODE STREQUAL "VIXEN_TRACE")
+    add_compile_definitions(VIXEN_DEBUG_LEVEL=5)
+endif (VIXEN_LOGGER_MODE STREQUAL "VIXEN_NONE")
+
 # ---- BUILD ENGINE ----
 
 add_subdirectory(engine/)
