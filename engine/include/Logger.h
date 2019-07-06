@@ -3,6 +3,7 @@
 #include <fstream>
 #include <ctime>
 #include <iomanip>
+#include <io.h>
 
 #ifdef __WIN32__
 
@@ -14,7 +15,11 @@ namespace vixen {
     class Logger {
     public:
         Logger() {
-            stream.open("latest.log", std::ofstream::out | std::ofstream::app);
+            mkdir("logs/");
+            time_t time = std::time(nullptr);
+            std::ostringstream name;
+            name << "logs/" << std::put_time(std::localtime(&time), "%Y%m%d%H%M%S") << ".log";
+            stream.open(name.str().c_str(), std::ofstream::out | std::ofstream::app);
         }
 
         ~Logger() {
