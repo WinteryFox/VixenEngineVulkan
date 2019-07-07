@@ -1,7 +1,8 @@
 #include "PhysicalDevice.h"
 
 namespace vixen {
-    PhysicalDevice::PhysicalDevice(const Instance &instance, const std::vector<const char *> &extensions) {
+    PhysicalDevice::PhysicalDevice(const Instance &instance, const std::vector<const char *> &extensions)
+            : enabledExtensions(extensions) {
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(instance.instance, &deviceCount, nullptr);
 

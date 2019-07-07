@@ -21,6 +21,8 @@ namespace vixen {
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
         createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
         createInfo.pEnabledFeatures = &physicalDevice.deviceFeatures;
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(physicalDevice.enabledExtensions.size());
+        createInfo.ppEnabledExtensionNames = physicalDevice.enabledExtensions.data();
 
         if (vkCreateDevice(physicalDevice.device, &createInfo, nullptr, &device) != VK_SUCCESS)
             fatal("Failed to create logical device");

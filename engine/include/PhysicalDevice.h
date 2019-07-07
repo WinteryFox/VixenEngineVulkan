@@ -34,6 +34,11 @@ namespace vixen {
         std::vector<VkExtensionProperties> availableExtensions;
 
         /**
+         * A list of currently enabled extensions, this is used when creating the logical device
+         */
+        std::vector<const char *> enabledExtensions;
+
+        /**
          * The Vulkan physical device graphics queue family index relative to other queue families
          */
         uint32_t graphicsFamilyIndex;
