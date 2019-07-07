@@ -12,6 +12,7 @@ namespace vixen {
         VkPhysicalDeviceDriverPropertiesKHR driverProperties{};
         VkPhysicalDeviceFeatures deviceFeatures{};
         VkQueueFamilyProperties deviceQueueFamily{};
+        uint32_t deviceQueueFamilyIndex = 0;
 
         explicit PhysicalDevice(const Instance &instance);
 

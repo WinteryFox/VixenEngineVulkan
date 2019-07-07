@@ -89,9 +89,14 @@ namespace vixen {
         std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyCount);
         vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilyProperties.data());
 
-        for (const auto &properties : queueFamilyProperties)
-            if (properties.queueCount > 0 && properties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+        uint32_t i = 0;
+        for (const auto &properties : queueFamilyProperties) {
+            if (properties.queueCount > 0 && properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+                deviceQueueFamilyIndex = i;
                 return std::optional(properties);
+            }
+            i++;
+        }
 
         return std::optional<VkQueueFamilyProperties>();
     }

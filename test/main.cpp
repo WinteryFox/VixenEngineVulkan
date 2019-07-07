@@ -1,13 +1,14 @@
-#include <Window.h>
-#include <Instance.h>
-#include <Logger.h>
-#include <PhysicalDevice.h>
-
 #ifdef __WIN32__
 
 #include <windows.h>
 
 #endif
+
+#include <Window.h>
+#include <Instance.h>
+#include <Logger.h>
+#include <PhysicalDevice.h>
+#include <LogicalDevice.h>
 
 int main() {
 #ifdef __WIN32__
@@ -23,10 +24,7 @@ int main() {
 
     std::vector<const char *> layers = {
 #ifdef VIXEN_DEBUG
-            "VK_LAYER_KHRONOS_validation",
-            "VK_LAYER_LUNARG_parameter_validation",
-            "VK_LAYER_LUNARG_core_validation",
-            "VK_LAYER_LUNARG_object_tracker"
+            "VK_LAYER_LUNARG_standard_validation"
 #endif
     };
 
@@ -42,6 +40,10 @@ int main() {
     std::unique_ptr physicalDevice = std::make_unique<vixen::PhysicalDevice>(
             *instance
     );
+    std::unique_ptr logicalDevice = std::make_unique<vixen::LogicalDevice>(
+            *physicalDevice
+    );
+
     while (!window->shouldClose()) {
         window->update();
 
