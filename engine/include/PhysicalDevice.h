@@ -40,7 +40,7 @@ namespace vixen {
         /**
          * Allocates a physical device for Vulkan use
          *
-         * @param instance The Vulkan instance the physical device will be allocated for
+         * @param[in] instance The Vulkan instance the physical device will be allocated for
          */
         explicit PhysicalDevice(const Instance &instance);
 
@@ -48,7 +48,7 @@ namespace vixen {
         /**
          * Automatically pick the best suited Vulkan capable physical device and Vulkan queue family
          *
-         * @param devices The list of Vulkan physical devices to pick from
+         * @param[in] devices The list of Vulkan physical devices to pick from
          * @return The Vulkan physical device, can be VK_NULL_HANDLE if no suitable physical device was found
          */
         std::pair<VkPhysicalDevice, std::optional<VkQueueFamilyProperties>>
@@ -57,7 +57,7 @@ namespace vixen {
         /**
          * Automatically find the graphics queue family for a Vulkan physical device
          *
-         * @param physicalDevice The physical device to find the queue family for
+         * @param[in] physicalDevice The physical device to find the queue family for
          * @return The Vulkan graphics family queue
          */
         std::optional<VkQueueFamilyProperties> findQueueFamilies(VkPhysicalDevice physicalDevice);

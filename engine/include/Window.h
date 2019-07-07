@@ -17,10 +17,10 @@ namespace vixen {
         /**
          * Creates a new GLFW3 window
          *
-         * @param name The display name of the window
-         * @param monitor The monitor the window should be fullscreen on or nullptr if fullscreen should not be enabled
-         * @param width The width of the window
-         * @param height The height of the window
+         * @param[in] name The display name of the window
+         * @param[in] monitor The monitor the window should be fullscreen on or nullptr if fullscreen should not be enabled
+         * @param[in] width The width of the window
+         * @param[in] height The height of the window
          */
         explicit Window(const std::string &name, GLFWmonitor *monitor = nullptr, int width = 1280, int height = 720);
         
