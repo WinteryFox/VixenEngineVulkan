@@ -11,22 +11,22 @@ namespace vixen {
         glfwWindowHint(GLFW_SAMPLES, 4);
         glfwWindowHint(GLFW_REFRESH_RATE, GLFW_DONT_CARE);
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        
-        // Disable V-Sync
+
+        /// Disable V-Sync
         glfwSwapInterval(0);
-        
-        // Create window
+
+        /// Create window
         window = glfwCreateWindow(width, height, name.c_str(), monitor, nullptr);
         if (!window) {
             glfwTerminate();
             fatal("GLFW failed to create the window!");
         }
 
-        // Centralize the window on the screen
+        /// Centralize the window on the screen
         const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         glfwSetWindowPos(window, mode->width / 2 - width / 2, mode->height / 2 - height / 2);
-        
-        // Make the window visible
+
+        /// Make the window visible
         glfwShowWindow(window);
     }
     

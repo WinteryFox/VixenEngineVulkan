@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <set>
 #include "PhysicalDevice.h"
 
 namespace vixen {
@@ -17,11 +18,16 @@ namespace vixen {
         VkQueue graphicsQueue = {};
 
         /**
+         * The Vulkan presentation queue family
+         */
+        VkQueue presentQueue = {};
+
+        /**
          * Creates a new Vulkan logical device
          *
          * @param[in] physicalDevice The Vulkan physical device to make the logical device for
          */
-        explicit LogicalDevice(PhysicalDevice physicalDevice);
+        explicit LogicalDevice(const PhysicalDevice &physicalDevice);
 
         ~LogicalDevice();
     };

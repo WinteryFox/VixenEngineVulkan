@@ -26,16 +26,17 @@ namespace vixen {
     }
 
     Instance::Instance(
+            const Window &window,
             const std::string &appName,
             const glm::ivec3 appVersion,
             const std::vector<const char *> &requiredExtensions,
             const std::vector<const char *> &requiredLayers
     ) {
-        queryExtensions(); // Query and save the supported extensions
-        queryLayers(); // Query and save the supported layers
+        queryExtensions(); /// Query and save the supported extensions
+        queryLayers(); /// Query and save the supported layers
         checkExtensions(requiredExtensions);
         checkLayers(requiredLayers);
-        createInstance(appName, appVersion, requiredExtensions, requiredLayers); // Create the Vulkan instance
+        createInstance(window, appName, appVersion, requiredExtensions, requiredLayers); /// Create the Vulkan instance
         registerLogger();
     }
 
@@ -45,16 +46,18 @@ namespace vixen {
         if (func != nullptr)
             func(instance, debugMessenger, nullptr);
 
+        vkDestroySurfaceKHR(instance, surface, nullptr);
         vkDestroyInstance(instance, nullptr);
     }
 
     void Instance::createInstance(
+            const Window &window,
             const std::string &appName,
             glm::ivec3 appVersion,
             const std::vector<const char *> &requiredExtensions,
             const std::vector<const char *> &requiredLayers
     ) {
-        // Fetch extensions for instance info
+        /// Fetch extensions for instance info
         uint32_t glfwExtensionCount = 0;
         const char **glfwExtensions;
         glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -63,7 +66,7 @@ namespace vixen {
         for (const char *extension : requiredExtensions)
             totalExtensions.push_back(extension);
 
-        // The application info
+        /// The application info
         VkApplicationInfo appInfo = {};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         appInfo.pApplicationName = appName.c_str();
@@ -72,7 +75,7 @@ namespace vixen {
         appInfo.engineVersion = VK_MAKE_VERSION(0, 0, 1);
         appInfo.apiVersion = VK_API_VERSION_1_1;
 
-        // The instance info
+        /// The instance info
         VkInstanceCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo = &appInfo;
@@ -84,15 +87,18 @@ namespace vixen {
         enabledExtensions = totalExtensions;
         enabledLayers = requiredLayers;
 
-        // Attempt to create the instance, throws runtime error if no instance could be made
+        /// Attempt to create the instance, throws runtime error if no instance could be made
         VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
-        if (result == VK_ERROR_EXTENSION_NOT_PRESENT) {
+        if (result == VK_ERROR_EXTENSION_NOT_PRESENT)
             fatal("Failed to create Vulkan instance, extension not present!");
-        } else if (result == VK_ERROR_LAYER_NOT_PRESENT) {
+        else if (result == VK_ERROR_LAYER_NOT_PRESENT)
             fatal("Failed to create Vulkan instance, layer not present!");
-        } else if (result != VK_SUCCESS) {
+        else if (result != VK_SUCCESS)
             fatal("Failed to create Vulkan instance, unknown error!");
-        }
+
+        if (glfwCreateWindowSurface(instance, window.window, nullptr, &surface) != VK_SUCCESS)
+            fatal("Failed to create window surface");
+        trace("Successfully created the window surface");
 
         info("Vixen Engine version "
              + std::to_string(VK_VERSION_MAJOR(appInfo.engineVersion)) + "."

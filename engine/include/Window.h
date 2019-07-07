@@ -7,13 +7,12 @@
 
 namespace vixen {
     class Window {
-    private:
+    public:
         /**
          * The GLFW3 window instance
          */
         GLFWwindow *window;
 
-    public:
         /**
          * Creates a new GLFW3 window
          *

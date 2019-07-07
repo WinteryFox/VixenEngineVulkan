@@ -23,11 +23,9 @@ namespace vixen {
         }
         trace(output);
 
-        std::pair<VkPhysicalDevice, std::optional<VkQueueFamilyProperties>> pair = pickDevice(devices);
-        device = pair.first;
+        device = pickDevice(instance, devices);
         if (device == VK_NULL_HANDLE)
             fatal("No suitable GPU found.");
-        deviceQueueFamily = pair.second.value();
 
         vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
         vkGetPhysicalDeviceProperties(device, &deviceProperties);
@@ -50,11 +48,10 @@ namespace vixen {
              std::to_string(VK_VERSION_PATCH(deviceProperties.apiVersion)));
     }
 
-    std::pair<VkPhysicalDevice, std::optional<VkQueueFamilyProperties>>
-    PhysicalDevice::pickDevice(const std::vector<VkPhysicalDevice> &devices) {
+    VkPhysicalDevice
+    PhysicalDevice::pickDevice(const Instance &instance, const std::vector<VkPhysicalDevice> &devices) {
         int currentScore = 0;
         VkPhysicalDevice currentDevice = VK_NULL_HANDLE;
-        std::optional<VkQueueFamilyProperties> queueProperties;
 
         for (const auto &physicalDevice : devices) {
             int score = 0;
@@ -69,35 +66,48 @@ namespace vixen {
 
             score += physicalDeviceProperties.limits.maxImageDimension2D;
 
-            queueProperties = findQueueFamilies(physicalDevice);
-            if (!queueProperties.has_value())
+            std::pair<std::optional<uint32_t>, std::optional<uint32_t>> pair = findQueueFamilies(instance,
+                                                                                                 physicalDevice);
+            if (!pair.first.has_value() || !pair.second.has_value())
                 score = 0;
 
             if (score > 0 && score > currentScore) {
                 currentScore = score;
                 currentDevice = physicalDevice;
+                graphicsFamilyIndex = pair.first.value();
+                presentFamilyIndex = pair.second.value();
             }
         }
 
-        return std::make_pair(currentDevice, queueProperties);
+        return currentDevice;
     }
 
-    std::optional<VkQueueFamilyProperties> PhysicalDevice::findQueueFamilies(VkPhysicalDevice physicalDevice) {
+    std::pair<std::optional<uint32_t>, std::optional<uint32_t>>
+    PhysicalDevice::findQueueFamilies(const Instance &instance, const VkPhysicalDevice &physicalDevice) {
+        std::optional<uint32_t> graphicsIndex;
+        std::optional<uint32_t> presentIndex;
+
+        /// Get a list of all the queue families on this physical device
         uint32_t queueFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
 
         std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyCount);
         vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilyProperties.data());
 
+        /// Loop over all of them and check if all the necessary queues are present
         uint32_t i = 0;
         for (const auto &properties : queueFamilyProperties) {
-            if (properties.queueCount > 0 && properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-                deviceQueueFamilyIndex = i;
-                return std::optional(properties);
-            }
+            if (properties.queueCount > 0 && properties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+                graphicsIndex = i;
+
+            VkBool32 presentSupport = false;
+            vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, instance.surface, &presentSupport);
+            if (presentSupport)
+                presentIndex = i;
+
             i++;
         }
 
-        return std::optional<VkQueueFamilyProperties>();
+        return std::make_pair(graphicsIndex, presentIndex);
     }
 }

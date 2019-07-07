@@ -10,6 +10,7 @@
 #include <cstring>
 #include <algorithm>
 #include "Logger.h"
+#include "Window.h"
 
 namespace vixen {
     class Instance {
@@ -40,6 +41,11 @@ namespace vixen {
         std::vector<const char *> enabledLayers;
 
         /**
+         * The Vulkan window surface
+         */
+        VkSurfaceKHR surface;
+
+        /**
          * Creates a new Vulkan instance
          *
          * @param[in] appName The name of the application or game
@@ -48,7 +54,8 @@ namespace vixen {
          * @param[in] requiredLayers A list of required Vulkan layers
          * @throws Throws upon failure to create a Vulkan instance, can be thrown because of missing layers, extensions or Vulkan not being installed on the system.
          */
-        Instance(const std::string &appName, glm::ivec3 appVersion, const std::vector<const char *> &requiredExtensions,
+        Instance(const Window &window, const std::string &appName, glm::ivec3 appVersion,
+                 const std::vector<const char *> &requiredExtensions,
                  const std::vector<const char *> &requiredLayers);
 
         ~Instance();
@@ -75,7 +82,7 @@ namespace vixen {
          * @param[in] requiredLayers A list of required Vulkan layers
          * @throws Throws upon failure to create a Vulkan instance, can be thrown because of missing layers, extensions or Vulkan not being installed on the system.
          */
-        void createInstance(const std::string &appName, glm::ivec3 appVersion,
+        void createInstance(const Window &window, const std::string &appName, glm::ivec3 appVersion,
                             const std::vector<const char *> &requiredExtensions,
                             const std::vector<const char *> &requiredLayers);
 

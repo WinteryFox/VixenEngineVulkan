@@ -28,14 +28,14 @@ namespace vixen {
         VkPhysicalDeviceFeatures deviceFeatures{};
 
         /**
-         * The Vulkan physical device graphics queue family
-         */
-        VkQueueFamilyProperties deviceQueueFamily{};
-
-        /**
          * The Vulkan physical device graphics queue family index relative to other queue families
          */
-        uint32_t deviceQueueFamilyIndex = 0;
+        uint32_t graphicsFamilyIndex;
+
+        /**
+         * The Vulkan physical device present queue family index relative to other queue families
+         */
+        uint32_t presentFamilyIndex;
 
         /**
          * Allocates a physical device for Vulkan use
@@ -51,15 +51,14 @@ namespace vixen {
          * @param[in] devices The list of Vulkan physical devices to pick from
          * @return The Vulkan physical device, can be VK_NULL_HANDLE if no suitable physical device was found
          */
-        std::pair<VkPhysicalDevice, std::optional<VkQueueFamilyProperties>>
-        pickDevice(const std::vector<VkPhysicalDevice> &devices);
+        VkPhysicalDevice pickDevice(const Instance &instance, const std::vector<VkPhysicalDevice> &devices);
 
         /**
-         * Automatically find the graphics queue family for a Vulkan physical device
+         * Automatically find and set the required graphics queue families for a Vulkan physical device
          *
-         * @param[in] physicalDevice The physical device to find the queue family for
-         * @return The Vulkan graphics family queue
+         * @param[in] physicalDevice The physical device to find the queue families for
          */
-        std::optional<VkQueueFamilyProperties> findQueueFamilies(VkPhysicalDevice physicalDevice);
+        std::pair<std::optional<uint32_t>, std::optional<uint32_t>>
+        findQueueFamilies(const Instance &instance, const VkPhysicalDevice &physicalDevice);
     };
 }
