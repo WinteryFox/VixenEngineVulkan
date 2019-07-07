@@ -1,3 +1,11 @@
+/**
+ * This is a simple test executionable to test new or experimental functionality.
+ * Do not use this in your project.
+ *
+ * @author Foxie
+ * @date 7/7/2019
+ */
+
 #ifdef __WIN32__
 
 #include <windows.h>

@@ -17,11 +17,11 @@ namespace vixen {
         createInfo.pEnabledFeatures = &physicalDevice.deviceFeatures;
 
         if (vkCreateDevice(physicalDevice.device, &createInfo, nullptr, &device) != VK_SUCCESS)
-            Logger().fatal("Failed to create logical device");
-        Logger().info("Successfully created logical device");
+            fatal("Failed to create logical device");
+        info("Successfully created logical device");
 
         vkGetDeviceQueue(device, physicalDevice.deviceQueueFamilyIndex, 0, &graphicsQueue);
-        Logger().info("Successfully created logical device graphics queue interface");
+        info("Successfully created logical device graphics queue interface");
     }
 
     LogicalDevice::~LogicalDevice() {

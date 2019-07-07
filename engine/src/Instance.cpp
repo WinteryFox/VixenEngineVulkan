@@ -9,16 +9,16 @@ namespace vixen {
     ) {
         switch (messageSeverity) {
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-                Logger().trace("[VULKAN] " + std::string(pCallbackData->pMessage));
+                trace("[VULKAN] " + std::string(pCallbackData->pMessage));
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-                Logger().info("[VULKAN] " + std::string(pCallbackData->pMessage));
+                info("[VULKAN] " + std::string(pCallbackData->pMessage));
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-                Logger().warning("[VULKAN] " + std::string(pCallbackData->pMessage));
+                warning("[VULKAN] " + std::string(pCallbackData->pMessage));
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-                Logger().error("[VULKAN] " + std::string(pCallbackData->pMessage));
+                error("[VULKAN] " + std::string(pCallbackData->pMessage));
                 break;
         }
 
@@ -87,26 +87,26 @@ namespace vixen {
         // Attempt to create the instance, throws runtime error if no instance could be made
         VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
         if (result == VK_ERROR_EXTENSION_NOT_PRESENT) {
-            Logger().fatal("Failed to create Vulkan instance, extension not present!");
+            fatal("Failed to create Vulkan instance, extension not present!");
         } else if (result == VK_ERROR_LAYER_NOT_PRESENT) {
-            Logger().fatal("Failed to create Vulkan instance, layer not present!");
+            fatal("Failed to create Vulkan instance, layer not present!");
         } else if (result != VK_SUCCESS) {
-            Logger().fatal("Failed to create Vulkan instance, unknown error!");
+            fatal("Failed to create Vulkan instance, unknown error!");
         }
 
-        Logger().info("Vixen Engine version "
-                      + std::to_string(VK_VERSION_MAJOR(appInfo.engineVersion)) + "."
-                      + std::to_string(VK_VERSION_MINOR(appInfo.engineVersion)) + "."
-                      + std::to_string(VK_VERSION_PATCH(appInfo.engineVersion))
-                      + " running Vulkan version "
-                      + std::to_string(VK_VERSION_MAJOR(appInfo.apiVersion)) + "."
-                      + std::to_string(VK_VERSION_MINOR(appInfo.apiVersion)) + "."
-                      + std::to_string(VK_VERSION_PATCH(appInfo.apiVersion)));
-        Logger().info("Serving application "
-                      + std::string(appInfo.pApplicationName) + " "
-                      + std::to_string(VK_VERSION_MAJOR(appVersion.x)) + "."
-                      + std::to_string(VK_VERSION_MINOR(appVersion.y)) + "."
-                      + std::to_string(VK_VERSION_PATCH(appVersion.z)));
+        info("Vixen Engine version "
+             + std::to_string(VK_VERSION_MAJOR(appInfo.engineVersion)) + "."
+             + std::to_string(VK_VERSION_MINOR(appInfo.engineVersion)) + "."
+             + std::to_string(VK_VERSION_PATCH(appInfo.engineVersion))
+             + " running Vulkan version "
+             + std::to_string(VK_VERSION_MAJOR(appInfo.apiVersion)) + "."
+             + std::to_string(VK_VERSION_MINOR(appInfo.apiVersion)) + "."
+             + std::to_string(VK_VERSION_PATCH(appInfo.apiVersion)));
+        info("Serving application "
+             + std::string(appInfo.pApplicationName) + " "
+             + std::to_string(VK_VERSION_MAJOR(appVersion.x)) + "."
+             + std::to_string(VK_VERSION_MINOR(appVersion.y)) + "."
+             + std::to_string(VK_VERSION_PATCH(appVersion.z)));
     }
 
     void Instance::queryLayers() {
@@ -120,7 +120,7 @@ namespace vixen {
                       std::to_string(VK_VERSION_MAJOR(layer.specVersion)) + "." +
                       std::to_string(VK_VERSION_MINOR(layer.specVersion)) + "." +
                       std::to_string(VK_VERSION_PATCH(layer.specVersion)) + ") ";
-        Logger().trace(output);
+        trace(output);
     }
 
     void Instance::queryExtensions() {
@@ -134,7 +134,7 @@ namespace vixen {
                       std::to_string(VK_VERSION_MAJOR(extension.specVersion)) + "." +
                       std::to_string(VK_VERSION_MINOR(extension.specVersion)) + "." +
                       std::to_string(VK_VERSION_PATCH(extension.specVersion)) + ") ";
-        Logger().trace(output);
+        trace(output);
     }
 
     void Instance::checkExtensions(const std::vector<const char *> &requiredExtensions) {
@@ -154,7 +154,7 @@ namespace vixen {
             for (const char *extension : result)
                 error += std::string(extension) + " ";
 
-            Logger().fatal(error);
+            fatal(error);
         }
     }
 
@@ -175,7 +175,7 @@ namespace vixen {
             for (const char *extension : result)
                 error += std::string(extension) + " ";
 
-            Logger().fatal(error);
+            fatal(error);
         }
     }
 

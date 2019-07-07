@@ -6,7 +6,7 @@ namespace vixen {
         vkEnumeratePhysicalDevices(instance.instance, &deviceCount, nullptr);
 
         if (deviceCount == 0)
-            Logger().fatal(
+            fatal(
                     "There are no Vulkan supported GPUs available, updating your graphics drivers may fix this.");
 
         std::vector<VkPhysicalDevice> devices(deviceCount);
@@ -21,12 +21,12 @@ namespace vixen {
                       std::to_string(VK_VERSION_MINOR(properties.apiVersion)) + "." +
                       std::to_string(VK_VERSION_PATCH(properties.apiVersion)) + ") ";
         }
-        Logger().trace(output);
+        trace(output);
 
         std::pair<VkPhysicalDevice, std::optional<VkQueueFamilyProperties>> pair = pickDevice(devices);
         device = pair.first;
         if (device == VK_NULL_HANDLE)
-            Logger().fatal("No suitable GPU found.");
+            fatal("No suitable GPU found.");
         deviceQueueFamily = pair.second.value();
 
         vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
@@ -42,12 +42,12 @@ namespace vixen {
 
         vkGetPhysicalDeviceProperties2(device, &deviceProperties2);
 
-        Logger().info("Allocated a GPU with name " + std::string(driverProperties.driverName) + " " +
-                      std::string(deviceProperties.deviceName) + " " + driverProperties.driverInfo +
-                      " running Vulkan version " +
-                      std::to_string(VK_VERSION_MAJOR(deviceProperties.apiVersion)) + "." +
-                      std::to_string(VK_VERSION_MINOR(deviceProperties.apiVersion)) + "." +
-                      std::to_string(VK_VERSION_PATCH(deviceProperties.apiVersion)));
+        info("Allocated a GPU with name " + std::string(driverProperties.driverName) + " " +
+             std::string(deviceProperties.deviceName) + " " + driverProperties.driverInfo +
+             " running Vulkan version " +
+             std::to_string(VK_VERSION_MAJOR(deviceProperties.apiVersion)) + "." +
+             std::to_string(VK_VERSION_MINOR(deviceProperties.apiVersion)) + "." +
+             std::to_string(VK_VERSION_PATCH(deviceProperties.apiVersion)));
     }
 
     std::pair<VkPhysicalDevice, std::optional<VkQueueFamilyProperties>>

@@ -5,7 +5,7 @@ namespace vixen {
         glfwInit();
         
         if (glfwVulkanSupported() != GLFW_TRUE)
-            Logger().fatal("Vulkan is not supported, updating your graphics drivers may fix this.");
+            fatal("Vulkan is not supported, updating your graphics drivers may fix this.");
         
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_SAMPLES, 4);
@@ -19,7 +19,7 @@ namespace vixen {
         window = glfwCreateWindow(width, height, name.c_str(), monitor, nullptr);
         if (!window) {
             glfwTerminate();
-            Logger().fatal("GLFW failed to create the window!");
+            fatal("GLFW failed to create the window!");
         }
 
         // Centralize the window on the screen
