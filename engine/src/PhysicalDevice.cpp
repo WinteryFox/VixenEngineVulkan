@@ -23,9 +23,11 @@ namespace vixen {
         }
         Logger().trace(output);
 
-        device = pickDevice(devices);
+        std::pair<VkPhysicalDevice, std::optional<VkQueueFamilyProperties>> pair = pickDevice(devices);
+        device = pair.first;
         if (device == VK_NULL_HANDLE)
             Logger().fatal("No suitable GPU found.");
+        deviceQueueFamily = pair.second.value();
 
         vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
         vkGetPhysicalDeviceProperties(device, &deviceProperties);
@@ -48,9 +50,11 @@ namespace vixen {
                       std::to_string(VK_VERSION_PATCH(deviceProperties.apiVersion)));
     }
 
-    VkPhysicalDevice PhysicalDevice::pickDevice(const std::vector<VkPhysicalDevice> &devices) {
+    std::pair<VkPhysicalDevice, std::optional<VkQueueFamilyProperties>>
+    PhysicalDevice::pickDevice(const std::vector<VkPhysicalDevice> &devices) {
         int currentScore = 0;
         VkPhysicalDevice currentDevice = VK_NULL_HANDLE;
+        std::optional<VkQueueFamilyProperties> queueProperties;
 
         for (const auto &physicalDevice : devices) {
             int score = 0;
@@ -65,12 +69,30 @@ namespace vixen {
 
             score += physicalDeviceProperties.limits.maxImageDimension2D;
 
-            if (score > currentScore) {
+            queueProperties = findQueueFamilies(physicalDevice);
+            if (!queueProperties.has_value())
+                score = 0;
+
+            if (score > 0 && score > currentScore) {
                 currentScore = score;
                 currentDevice = physicalDevice;
             }
         }
 
-        return currentDevice;
+        return std::make_pair(currentDevice, queueProperties);
+    }
+
+    std::optional<VkQueueFamilyProperties> PhysicalDevice::findQueueFamilies(VkPhysicalDevice physicalDevice) {
+        uint32_t queueFamilyCount = 0;
+        vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
+
+        std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyCount);
+        vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilyProperties.data());
+
+        for (const auto &properties : queueFamilyProperties)
+            if (properties.queueCount > 0 && properties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+                return std::optional(properties);
+
+        return std::optional<VkQueueFamilyProperties>();
     }
 }

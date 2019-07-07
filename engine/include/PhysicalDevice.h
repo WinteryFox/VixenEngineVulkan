@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <optional>
 #include "Instance.h"
 
 namespace vixen {
@@ -10,10 +11,14 @@ namespace vixen {
         VkPhysicalDeviceProperties deviceProperties{};
         VkPhysicalDeviceDriverPropertiesKHR driverProperties{};
         VkPhysicalDeviceFeatures deviceFeatures{};
+        VkQueueFamilyProperties deviceQueueFamily{};
 
         explicit PhysicalDevice(const Instance &instance);
 
     private:
-        VkPhysicalDevice pickDevice(const std::vector<VkPhysicalDevice> &devices);
+        std::pair<VkPhysicalDevice, std::optional<VkQueueFamilyProperties>>
+        pickDevice(const std::vector<VkPhysicalDevice> &devices);
+
+        std::optional<VkQueueFamilyProperties> findQueueFamilies(VkPhysicalDevice physicalDevice);
     };
 }
