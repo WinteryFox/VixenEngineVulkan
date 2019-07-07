@@ -1,7 +1,7 @@
 #include "PhysicalDevice.h"
 
 namespace vixen {
-    PhysicalDevice::PhysicalDevice(const Instance &instance) {
+    PhysicalDevice::PhysicalDevice(const Instance &instance, const std::vector<const char *> &extensions) {
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(instance.instance, &deviceCount, nullptr);
 
@@ -23,7 +23,7 @@ namespace vixen {
         }
         trace(output);
 
-        device = pickDevice(instance, devices);
+        device = pickDevice(instance, devices, extensions);
         if (device == VK_NULL_HANDLE)
             fatal("No suitable GPU found.");
 
@@ -49,7 +49,8 @@ namespace vixen {
     }
 
     VkPhysicalDevice
-    PhysicalDevice::pickDevice(const Instance &instance, const std::vector<VkPhysicalDevice> &devices) {
+    PhysicalDevice::pickDevice(const Instance &instance, const std::vector<VkPhysicalDevice> &devices,
+                               const std::vector<const char *> &extensions) {
         int currentScore = 0;
         VkPhysicalDevice currentDevice = VK_NULL_HANDLE;
 
@@ -69,6 +70,20 @@ namespace vixen {
             std::pair<std::optional<uint32_t>, std::optional<uint32_t>> pair = findQueueFamilies(instance,
                                                                                                  physicalDevice);
             if (!pair.first.has_value() || !pair.second.has_value())
+                score = 0;
+
+            uint32_t extensionCount;
+            vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
+
+            std::vector<VkExtensionProperties> avExtensions(extensionCount);
+            vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, avExtensions.data());
+
+            std::set<std::string> requiredExtensions(extensions.begin(), extensions.end());
+            for (const auto &extension : avExtensions) {
+                requiredExtensions.erase(extension.extensionName);
+            }
+
+            if (!requiredExtensions.empty())
                 score = 0;
 
             if (score > 0 && score > currentScore) {

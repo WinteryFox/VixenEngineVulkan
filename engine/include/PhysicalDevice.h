@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.h>
 #include <optional>
+#include <set>
 #include "Instance.h"
 
 namespace vixen {
@@ -28,6 +29,11 @@ namespace vixen {
         VkPhysicalDeviceFeatures deviceFeatures{};
 
         /**
+         * A list of all extensions supported by this physical device
+         */
+        std::vector<VkExtensionProperties> availableExtensions;
+
+        /**
          * The Vulkan physical device graphics queue family index relative to other queue families
          */
         uint32_t graphicsFamilyIndex;
@@ -40,18 +46,24 @@ namespace vixen {
         /**
          * Allocates a physical device for Vulkan use
          *
-         * @param[in] instance The Vulkan instance the physical device will be allocated for
+         * @param[in] instance The Vulkan instance to pick the device for
+         * @param[in] devices The list of Vulkan physical devices to pick from
+         * @param[in] extensions The device extensions required by the application
          */
-        explicit PhysicalDevice(const Instance &instance);
+        explicit PhysicalDevice(const Instance &instance,
+                                const std::vector<const char *> &extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME});
 
     private:
         /**
          * Automatically pick the best suited Vulkan capable physical device and Vulkan queue family
          *
+         * @param[in] instance The Vulkan instance to pick the device for
          * @param[in] devices The list of Vulkan physical devices to pick from
+         * @param[in] extensions The device extensions required by the application
          * @return The Vulkan physical device, can be VK_NULL_HANDLE if no suitable physical device was found
          */
-        VkPhysicalDevice pickDevice(const Instance &instance, const std::vector<VkPhysicalDevice> &devices);
+        VkPhysicalDevice pickDevice(const Instance &instance, const std::vector<VkPhysicalDevice> &devices,
+                                    const std::vector<const char *> &extensions);
 
         /**
          * Automatically find and set the required graphics queue families for a Vulkan physical device
