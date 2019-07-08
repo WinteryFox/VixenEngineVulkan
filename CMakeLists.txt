@@ -15,6 +15,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
 
 set(SKIP_INSTALL_ALL ON)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
+include(generate_product_version)
+
 # ---- OPTIONS ----
 
 option(VIXEN_BUILD_TEST "Build the test executable" ON)
