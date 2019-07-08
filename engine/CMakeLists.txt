@@ -1,19 +1,5 @@
 project(engine)
 
-# ---- BUILD GLFW ----
-
-set(GLFW contrib/glfw/)
-
-if (VIXEN_WITH_GLFW)
-    set(GLFW_BUILD_DOCS OFF CACHE BOOL "")
-    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "")
-    set(GLFW_BUILD_TESTS OFF CACHE BOOL "")
-    set(GLFW_INSTALL OFF CACHE BOOL "")
-    set(BUILD_SHARED_LIBS OFF CACHE BOOL "")
-
-    add_subdirectory(${GLFW})
-endif (VIXEN_WITH_GLFW)
-
 # ---- BUILD ENGINE ----
 
 set(
@@ -35,13 +21,15 @@ add_library(
         ${vixen_SOURCES}
 )
 
-set_target_properties(engine PROPERTIES PREFIX "" OUTPUT_NAME "VixenEngine")
+set_target_properties(
+        engine PROPERTIES
+        PREFIX ""
+        OUTPUT_NAME "VixenEngine"
+)
 
-if (NOT VIXEN_WITH_GLFW)
-    find_package(GLFW REQUIRED)
-endif (NOT VIXEN_WITH_GLFW)
+find_package(GLFW REQUIRED)
 find_package(Threads REQUIRED)
 find_package(Vulkan REQUIRED)
 
-target_include_directories(engine PUBLIC include ${Vulkan_INCLUDE_DIR} ${GLFW}/include/ contrib/glm/)
-target_link_libraries(engine Threads::Threads Vulkan::Vulkan glfw)
+target_include_directories(engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${Vulkan_INCLUDE_DIR} ${GLFW_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glm/)
+target_link_libraries(engine Threads::Threads Vulkan::Vulkan ${GLFW_LIBRARIES})
