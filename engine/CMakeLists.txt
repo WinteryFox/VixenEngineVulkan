@@ -31,9 +31,22 @@ set_target_properties(
         OUTPUT_NAME "VixenEngine"
 )
 
+find_package(PNG REQUIRED)
 find_package(GLFW REQUIRED)
-find_package(Threads REQUIRED)
 find_package(Vulkan REQUIRED)
 
-target_include_directories(engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${Vulkan_INCLUDE_DIR} ${GLFW_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glm/)
-target_link_libraries(engine Threads::Threads Vulkan::Vulkan ${GLFW_LIBRARIES})
+target_include_directories(
+        engine PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${Vulkan_INCLUDE_DIR}
+        ${GLFW_INCLUDE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glm/
+        ${PNG_INCLUDE_DIR}
+)
+target_link_libraries(
+        engine
+        Vulkan::Vulkan
+        ${GLFW_LIBRARIES}
+        PNG::PNG
+        -static
+)
