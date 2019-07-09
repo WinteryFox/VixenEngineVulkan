@@ -12,6 +12,7 @@ set(
 )
 set(
         vixen_SOURCES
+        properties.rc
         src/Window.cpp
         src/Instance.cpp
         src/PhysicalDevice.cpp
