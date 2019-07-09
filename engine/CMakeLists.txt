@@ -1,10 +1,8 @@
-project(engine)
-
 # ---- BUILD ENGINE ----
 
-find_package(PNG REQUIRED)
-find_package(GLFW REQUIRED)
 find_package(Vulkan REQUIRED)
+find_package(GLFW REQUIRED)
+find_package(PNG REQUIRED)
 
 set(
         vixen_HEADERS
@@ -24,20 +22,19 @@ set(
 )
 
 add_library(
-        engine
+        VixenEngine
         SHARED
-        ${vixen_HEADERS}
         ${vixen_SOURCES}
+        ${vixen_HEADERS}
 )
-
 set_target_properties(
-        engine PROPERTIES
+        VixenEngine PROPERTIES
         PREFIX ""
         OUTPUT_NAME "VixenEngine"
 )
-
 target_include_directories(
-        engine PUBLIC
+        VixenEngine
+        PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${Vulkan_INCLUDE_DIR}
         ${GLFW_INCLUDE_DIR}
@@ -45,10 +42,10 @@ target_include_directories(
         ${PNG_INCLUDE_DIR}
 )
 target_link_libraries(
-        engine
-        PNG::PNG
+        VixenEngine
         Vulkan::Vulkan
         ${GLFW_LIBRARIES}
+        PNG::PNG
         -static-libstdc++
         -static-libgcc
         -static

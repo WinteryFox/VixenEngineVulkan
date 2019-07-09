@@ -26,7 +26,7 @@ int main() {
 #endif
 
     std::vector<const char *> extensions = {
-            VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
+            "VK_EXT_debug_utils",
             "VK_KHR_get_physical_device_properties2"
     };
 
