@@ -1,8 +1,15 @@
+# ---- BUILD TEST ----
+
+find_package(Threads REQUIRED)
+
 add_executable(
         test
         main.cpp
         properties.rc
 )
+
+target_compile_options(test PRIVATE -fno-exceptions -fno-rtti)
+
 target_include_directories(
         test
         PUBLIC
@@ -14,7 +21,7 @@ target_link_libraries(
         -static-libstdc++
         -static-libgcc
         -static
-        pthread
+        Threads::Threads
 )
 
 set_target_properties(

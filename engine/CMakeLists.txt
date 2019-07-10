@@ -3,6 +3,7 @@
 find_package(Vulkan REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(PNG REQUIRED)
+find_package(Threads REQUIRED)
 
 set(
         vixen_HEADERS
@@ -27,6 +28,9 @@ add_library(
         ${vixen_SOURCES}
         ${vixen_HEADERS}
 )
+
+target_compile_options(VixenEngine PRIVATE -fno-exceptions -fno-rtti)
+
 set_target_properties(
         VixenEngine PROPERTIES
         PREFIX ""
@@ -49,5 +53,5 @@ target_link_libraries(
         -static-libstdc++
         -static-libgcc
         -static
-        pthread
+        Threads::Threads
 )
