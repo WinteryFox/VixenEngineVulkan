@@ -47,6 +47,10 @@ namespace vixen {
              std::to_string(VK_VERSION_MAJOR(deviceProperties.apiVersion)) + "." +
              std::to_string(VK_VERSION_MINOR(deviceProperties.apiVersion)) + "." +
              std::to_string(VK_VERSION_PATCH(deviceProperties.apiVersion)));
+
+        chooseSwapSurfaceFormat(availableSurfaceFormats);
+        chooseSwapPresentMode(availablePresentModes);
+        chooseSwapExtent(surfaceCapabilities);
     }
 
     VkPhysicalDevice
@@ -70,8 +74,9 @@ namespace vixen {
 
             std::pair<std::optional<uint32_t>, std::optional<uint32_t>> pair = findQueueFamilies(instance,
                                                                                                  physicalDevice);
+            /// If there are any queue families missing, this device is not suitable
             if (!pair.first.has_value() || !pair.second.has_value())
-                score = 0;
+                continue;
 
             uint32_t extensionCount;
             vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
@@ -80,12 +85,35 @@ namespace vixen {
             vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, avExtensions.data());
 
             std::set<std::string> requiredExtensions(extensions.begin(), extensions.end());
-            for (const auto &extension : avExtensions) {
+            for (const auto &extension : avExtensions)
                 requiredExtensions.erase(extension.extensionName);
-            }
 
+            /// If not all of the required extensions are available, this device is not suitable
             if (!requiredExtensions.empty())
-                score = 0;
+                continue;
+
+            /// Get the surface capabilities
+            vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, instance.surface, &surfaceCapabilities);
+
+            /// Get the supported surface formats
+            uint32_t formatCount;
+            vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, instance.surface, &formatCount, nullptr);
+
+            availableSurfaceFormats.resize(formatCount);
+            vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, instance.surface, &formatCount,
+                                                 availableSurfaceFormats.data());
+
+            /// Get the supported present modes
+            uint32_t presentModeCount;
+            vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, instance.surface, &presentModeCount, nullptr);
+
+            availablePresentModes.resize(presentModeCount);
+            vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, instance.surface, &presentModeCount,
+                                                      availablePresentModes.data());
+
+            /// If there are no surface formats or present modes available on this device, it is not suitable
+            if (availableSurfaceFormats.empty() || availablePresentModes.empty())
+                continue;
 
             if (score > 0 && score > currentScore) {
                 currentScore = score;
@@ -97,6 +125,7 @@ namespace vixen {
 
         return currentDevice;
     }
+
 
     std::pair<std::optional<uint32_t>, std::optional<uint32_t>>
     PhysicalDevice::findQueueFamilies(const Instance &instance, const VkPhysicalDevice &physicalDevice) {
@@ -125,5 +154,41 @@ namespace vixen {
         }
 
         return std::make_pair(graphicsIndex, presentIndex);
+    }
+
+    VkSurfaceFormatKHR
+    PhysicalDevice::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats) {
+        for (const auto &format : availableFormats)
+            if (format.format == VK_FORMAT_B8G8R8A8_UNORM && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+                return format;
+
+        return availableFormats[0];
+    }
+
+    VkPresentModeKHR PhysicalDevice::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes) {
+        VkPresentModeKHR bestMode = VK_PRESENT_MODE_FIFO_KHR;
+
+        for (const auto &presentMode : availablePresentModes)
+            if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+                return presentMode;
+            else if (presentMode == VK_PRESENT_MODE_IMMEDIATE_KHR)
+                bestMode = presentMode;
+
+        return bestMode;
+    }
+
+    VkExtent2D PhysicalDevice::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
+        if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
+            return capabilities.currentExtent;
+        } else {
+            VkExtent2D actualExtent = {1920, 1080};
+
+            actualExtent.width = std::max(capabilities.minImageExtent.width,
+                                          std::min(capabilities.maxImageExtent.width, actualExtent.width));
+            actualExtent.height = std::max(capabilities.minImageExtent.height,
+                                           std::min(capabilities.maxImageExtent.height, actualExtent.height));
+
+            return actualExtent;
+        }
     }
 }
