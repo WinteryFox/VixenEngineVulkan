@@ -3,10 +3,12 @@
 namespace vixen {
     PhysicalDevice::PhysicalDevice(const Instance &instance, const std::vector<const char *> &extensions)
             : enabledExtensions(extensions) {
+        /// Get the physical devices installed in this system
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(instance.instance, &deviceCount, nullptr);
 
         if (deviceCount == 0)
+            /// There are no physical devices installed in this system, or none are Vulkan supported
             fatal(
                     "There are no Vulkan supported GPUs available, updating your graphics drivers may fix this.");
 
@@ -26,6 +28,7 @@ namespace vixen {
 
         device = pickDevice(instance, devices, extensions);
         if (device == VK_NULL_HANDLE)
+            /// There are no suitable physical devices installed in this system
             fatal("No suitable GPU found.");
 
         vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
@@ -48,9 +51,13 @@ namespace vixen {
              std::to_string(VK_VERSION_MINOR(deviceProperties.apiVersion)) + "." +
              std::to_string(VK_VERSION_PATCH(deviceProperties.apiVersion)));
 
-        chooseSwapSurfaceFormat(availableSurfaceFormats);
-        chooseSwapPresentMode(availablePresentModes);
-        chooseSwapExtent(surfaceCapabilities);
+        /// Automatically choose the surface format, swap present mode and swap extent to be used
+        surfaceFormat = chooseSwapSurfaceFormat(availableSurfaceFormats);
+        presentMode = chooseSwapPresentMode(availablePresentModes);
+        extent = chooseSwapExtent(surfaceCapabilities);
+        trace("Using the following swap surface format and swap present mode; " + std::to_string(surfaceFormat.format) +
+              "(" + std::to_string(surfaceFormat.colorSpace) + ")" + ", " + std::to_string(presentMode) +
+              " with the following extent " + std::to_string(extent.width) + ", " + std::to_string(extent.height));
     }
 
     VkPhysicalDevice
@@ -165,13 +172,13 @@ namespace vixen {
         return availableFormats[0];
     }
 
-    VkPresentModeKHR PhysicalDevice::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes) {
+    VkPresentModeKHR PhysicalDevice::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availableModes) {
         VkPresentModeKHR bestMode = VK_PRESENT_MODE_FIFO_KHR;
 
-        for (const auto &presentMode : availablePresentModes)
-            if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR)
-                return presentMode;
-            else if (presentMode == VK_PRESENT_MODE_IMMEDIATE_KHR)
+        for (const auto &mode : availableModes)
+            if (mode == VK_PRESENT_MODE_MAILBOX_KHR)
+                return mode;
+            else if (mode == VK_PRESENT_MODE_IMMEDIATE_KHR)
                 bestMode = presentMode;
 
         return bestMode;
@@ -181,7 +188,7 @@ namespace vixen {
         if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
             return capabilities.currentExtent;
         } else {
-            VkExtent2D actualExtent = {1920, 1080};
+            VkExtent2D actualExtent;
 
             actualExtent.width = std::max(capabilities.minImageExtent.width,
                                           std::min(capabilities.maxImageExtent.width, actualExtent.width));

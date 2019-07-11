@@ -74,6 +74,11 @@ namespace vixen {
         std::vector<VkPresentModeKHR> availablePresentModes;
 
         /**
+         * The extent currently being used by this Vulkan physical device
+         */
+        VkExtent2D extent;
+
+        /**
          * Allocates a physical device for Vulkan use
          *
          * @param[in] instance The Vulkan instance to pick the device for
