@@ -2,6 +2,7 @@
 
 #ifdef __WIN32__
 
+#include <windows.h>
 #include <direct.h>
 
 #endif
