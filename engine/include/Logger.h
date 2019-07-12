@@ -7,6 +7,12 @@
 
 #endif
 
+#ifdef __linux__
+
+#include <sys/stat.h>
+
+#endif
+
 #include <ctime>
 #include <iomanip>
 #include <fstream>
@@ -29,7 +35,7 @@ namespace vixen {
 #ifdef __WIN32__
         mkdir("logs/");
 #else
-        mkdir("logs/", 0777)
+        mkdir("logs/", 0777);
 #endif
         time_t time = std::time(nullptr);
 

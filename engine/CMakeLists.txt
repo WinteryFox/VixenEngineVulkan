@@ -45,13 +45,26 @@ target_include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glm/
         ${PNG_INCLUDE_DIR}
 )
-target_link_libraries(
-        VixenEngine
-        Vulkan::Vulkan
-        ${GLFW_LIBRARIES}
-        PNG::PNG
-        -static-libstdc++
-        -static-libgcc
-        -static
-        Threads::Threads
-)
+
+if (WIN32)
+    target_link_libraries(
+            VixenEngine
+            Vulkan::Vulkan
+            ${GLFW_LIBRARIES}
+            PNG::PNG
+            -static-libstdc++
+            -static-libgcc
+            -static
+            Threads::Threads
+            -dynamic
+    )
+else ()
+    target_link_libraries(
+            VixenEngine
+            Vulkan::Vulkan
+            ${GLFW_LIBRARIES}
+            PNG::PNG
+            -static-libstdc++
+            -static-libgcc
+    )
+endif ()

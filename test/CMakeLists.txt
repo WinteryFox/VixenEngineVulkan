@@ -15,14 +15,24 @@ target_include_directories(
         PUBLIC
         ${CMAKE_SOURCE_DIR}/engine/include
 )
-target_link_libraries(
-        test
-        VixenEngine
-        -static-libstdc++
-        -static-libgcc
-        -static
-        Threads::Threads
-)
+if (WIN32)
+    target_link_libraries(
+            test
+            VixenEngine
+            -static-libstdc++
+            -static-libgcc
+            -static
+            Threads::Threads
+            -dynamic
+    )
+else ()
+    target_link_libraries(
+            test
+            VixenEngine
+            -static-libstdc++
+            -static-libgcc
+    )
+endif ()
 
 set_target_properties(
         test PROPERTIES
