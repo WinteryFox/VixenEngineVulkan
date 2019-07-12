@@ -26,7 +26,9 @@ int main() {
 #endif
 
     std::vector<const char *> extensions = {
+#ifdef VIXEN_DEBUG
             "VK_EXT_debug_utils",
+#endif
             "VK_KHR_get_physical_device_properties2"
     };
 

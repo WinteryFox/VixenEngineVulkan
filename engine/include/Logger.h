@@ -2,11 +2,10 @@
 
 #ifdef __WIN32__
 
-#include <windows.h>
+#include <direct.h>
 
 #endif
 
-#include <io.h>
 #include <ctime>
 #include <iomanip>
 #include <fstream>
@@ -26,7 +25,11 @@ namespace vixen {
         if (VIXEN_DEBUG_LEVEL < (int) severity)
             return;
 
+#ifdef __WIN32__
         mkdir("logs/");
+#else
+        mkdir("logs/", 0777)
+#endif
         time_t time = std::time(nullptr);
 
         std::ostringstream name;
