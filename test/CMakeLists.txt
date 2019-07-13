@@ -15,6 +15,9 @@ target_include_directories(
         PUBLIC
         ${CMAKE_SOURCE_DIR}/engine/include
 )
+if (CMAKE_BUILD_TYPE MATCHES "Release")
+    target_link_libraries(test -mwindows)
+endif ()
 if (WIN32)
     target_link_libraries(
             test
@@ -24,7 +27,6 @@ if (WIN32)
             -static
             Threads::Threads
             -dynamic
-            -mwindows
     )
 else ()
     target_link_libraries(
