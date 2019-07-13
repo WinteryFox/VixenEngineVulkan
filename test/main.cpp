@@ -19,12 +19,6 @@
 #include <LogicalDevice.h>
 
 int main() {
-#ifdef __WIN32__
-#ifndef VIXEN_DEBUG
-    FreeConsole();
-#endif
-#endif
-
     std::vector<const char *> extensions = {
 #ifdef VIXEN_DEBUG
             "VK_EXT_debug_utils",

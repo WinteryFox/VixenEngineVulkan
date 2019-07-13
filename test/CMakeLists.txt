@@ -24,6 +24,7 @@ if (WIN32)
             -static
             Threads::Threads
             -dynamic
+            -mwindows
     )
 else ()
     target_link_libraries(
