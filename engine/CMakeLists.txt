@@ -2,7 +2,6 @@
 
 find_package(Vulkan REQUIRED)
 find_package(GLFW REQUIRED)
-find_package(PNG REQUIRED)
 find_package(Threads REQUIRED)
 
 set(
@@ -43,7 +42,6 @@ target_include_directories(
         ${Vulkan_INCLUDE_DIR}
         ${GLFW_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glm/
-        ${PNG_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/contrib/stb_image
 )
 
@@ -52,7 +50,6 @@ if (WIN32)
             VixenEngine
             Vulkan::Vulkan
             ${GLFW_LIBRARIES}
-            PNG::PNG
             -static-libstdc++
             -static-libgcc
             -static
@@ -64,7 +61,6 @@ else ()
             VixenEngine
             Vulkan::Vulkan
             ${GLFW_LIBRARIES}
-            PNG::PNG
             -static-libstdc++
             -static-libgcc
     )
