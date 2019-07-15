@@ -44,6 +44,7 @@ target_include_directories(
         ${GLFW_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glm/
         ${PNG_INCLUDE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/stb_image
 )
 
 if (WIN32)
