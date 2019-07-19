@@ -37,7 +37,7 @@ int main() {
                                                                  glm::ivec3(0, 0, 1),
                                                                  extensions, layers);
     std::unique_ptr physicalDevice = std::make_unique<vixen::PhysicalDevice>(*instance);
-    std::unique_ptr logicalDevice = std::make_unique<vixen::LogicalDevice>(*physicalDevice);
+    std::unique_ptr logicalDevice = std::make_unique<vixen::LogicalDevice>(*instance, *physicalDevice);
 
     while (!window->shouldClose()) {
         window->update();

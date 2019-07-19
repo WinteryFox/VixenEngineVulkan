@@ -33,6 +33,16 @@ namespace vixen {
          */
         std::vector<VkExtensionProperties> availableExtensions;
 
+        /***
+         * The surface format capabilities for this Vulkan physical device
+         */
+        VkSurfaceCapabilitiesKHR surfaceCapabilities;
+
+        /**
+         * The present modes available for this Vulkan physical device
+         */
+        std::vector<VkPresentModeKHR> availablePresentModes;
+
         /**
          * A list of currently enabled extensions, this is used when creating the logical device
          */
@@ -48,35 +58,10 @@ namespace vixen {
          */
         uint32_t presentFamilyIndex = 0;
 
-        /***
-         * The surface format capabilities for this Vulkan physical device
-         */
-        VkSurfaceCapabilitiesKHR surfaceCapabilities;
-
-        /**
-         * The surface format this Vulkan physical device is currently using
-         */
-        VkSurfaceFormatKHR surfaceFormat;
-
         /**
          * The surface formats available for this Vulkan physical device
          */
         std::vector<VkSurfaceFormatKHR> availableSurfaceFormats;
-
-        /**
-         * The present mode this Vulkan physical device is currently using
-         */
-        VkPresentModeKHR presentMode;
-
-        /**
-         * The present modes available for this Vulkan physical device
-         */
-        std::vector<VkPresentModeKHR> availablePresentModes;
-
-        /**
-         * The extent currently being used by this Vulkan physical device
-         */
-        VkExtent2D extent;
 
         /**
          * Allocates a physical device for Vulkan use
@@ -99,24 +84,6 @@ namespace vixen {
          */
         VkPhysicalDevice pickDevice(const Instance &instance, const std::vector<VkPhysicalDevice> &devices,
                                     const std::vector<const char *> &extensions);
-
-        /**
-         * Pick the best surface format from the available formats
-         *
-         * @param[in] availableFormats The available formats on this device
-         * @return Returns the optimal swap surface format
-         */
-        VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
-
-        /**
-         * Pick the best present mode from the available formats
-         *
-         * @param[in] availablePresentModes The available present modes on this device
-         * @return Returns the optimal present mode
-         */
-        VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
-
-        VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
 
         /**
          * Automatically find and set the required graphics queue families for a Vulkan physical device

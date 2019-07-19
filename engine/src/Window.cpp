@@ -28,6 +28,7 @@ namespace vixen {
         const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         glfwSetWindowPos(window, mode->width / 2 - width / 2, mode->height / 2 - height / 2);
 
+        /// Load the window icon and set it
         int iconWidth, iconHeight, channels;
         stbi_uc *pixels = stbi_load("../../icon.png", &iconWidth, &iconHeight, &channels, 4);
         if (!pixels) {
