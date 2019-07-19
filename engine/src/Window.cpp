@@ -3,7 +3,7 @@
 #include "Window.h"
 
 namespace vixen {
-    Window::Window(const std::string &name, GLFWmonitor *monitor, int width, int height) {
+    Window::Window(const std::string &name, const std::string &icon, GLFWmonitor *monitor, int width, int height) {
         glfwInit();
 
         if (glfwVulkanSupported() != GLFW_TRUE)
@@ -30,17 +30,17 @@ namespace vixen {
 
         /// Load the window icon and set it
         int iconWidth, iconHeight, channels;
-        stbi_uc *pixels = stbi_load("../../icon.png", &iconWidth, &iconHeight, &channels, 4);
+        stbi_uc *pixels = stbi_load(icon.c_str(), &iconWidth, &iconHeight, &channels, 4);
         if (!pixels) {
             glfwTerminate();
             fatal("Failed to load the window icon");
         }
 
-        GLFWimage icon;
-        icon.pixels = pixels;
-        icon.width = iconWidth;
-        icon.height = iconHeight;
-        glfwSetWindowIcon(window, 1, &icon);
+        GLFWimage image;
+        image.pixels = pixels;
+        image.width = iconWidth;
+        image.height = iconHeight;
+        glfwSetWindowIcon(window, 1, &image);
 
         stbi_image_free(pixels);
 
