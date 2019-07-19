@@ -53,6 +53,16 @@ namespace vixen {
         std::vector<VkImage> swapChainImages;
 
         /**
+         * All of the swap chain image views
+         */
+        std::vector<VkImageView> swapChainImageViews;
+
+        /**
+         * The image format used by the swap chain
+         */
+        VkFormat swapChainFormat;
+
+        /**
          * Creates a new Vulkan logical device
          *
          * @param[in] instance The Vulkan instance to create the logical device for
@@ -62,7 +72,6 @@ namespace vixen {
 
         ~LogicalDevice();
 
-    private:
         /**
          * Pick the best surface format from the available formats
          *
@@ -80,5 +89,13 @@ namespace vixen {
         VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
 
         VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
+
+        /**
+         * Creates the image views for a vector of images
+         *
+         * @param[in] images The images to create the image views for
+         * @return Returns a vector of image views corresponding to the images
+         */
+        std::vector<VkImageView> createImageViews(const std::vector<VkImage> &images);
     };
 }

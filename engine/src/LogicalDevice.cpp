@@ -49,16 +49,21 @@ namespace vixen {
             imageCount > physicalDevice.surfaceCapabilities.maxImageCount)
             imageCount = physicalDevice.surfaceCapabilities.maxImageCount;
 
+        /// Define the swap chain image format
+        swapChainFormat = surfaceFormat.format;
+
+        /// Create the swap chain info struct
         VkSwapchainCreateInfoKHR swapchainCreateInfo = {};
         swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         swapchainCreateInfo.surface = instance.surface;
         swapchainCreateInfo.minImageCount = imageCount;
-        swapchainCreateInfo.imageFormat = surfaceFormat.format;
+        swapchainCreateInfo.imageFormat = swapChainFormat;
         swapchainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
         swapchainCreateInfo.imageExtent = extent;
         swapchainCreateInfo.imageArrayLayers = 1;
         swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
+        /// If the graphics family is not the same as the present family, we need to use concurrent sharing mode
         if (physicalDevice.graphicsFamilyIndex != physicalDevice.presentFamilyIndex) {
             uint32_t indices[] = {physicalDevice.graphicsFamilyIndex, physicalDevice.presentFamilyIndex};
             swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
@@ -70,23 +75,31 @@ namespace vixen {
             swapchainCreateInfo.pQueueFamilyIndices = nullptr;
         }
 
+        /// Image details
         swapchainCreateInfo.preTransform = physicalDevice.surfaceCapabilities.currentTransform;
         swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
         swapchainCreateInfo.presentMode = presentMode;
         swapchainCreateInfo.clipped = VK_TRUE;
         swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
 
+        /// Create the swap chain
         if (vkCreateSwapchainKHR(device, &swapchainCreateInfo, nullptr, &swapChain) != VK_SUCCESS) {
             fatal("Failed to create swap chain");
         }
         info("Successfully created initial swap chain");
 
+        /// Create the swap chain image views
         vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
         swapChainImages.resize(imageCount);
         vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
+
+        swapChainImageViews = createImageViews(swapChainImages);
     }
 
     LogicalDevice::~LogicalDevice() {
+        for (const auto &view : swapChainImageViews)
+            vkDestroyImageView(device, view, nullptr);
+
         vkDestroySwapchainKHR(device, swapChain, nullptr);
         vkDestroyDevice(device, nullptr);
     }
@@ -125,5 +138,31 @@ namespace vixen {
 
             return actualExtent;
         }
+    }
+
+    std::vector<VkImageView> LogicalDevice::createImageViews(const std::vector<VkImage> &images) {
+        std::vector<VkImageView> imageViews(images.size());
+
+        for (uint32_t i = 0; i < images.size(); i++) {
+            VkImageViewCreateInfo createInfo = {};
+            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            createInfo.image = images[i];
+            createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            createInfo.format = swapChainFormat;
+            createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            createInfo.subresourceRange.baseMipLevel = 0;
+            createInfo.subresourceRange.levelCount = 1;
+            createInfo.subresourceRange.baseArrayLayer = 0;
+            createInfo.subresourceRange.layerCount = 1;
+
+            if (vkCreateImageView(device, &createInfo, nullptr, &imageViews[i]) != VK_SUCCESS)
+                fatal("Failed to create image views");
+        }
+
+        return imageViews;
     }
 }
