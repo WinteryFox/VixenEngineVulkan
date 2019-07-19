@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
-
+#include <stb_image.h>
 #include "Logger.h"
 
 namespace vixen {
@@ -22,8 +22,9 @@ namespace vixen {
          * @param[in] height The height of the window
          */
         explicit Window(const std::string &name, GLFWmonitor *monitor = nullptr, int width = 1280, int height = 720);
-        
+
         ~Window();
+
         bool shouldClose();
 
         /**
