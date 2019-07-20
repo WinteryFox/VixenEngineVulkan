@@ -11,7 +11,7 @@ set(
         include/Logger.h
         include/PhysicalDevice.h
         include/LogicalDevice.h
-        include/Shader.h)
+        include/Shader.h include/Render.h)
 set(
         vixen_SOURCES
         properties.rc
@@ -19,7 +19,7 @@ set(
         src/Instance.cpp
         src/PhysicalDevice.cpp
         src/LogicalDevice.cpp
-        src/Shader.cpp)
+        src/Shader.cpp src/Render.cpp)
 
 add_library(
         VixenEngine

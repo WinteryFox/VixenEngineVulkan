@@ -19,6 +19,7 @@
 #include <PhysicalDevice.h>
 #include <LogicalDevice.h>
 #include <Shader.h>
+#include <Render.h>
 
 int main() {
     std::vector<const char *> extensions = {
@@ -41,8 +42,10 @@ int main() {
     std::unique_ptr physicalDevice = std::make_unique<vixen::PhysicalDevice>(*instance);
     std::unique_ptr logicalDevice = std::make_unique<vixen::LogicalDevice>(*instance, *physicalDevice);
 
-    vixen::Shader vert(logicalDevice.get(), "vert.spv");
-    vixen::Shader frag(logicalDevice.get(), "frag.spv");
+    vixen::Shader vertex(logicalDevice.get(), "vert.spv");
+    vixen::Shader fragment(logicalDevice.get(), "frag.spv");
+
+    std::unique_ptr render = std::make_unique<vixen::Render>(logicalDevice.get(), vertex, fragment);
 
     while (!window->shouldClose()) {
         window->update();

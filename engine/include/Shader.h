@@ -15,7 +15,7 @@ namespace vixen {
         VkShaderModule shader;
 
         /**
-         * The logical device this shader is made by
+         * The logical device this shader is made by, required to be stored to destroy the shader
          */
         LogicalDevice *device;
 
