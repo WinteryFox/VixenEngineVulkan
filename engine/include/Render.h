@@ -44,9 +44,9 @@ namespace vixen {
         /**
          * Construct a new render pipeline
          *
-         * @param device The device to create the pipeline for
-         * @param vertex The vertex shader this pipeline will use
-         * @param fragment The fragment shader this pipeline will use
+         * @param[in] device The device to create the pipeline for
+         * @param[in] vertex The vertex shader this pipeline will use
+         * @param[in] fragment The fragment shader this pipeline will use
          */
         Render(LogicalDevice *device, const Shader &vertex, const Shader &fragment);
 
