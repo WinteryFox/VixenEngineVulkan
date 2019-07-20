@@ -12,11 +12,13 @@
 
 #endif
 
+#include <memory>
 #include <Window.h>
 #include <Instance.h>
 #include <Logger.h>
 #include <PhysicalDevice.h>
 #include <LogicalDevice.h>
+#include <Shader.h>
 
 int main() {
     std::vector<const char *> extensions = {
@@ -33,11 +35,14 @@ int main() {
     };
 
     std::unique_ptr window = std::make_unique<vixen::Window>("Vixen Engine Test Application");
-    std::unique_ptr instance = std::make_unique<vixen::Instance>(*window, "Vixen Engine Test Application",
+    std::shared_ptr instance = std::make_shared<vixen::Instance>(*window, "Vixen Engine Test Application",
                                                                  glm::ivec3(0, 0, 1),
                                                                  extensions, layers);
     std::unique_ptr physicalDevice = std::make_unique<vixen::PhysicalDevice>(*instance);
     std::unique_ptr logicalDevice = std::make_unique<vixen::LogicalDevice>(*instance, *physicalDevice);
+
+    vixen::Shader vert(logicalDevice.get(), "vert.spv");
+    vixen::Shader frag(logicalDevice.get(), "frag.spv");
 
     while (!window->shouldClose()) {
         window->update();
