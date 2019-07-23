@@ -47,6 +47,9 @@ namespace vixen {
          */
         std::vector<VkCommandBuffer> commandBuffers;
 
+        VkSemaphore imageAvailableSemaphore;
+        VkSemaphore renderFinishedSemaphore;
+
         /**
          * The logical device this renderer was made by and should be destroyed by
          */
@@ -63,5 +66,7 @@ namespace vixen {
                const Shader &vertex, const Shader &fragment);
 
         ~Render();
+
+        void render();
     };
 }

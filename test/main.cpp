@@ -49,6 +49,8 @@ int main() {
     while (!window->shouldClose()) {
         window->update();
 
+        render->render();
+
         window->swap();
     }
 
