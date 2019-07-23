@@ -1,7 +1,9 @@
 #include "Render.h"
 
 namespace vixen {
-    Render::Render(LogicalDevice *device, const Shader &vertex, const Shader &fragment) : device(device) {
+    Render::Render(const std::shared_ptr<LogicalDevice> &device, const std::shared_ptr<PhysicalDevice> &physicalDevice,
+                   const Shader &vertex, const Shader &fragment)
+            : device(device) {
         VkPipelineShaderStageCreateInfo vertCreateInfo = {};
         vertCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         vertCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
@@ -155,9 +157,7 @@ namespace vixen {
 
         swapChainFramebuffers.resize(device->swapChainImageViews.size());
         for (size_t i = 0; i < device->swapChainImageViews.size(); i++) {
-            VkImageView attachments[] = {
-                    device->swapChainImageViews[i]
-            };
+            VkImageView attachments[] = {device->swapChainImageViews[i]};
 
             VkFramebufferCreateInfo framebufferCreateInfo = {};
             framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -172,12 +172,44 @@ namespace vixen {
                 VK_SUCCESS)
                 fatal("Failed to create a frame buffer");
         }
+        trace("Successfully created frame buffers");
+
+        VkCommandPoolCreateInfo poolCreateInfo = {};
+        poolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        poolCreateInfo.queueFamilyIndex = physicalDevice->graphicsFamilyIndex;
+        poolCreateInfo.flags = 0;
+
+        if (vkCreateCommandPool(device->device, &poolCreateInfo, nullptr, &commandPool) != VK_SUCCESS)
+            fatal("Failed to create command pool");
+        trace("Successfully created command pool");
+
+        commandBuffers.resize(swapChainFramebuffers.size());
+        VkCommandBufferAllocateInfo allocateInfo = {};
+        allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocateInfo.commandPool = commandPool;
+        allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocateInfo.commandBufferCount = (uint32_t) commandBuffers.size();
+
+        if (vkAllocateCommandBuffers(device->device, &allocateInfo, commandBuffers.data()) != VK_SUCCESS)
+            fatal("Failed to allocate command buffers");
+        trace("Successfully allocated command buffers");
+
+        for (auto &commandBuffer : commandBuffers) {
+            VkCommandBufferBeginInfo beginInfo = {};
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+            beginInfo.pInheritanceInfo = nullptr;
+
+            if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
+                fatal("Failed to begin command buffer");
+        }
     }
 
     Render::~Render() {
         for (const auto &framebuffer : swapChainFramebuffers)
             vkDestroyFramebuffer(device->device, framebuffer, nullptr);
 
+        vkDestroyCommandPool(device->device, commandPool, nullptr);
         vkDestroyPipelineLayout(device->device, pipelineLayout, nullptr);
         vkDestroyRenderPass(device->device, renderPass, nullptr);
         vkDestroyPipeline(device->device, pipeline, nullptr);

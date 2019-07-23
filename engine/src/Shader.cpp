@@ -1,7 +1,7 @@
 #include "Shader.h"
 
 namespace vixen {
-    Shader::Shader(LogicalDevice *device, const std::string &filePath) : device(device) {
+    Shader::Shader(const std::shared_ptr<LogicalDevice> &device, const std::string &filePath) : device(device) {
         shader = createShader(device, filePath);
     }
 
@@ -9,7 +9,8 @@ namespace vixen {
         vkDestroyShaderModule(device->device, shader, nullptr);
     }
 
-    VkShaderModule Shader::createShader(LogicalDevice *logicalDevice, const std::string &filePath) {
+    VkShaderModule
+    Shader::createShader(const std::shared_ptr<LogicalDevice> &logicalDevice, const std::string &filePath) {
         std::ifstream file(filePath, std::ios::ate | std::ios::binary);
         if (!file.is_open()) {
             error("Failed to open shader " + filePath);

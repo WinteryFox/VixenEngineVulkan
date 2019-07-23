@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <memory>
 #include "Shader.h"
 
 namespace vixen {
@@ -37,9 +38,19 @@ namespace vixen {
         std::vector<VkFramebuffer> swapChainFramebuffers = {};
 
         /**
+         * The command pool used by this renderer
+         */
+        VkCommandPool commandPool = VK_NULL_HANDLE;
+
+        /**
+         * A list of command buffers associated with the corresponding framebuffer
+         */
+        std::vector<VkCommandBuffer> commandBuffers;
+
+        /**
          * The logical device this renderer was made by and should be destroyed by
          */
-        LogicalDevice *device = nullptr;
+        std::shared_ptr<LogicalDevice> device = nullptr;
 
         /**
          * Construct a new render pipeline
@@ -48,7 +59,8 @@ namespace vixen {
          * @param[in] vertex The vertex shader this pipeline will use
          * @param[in] fragment The fragment shader this pipeline will use
          */
-        Render(LogicalDevice *device, const Shader &vertex, const Shader &fragment);
+        Render(const std::shared_ptr<LogicalDevice> &device, const std::shared_ptr<PhysicalDevice> &physicalDevice,
+               const Shader &vertex, const Shader &fragment);
 
         ~Render();
     };

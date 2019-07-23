@@ -18,7 +18,7 @@ namespace vixen {
         /**
          * The Vulkan instance
          */
-        VkInstance instance;
+        VkInstance instance = VK_NULL_HANDLE;
 
         /**
          * Contains all available extensions on this system
@@ -43,7 +43,7 @@ namespace vixen {
         /**
          * The Vulkan window surface
          */
-        VkSurfaceKHR surface;
+        VkSurfaceKHR surface = VK_NULL_HANDLE;
 
         /**
          * Creates a new Vulkan instance
@@ -61,7 +61,7 @@ namespace vixen {
         ~Instance();
 
     private:
-        VkDebugUtilsMessengerEXT debugMessenger;
+        VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
 
         /**
          * Query what Vulkan layers are available, this is stored in the availableLayers class property

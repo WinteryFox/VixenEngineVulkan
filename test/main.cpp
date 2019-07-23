@@ -35,17 +35,16 @@ int main() {
 #endif
     };
 
-    std::unique_ptr window = std::make_unique<vixen::Window>("Vixen Engine Test Application");
-    std::shared_ptr instance = std::make_shared<vixen::Instance>(*window, "Vixen Engine Test Application",
-                                                                 glm::ivec3(0, 0, 1),
-                                                                 extensions, layers);
-    std::unique_ptr physicalDevice = std::make_unique<vixen::PhysicalDevice>(*instance);
-    std::unique_ptr logicalDevice = std::make_unique<vixen::LogicalDevice>(*instance, *physicalDevice);
+    std::unique_ptr<vixen::Window> window(new vixen::Window("Vixen Engine Test Application"));
+    std::shared_ptr<vixen::Instance> instance(
+            new vixen::Instance(*window, "Vixen Engine Test Application", glm::ivec3(0, 0, 1), extensions, layers));
+    std::shared_ptr<vixen::PhysicalDevice> physicalDevice(new vixen::PhysicalDevice(*instance));
+    std::shared_ptr<vixen::LogicalDevice> logicalDevice(new vixen::LogicalDevice(*instance, *physicalDevice));
 
-    vixen::Shader vertex(logicalDevice.get(), "vert.spv");
-    vixen::Shader fragment(logicalDevice.get(), "frag.spv");
+    vixen::Shader vertex(logicalDevice, "vert.spv");
+    vixen::Shader fragment(logicalDevice, "frag.spv");
 
-    std::unique_ptr render = std::make_unique<vixen::Render>(logicalDevice.get(), vertex, fragment);
+    std::unique_ptr<vixen::Render> render(new vixen::Render(logicalDevice, physicalDevice, vertex, fragment));
 
     while (!window->shouldClose()) {
         window->update();
