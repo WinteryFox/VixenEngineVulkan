@@ -18,7 +18,7 @@ namespace vixen {
         /**
          * The logical device this shader is made by, required to be stored to destroy the shader
          */
-        std::shared_ptr<LogicalDevice> device;
+        const std::shared_ptr<LogicalDevice> device;
 
         /**
          * Create a new Vulkan shader module

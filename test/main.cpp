@@ -44,7 +44,7 @@ int main() {
     vixen::Shader vertex(logicalDevice, "vert.spv");
     vixen::Shader fragment(logicalDevice, "frag.spv");
 
-    std::unique_ptr<vixen::Render> render(new vixen::Render(logicalDevice, physicalDevice, vertex, fragment));
+    std::unique_ptr<vixen::Render> render(new vixen::Render(logicalDevice, physicalDevice, vertex, fragment, 3));
 
     while (!window->shouldClose()) {
         window->update();

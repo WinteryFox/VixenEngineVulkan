@@ -47,13 +47,31 @@ namespace vixen {
          */
         std::vector<VkCommandBuffer> commandBuffers;
 
-        VkSemaphore imageAvailableSemaphore;
-        VkSemaphore renderFinishedSemaphore;
+        /**
+         * A list of all the semaphores for the image available signal for GPU-GPU synchronization
+         */
+        std::vector<VkSemaphore> imageAvailableSemaphores = {};
+
+        /**
+         * A list of all the semaphores for the render finished signal for GPU-GPU synchronization
+         */
+        std::vector<VkSemaphore> renderFinishedSemaphores = {};
+
+        /**
+         * A list of all the fences, used for CPU-GPU synchronization
+         */
+        std::vector<VkFence> fences = {};
+
+        /**
+         * The maximum number of frames in flight, also known as concurrently rendered frames
+         * ensuring that the GPU is always being utilized
+         */
+        const int framesInFlight;
 
         /**
          * The logical device this renderer was made by and should be destroyed by
          */
-        std::shared_ptr<LogicalDevice> device = nullptr;
+        const std::shared_ptr<LogicalDevice> device = nullptr;
 
         /**
          * Construct a new render pipeline
@@ -61,12 +79,22 @@ namespace vixen {
          * @param[in] device The device to create the pipeline for
          * @param[in] vertex The vertex shader this pipeline will use
          * @param[in] fragment The fragment shader this pipeline will use
+         * @param[in] framesInFlight The maximum frames in flight to be used by this renderer
          */
         Render(const std::shared_ptr<LogicalDevice> &device, const std::shared_ptr<PhysicalDevice> &physicalDevice,
-               const Shader &vertex, const Shader &fragment);
+               const Shader &vertex, const Shader &fragment, int framesInFlight);
 
         ~Render();
 
+        /**
+         * Renders the current scene
+         */
         void render();
+
+    private:
+        /**
+         * The current frame in relation to the maximum frames in flight
+         */
+        size_t currentFrame = 0;
     };
 }

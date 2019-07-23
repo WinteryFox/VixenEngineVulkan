@@ -2,8 +2,8 @@
 
 namespace vixen {
     Render::Render(const std::shared_ptr<LogicalDevice> &device, const std::shared_ptr<PhysicalDevice> &physicalDevice,
-                   const Shader &vertex, const Shader &fragment)
-            : device(device) {
+                   const Shader &vertex, const Shader &fragment, int framesInFlight)
+            : device(device), framesInFlight(framesInFlight) {
         VkPipelineShaderStageCreateInfo vertCreateInfo = {};
         vertCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         vertCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
@@ -204,14 +204,6 @@ namespace vixen {
             fatal("Failed to allocate command buffers");
         trace("Successfully allocated command buffers");
 
-        VkSemaphoreCreateInfo semaphoreCreateInfo = {};
-        semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-        if (vkCreateSemaphore(device->device, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS ||
-            vkCreateSemaphore(device->device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphore))
-            fatal("Failed to create semaphores");
-        trace("Successfully created semaphores");
-
-
         for (int i = 0; i < commandBuffers.size(); i++) {
             VkCommandBufferBeginInfo beginInfo = {};
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -242,6 +234,27 @@ namespace vixen {
             if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS)
                 fatal("Failed to reset command buffer");
         }
+        trace("Successfully created command buffers");
+
+        imageAvailableSemaphores.resize(framesInFlight);
+        renderFinishedSemaphores.resize(framesInFlight);
+        fences.resize(framesInFlight);
+
+        VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+        semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+        VkFenceCreateInfo fenceCreateInfo = {};
+        fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+        for (int i = 0; i < framesInFlight; i++)
+            if (vkCreateSemaphore(device->device, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]) !=
+                VK_SUCCESS ||
+                vkCreateSemaphore(device->device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]) !=
+                VK_SUCCESS ||
+                vkCreateFence(device->device, &fenceCreateInfo, nullptr, &fences[i]) != VK_SUCCESS)
+                fatal("Failed to create semaphores and fences");
+        trace("Successfully created semaphores and fences");
     }
 
     Render::~Render() {
@@ -250,8 +263,12 @@ namespace vixen {
         for (const auto &framebuffer : swapChainFramebuffers)
             vkDestroyFramebuffer(device->device, framebuffer, nullptr);
 
-        vkDestroySemaphore(device->device, imageAvailableSemaphore, nullptr);
-        vkDestroySemaphore(device->device, renderFinishedSemaphore, nullptr);
+        for (int i = 0; i < framesInFlight; i++) {
+            vkDestroySemaphore(device->device, imageAvailableSemaphores[i], nullptr);
+            vkDestroySemaphore(device->device, renderFinishedSemaphores[i], nullptr);
+            vkDestroyFence(device->device, fences[i], nullptr);
+        }
+
         vkDestroyCommandPool(device->device, commandPool, nullptr);
         vkDestroyPipelineLayout(device->device, pipelineLayout, nullptr);
         vkDestroyRenderPass(device->device, renderPass, nullptr);
@@ -259,14 +276,17 @@ namespace vixen {
     }
 
     void Render::render() {
+        vkWaitForFences(device->device, 1, &fences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
+        vkResetFences(device->device, 1, &fences[currentFrame]);
+
         uint32_t imageIndex;
         vkAcquireNextImageKHR(device->device, device->swapChain, std::numeric_limits<uint64_t>::max(),
-                              imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+                              imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
         VkSubmitInfo submitInfo = {};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-        VkSemaphore waitSemaphores[] = {imageAvailableSemaphore};
+        VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
         VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = waitSemaphores;
@@ -274,11 +294,11 @@ namespace vixen {
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
 
-        VkSemaphore signalSemaphores[] = {renderFinishedSemaphore};
+        VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
-        if (vkQueueSubmit(device->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+        if (vkQueueSubmit(device->graphicsQueue, 1, &submitInfo, fences[currentFrame]) != VK_SUCCESS)
             fatal("Failed to submit command to queue");
 
         VkPresentInfoKHR presentInfo = {};
@@ -293,5 +313,7 @@ namespace vixen {
         presentInfo.pResults = nullptr;
 
         vkQueuePresentKHR(device->presentQueue, &presentInfo);
+
+        currentFrame = (currentFrame + 1) % framesInFlight;
     }
 }
