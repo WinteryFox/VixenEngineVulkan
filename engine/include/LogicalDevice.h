@@ -30,7 +30,7 @@ namespace vixen {
         /**
          * The extent currently being used by this Vulkan physical device
          */
-        VkExtent2D extent;
+        VkExtent2D extent = {};
 
         /**
          * The minimum amount of images to be in the swap chain
@@ -40,7 +40,7 @@ namespace vixen {
         /**
          * The surface format this Vulkan physical device is currently using
          */
-        VkSurfaceFormatKHR surfaceFormat;
+        VkSurfaceFormatKHR surfaceFormat = {};
 
         /**
          * The present mode this Vulkan physical device is currently using
