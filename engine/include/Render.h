@@ -71,7 +71,11 @@ namespace vixen {
         /**
          * The logical device this renderer was made by and should be destroyed by
          */
-        const std::shared_ptr<LogicalDevice> device = nullptr;
+        std::shared_ptr<LogicalDevice> device = nullptr;
+
+        const Shader vertex;
+
+        const Shader fragment;
 
         /**
          * Construct a new render pipeline
@@ -91,7 +95,21 @@ namespace vixen {
          */
         void render();
 
+        void createCommandBuffers();
+
+        void createFramebuffers();
+
+        void createSyncObjects();
+
+        void createRenderPass();
+
+        void createPipeline();
+
+        void createPipelineLayout();
+
         void destroyPipeline();
+
+        void recreate();
 
     private:
         /**

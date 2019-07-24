@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.h>
 #include <set>
+#include <memory>
 #include "PhysicalDevice.h"
 
 namespace vixen {
@@ -58,9 +59,16 @@ namespace vixen {
         std::vector<VkImageView> imageViews;
 
         /**
-         * The image format used by the swap chain
+         * A pointer to the instance this logical device was created by
          */
-        VkFormat format;
+        std::shared_ptr<Instance> instance = nullptr;
+
+        /**
+         * A pointer to the physical device this logical device was created by
+         */
+        std::shared_ptr<PhysicalDevice> physicalDevice = nullptr;
+
+        std::shared_ptr<Window> window = nullptr;
 
         /**
          * Creates a new Vulkan logical device
@@ -68,35 +76,30 @@ namespace vixen {
          * @param[in] instance The Vulkan instance to create the logical device for
          * @param[in] physicalDevice The Vulkan physical device to make the logical device for
          */
-        explicit LogicalDevice(const Instance &instance, const PhysicalDevice &physicalDevice);
+        LogicalDevice(const std::shared_ptr<Instance> &instance,
+                      const std::shared_ptr<Window> &window,
+                      const std::shared_ptr<PhysicalDevice> &physicalDevice);
 
         ~LogicalDevice();
 
         /**
          * Pick the best surface format from the available formats
-         *
-         * @param[in] availableFormats The available formats on this device
-         * @return Returns the optimal swap surface format
          */
-        VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
+        void chooseSwapSurfaceFormat();
 
         /**
          * Pick the best present mode from the available formats
-         *
-         * @param[in] availablePresentModes The available present modes on this device
-         * @return Returns the optimal present mode
          */
-        VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
+        void chooseSwapPresentMode();
 
-        VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
+        void chooseSwapExtent();
 
         /**
          * Creates the image views for a vector of images
-         *
-         * @param[in] images The images to create the image views for
-         * @return Returns a vector of image views corresponding to the images
          */
-        std::vector<VkImageView> createImageViews(const std::vector<VkImage> &images);
+        void createImageViews();
+
+        void createSwapchain();
 
         void destroySwapchain();
     };

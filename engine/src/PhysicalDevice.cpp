@@ -1,11 +1,12 @@
 #include "PhysicalDevice.h"
 
 namespace vixen {
-    PhysicalDevice::PhysicalDevice(const Instance &instance, const std::vector<const char *> &extensions)
-            : enabledExtensions(extensions) {
+    PhysicalDevice::PhysicalDevice(const std::shared_ptr<Instance> &instance,
+                                   const std::vector<const char *> &extensions)
+            : instance(instance), enabledExtensions(extensions) {
         /// Get the physical devices installed in this system
         uint32_t deviceCount = 0;
-        vkEnumeratePhysicalDevices(instance.instance, &deviceCount, nullptr);
+        vkEnumeratePhysicalDevices(instance->instance, &deviceCount, nullptr);
 
         if (deviceCount == 0)
             /// There are no physical devices installed in this system, or none are Vulkan supported
@@ -13,7 +14,7 @@ namespace vixen {
                     "There are no Vulkan supported GPUs available, updating your graphics drivers may fix this.");
 
         std::vector<VkPhysicalDevice> devices(deviceCount);
-        vkEnumeratePhysicalDevices(instance.instance, &deviceCount, devices.data());
+        vkEnumeratePhysicalDevices(instance->instance, &deviceCount, devices.data());
 
         std::string output = "Found " + std::to_string(devices.size()) + " physical devices; ";
         for (const auto &physicalDevice : devices) {
@@ -26,7 +27,7 @@ namespace vixen {
         }
         trace(output);
 
-        device = pickDevice(instance, devices, extensions);
+        device = pickDevice(devices, extensions);
         if (device == VK_NULL_HANDLE)
             /// There are no suitable physical devices installed in this system
             fatal("No suitable GPU found.");
@@ -52,9 +53,9 @@ namespace vixen {
              std::to_string(VK_VERSION_PATCH(deviceProperties.apiVersion)));
     }
 
-    VkPhysicalDevice
-    PhysicalDevice::pickDevice(const Instance &instance, const std::vector<VkPhysicalDevice> &devices,
-                               const std::vector<const char *> &extensions) {
+    // TODO: Fix this shit
+    VkPhysicalDevice PhysicalDevice::pickDevice(const std::vector<VkPhysicalDevice> &devices,
+                                                const std::vector<const char *> &extensions) {
         int currentScore = 0;
         VkPhysicalDevice currentDevice = VK_NULL_HANDLE;
 
@@ -71,8 +72,7 @@ namespace vixen {
 
             score += physicalDeviceProperties.limits.maxImageDimension2D;
 
-            std::pair<std::optional<uint32_t>, std::optional<uint32_t>> pair = findQueueFamilies(instance,
-                                                                                                 physicalDevice);
+            std::pair<std::optional<uint32_t>, std::optional<uint32_t>> pair = findQueueFamilies(physicalDevice);
             /// If there are any queue families missing, this device is not suitable
             if (!pair.first.has_value() || !pair.second.has_value())
                 continue;
@@ -91,27 +91,10 @@ namespace vixen {
             if (!requiredExtensions.empty())
                 continue;
 
-            /// Get the surface capabilities
-            vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, instance.surface, &surfaceCapabilities);
-
-            /// Get the supported surface formats
-            uint32_t formatCount;
-            vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, instance.surface, &formatCount, nullptr);
-
-            availableSurfaceFormats.resize(formatCount);
-            vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, instance.surface, &formatCount,
-                                                 availableSurfaceFormats.data());
-
-            /// Get the supported present modes
-            uint32_t presentModeCount;
-            vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, instance.surface, &presentModeCount, nullptr);
-
-            availablePresentModes.resize(presentModeCount);
-            vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, instance.surface, &presentModeCount,
-                                                      availablePresentModes.data());
+            SwapChainSupportDetails details = querySwapChainSupportDetails(physicalDevice);
 
             /// If there are no surface formats or present modes available on this device, it is not suitable
-            if (availableSurfaceFormats.empty() || availablePresentModes.empty())
+            if (details.formats.empty() || details.presentModes.empty())
                 continue;
 
             if (score > 0 && score > currentScore) {
@@ -126,7 +109,7 @@ namespace vixen {
     }
 
     std::pair<std::optional<uint32_t>, std::optional<uint32_t>>
-    PhysicalDevice::findQueueFamilies(const Instance &instance, const VkPhysicalDevice &physicalDevice) {
+    PhysicalDevice::findQueueFamilies(const VkPhysicalDevice &physicalDevice) {
         std::optional<uint32_t> graphicsIndex;
         std::optional<uint32_t> presentIndex;
 
@@ -144,7 +127,7 @@ namespace vixen {
                 graphicsIndex = i;
 
             VkBool32 presentSupport = false;
-            vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, instance.surface, &presentSupport);
+            vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, instance->surface, &presentSupport);
             if (presentSupport)
                 presentIndex = i;
 
@@ -152,5 +135,34 @@ namespace vixen {
         }
 
         return std::make_pair(graphicsIndex, presentIndex);
+    }
+
+    SwapChainSupportDetails PhysicalDevice::querySwapChainSupportDetails(VkPhysicalDevice physicalDevice) {
+        SwapChainSupportDetails details;
+
+        /// Get the surface capabilities
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, instance->surface, &details.capabilities);
+
+        /// Get the supported surface formats
+        uint32_t formatCount;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, instance->surface, &formatCount, nullptr);
+
+        details.formats.resize(formatCount);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, instance->surface, &formatCount,
+                                             details.formats.data());
+
+        /// Get the supported present modes
+        uint32_t presentModeCount;
+        vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, instance->surface, &presentModeCount, nullptr);
+
+        details.presentModes.resize(presentModeCount);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, instance->surface, &presentModeCount,
+                                                  details.presentModes.data());
+
+        return details;
+    }
+
+    SwapChainSupportDetails PhysicalDevice::querySwapChainSupportDetails() {
+        return querySwapChainSupportDetails(device);
     }
 }

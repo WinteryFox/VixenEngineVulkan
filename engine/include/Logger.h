@@ -39,13 +39,9 @@ namespace vixen {
 #endif
         time_t time = std::time(nullptr);
 
-        std::ostringstream name;
         std::tm *localtime = std::localtime(&time);
-        const auto &stampName = std::put_time(localtime, "%Y%m%d%H%M%S");
-        name << "logs/" << stampName << ".log";
-
         const auto &stamp = std::put_time(localtime, "%Y-%m-%d %H:%M:%S");
-        std::ofstream stream(name.str().c_str(), std::ofstream::out | std::ofstream::app);
+        std::ofstream stream("logs/latest.log", std::ofstream::out | std::ofstream::app);
 
         std::cout << stamp;
         stream << stamp;

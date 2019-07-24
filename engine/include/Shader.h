@@ -13,7 +13,7 @@ namespace vixen {
         /**
          * The vertex shader module
          */
-        VkShaderModule shader;
+        VkShaderModule shader = VK_NULL_HANDLE;
 
         /**
          * The logical device this shader is made by, required to be stored to destroy the shader

@@ -35,11 +35,11 @@ int main() {
 #endif
     };
 
-    std::unique_ptr<vixen::Window> window(new vixen::Window("Vixen Engine Test Application"));
+    std::shared_ptr<vixen::Window> window(new vixen::Window("Vixen Engine Test Application"));
     std::shared_ptr<vixen::Instance> instance(
             new vixen::Instance(*window, "Vixen Engine Test Application", glm::ivec3(0, 0, 1), extensions, layers));
-    std::shared_ptr<vixen::PhysicalDevice> physicalDevice(new vixen::PhysicalDevice(*instance));
-    std::shared_ptr<vixen::LogicalDevice> logicalDevice(new vixen::LogicalDevice(*instance, *physicalDevice));
+    std::shared_ptr<vixen::PhysicalDevice> physicalDevice(new vixen::PhysicalDevice(instance));
+    std::shared_ptr<vixen::LogicalDevice> logicalDevice(new vixen::LogicalDevice(instance, window, physicalDevice));
 
     vixen::Shader vertex(logicalDevice, "vert.spv");
     vixen::Shader fragment(logicalDevice, "frag.spv");
