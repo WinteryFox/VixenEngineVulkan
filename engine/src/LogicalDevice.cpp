@@ -16,15 +16,15 @@ namespace vixen {
             queueCreateInfos.push_back(queueCreateInfo);
         }
 
-        VkDeviceCreateInfo createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        createInfo.pQueueCreateInfos = queueCreateInfos.data();
-        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-        createInfo.pEnabledFeatures = &physicalDevice.deviceFeatures;
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(physicalDevice.enabledExtensions.size());
-        createInfo.ppEnabledExtensionNames = physicalDevice.enabledExtensions.data();
+        VkDeviceCreateInfo deviceCreateInfo = {};
+        deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
+        deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+        deviceCreateInfo.pEnabledFeatures = &physicalDevice.deviceFeatures;
+        deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(physicalDevice.enabledExtensions.size());
+        deviceCreateInfo.ppEnabledExtensionNames = physicalDevice.enabledExtensions.data();
 
-        if (vkCreateDevice(physicalDevice.device, &createInfo, nullptr, &device) != VK_SUCCESS)
+        if (vkCreateDevice(physicalDevice.device, &deviceCreateInfo, nullptr, &device) != VK_SUCCESS)
             fatal("Failed to create logical device");
         trace("Successfully created logical device");
 
@@ -83,15 +83,15 @@ namespace vixen {
         swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
 
         /// Create the swap chain
-        if (vkCreateSwapchainKHR(device, &swapchainCreateInfo, nullptr, &swapChain) != VK_SUCCESS) {
+        if (vkCreateSwapchainKHR(device, &swapchainCreateInfo, nullptr, &swapchain) != VK_SUCCESS) {
             fatal("Failed to create swap chain");
         }
         info("Successfully created initial swap chain");
 
         /// Create the swap chain image views
-        vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
+        vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
         swapChainImages.resize(imageCount);
-        vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
+        vkGetSwapchainImagesKHR(device, swapchain, &imageCount, swapChainImages.data());
 
         swapChainImageViews = createImageViews(swapChainImages);
     }
@@ -100,7 +100,7 @@ namespace vixen {
         for (const auto &view : swapChainImageViews)
             vkDestroyImageView(device, view, nullptr);
 
-        vkDestroySwapchainKHR(device, swapChain, nullptr);
+        vkDestroySwapchainKHR(device, swapchain, nullptr);
         vkDestroyDevice(device, nullptr);
     }
 
@@ -164,5 +164,12 @@ namespace vixen {
         }
 
         return imageViews;
+    }
+
+    void LogicalDevice::destroySwapchain() {
+        for (const auto &imageView : swapChainImageViews)
+            vkDestroyImageView(device, imageView, nullptr);
+
+        vkDestroySwapchainKHR(device, swapchain, nullptr);
     }
 }

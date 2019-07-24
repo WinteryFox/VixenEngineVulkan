@@ -15,7 +15,7 @@ namespace vixen {
         /**
          * The Vulkan swap chain
          */
-        VkSwapchainKHR swapChain = VK_NULL_HANDLE;
+        VkSwapchainKHR swapchain = VK_NULL_HANDLE;
 
         /**
          * The Vulkan graphics queue family
@@ -97,5 +97,7 @@ namespace vixen {
          * @return Returns a vector of image views corresponding to the images
          */
         std::vector<VkImageView> createImageViews(const std::vector<VkImage> &images);
+
+        void destroySwapchain();
     };
 }

@@ -91,6 +91,8 @@ namespace vixen {
          */
         void render();
 
+        void destroyPipeline();
+
     private:
         /**
          * The current frame in relation to the maximum frames in flight

@@ -280,7 +280,7 @@ namespace vixen {
         vkResetFences(device->device, 1, &fences[currentFrame]);
 
         uint32_t imageIndex;
-        vkAcquireNextImageKHR(device->device, device->swapChain, std::numeric_limits<uint64_t>::max(),
+        vkAcquireNextImageKHR(device->device, device->swapchain, std::numeric_limits<uint64_t>::max(),
                               imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
         VkSubmitInfo submitInfo = {};
@@ -306,7 +306,7 @@ namespace vixen {
         presentInfo.waitSemaphoreCount = 1;
         presentInfo.pWaitSemaphores = signalSemaphores;
 
-        VkSwapchainKHR swapChains[] = {device->swapChain};
+        VkSwapchainKHR swapChains[] = {device->swapchain};
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = swapChains;
         presentInfo.pImageIndices = &imageIndex;
@@ -315,5 +315,19 @@ namespace vixen {
         vkQueuePresentKHR(device->presentQueue, &presentInfo);
 
         currentFrame = (currentFrame + 1) % framesInFlight;
+    }
+
+    void Render::destroyPipeline() {
+        vkDeviceWaitIdle(device->device);
+
+        for (const auto &framebuffer : swapChainFramebuffers)
+            vkDestroyFramebuffer(device->device, framebuffer, nullptr);
+
+        vkFreeCommandBuffers(device->device, commandPool, static_cast<uint32_t>(commandBuffers.size()),
+                             commandBuffers.data());
+
+        vkDestroyPipeline(device->device, pipeline, nullptr);
+        vkDestroyPipelineLayout(device->device, pipelineLayout, nullptr);
+        vkDestroyRenderPass(device->device, renderPass, nullptr);
     }
 }
