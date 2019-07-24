@@ -50,14 +50,14 @@ namespace vixen {
             imageCount = physicalDevice.surfaceCapabilities.maxImageCount;
 
         /// Define the swap chain image format
-        swapChainFormat = surfaceFormat.format;
+        format = surfaceFormat.format;
 
         /// Create the swap chain info struct
         VkSwapchainCreateInfoKHR swapchainCreateInfo = {};
         swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         swapchainCreateInfo.surface = instance.surface;
         swapchainCreateInfo.minImageCount = imageCount;
-        swapchainCreateInfo.imageFormat = swapChainFormat;
+        swapchainCreateInfo.imageFormat = format;
         swapchainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
         swapchainCreateInfo.imageExtent = extent;
         swapchainCreateInfo.imageArrayLayers = 1;
@@ -90,14 +90,14 @@ namespace vixen {
 
         /// Create the swap chain image views
         vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
-        swapChainImages.resize(imageCount);
-        vkGetSwapchainImagesKHR(device, swapchain, &imageCount, swapChainImages.data());
+        images.resize(imageCount);
+        vkGetSwapchainImagesKHR(device, swapchain, &imageCount, images.data());
 
-        swapChainImageViews = createImageViews(swapChainImages);
+        imageViews = createImageViews(images);
     }
 
     LogicalDevice::~LogicalDevice() {
-        for (const auto &view : swapChainImageViews)
+        for (const auto &view : imageViews)
             vkDestroyImageView(device, view, nullptr);
 
         vkDestroySwapchainKHR(device, swapchain, nullptr);
@@ -148,7 +148,7 @@ namespace vixen {
             createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             createInfo.image = images[i];
             createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            createInfo.format = swapChainFormat;
+            createInfo.format = format;
             createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
             createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
             createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -167,7 +167,7 @@ namespace vixen {
     }
 
     void LogicalDevice::destroySwapchain() {
-        for (const auto &imageView : swapChainImageViews)
+        for (const auto &imageView : imageViews)
             vkDestroyImageView(device, imageView, nullptr);
 
         vkDestroySwapchainKHR(device, swapchain, nullptr);

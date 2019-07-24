@@ -35,7 +35,7 @@ namespace vixen {
         /**
          * A list of frame buffers used by this graphics pipeline
          */
-        std::vector<VkFramebuffer> swapChainFramebuffers = {};
+        std::vector<VkFramebuffer> framebuffers = {};
 
         /**
          * The command pool used by this renderer

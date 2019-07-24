@@ -50,17 +50,17 @@ namespace vixen {
         /**
          * All of the images in the current swap chain
          */
-        std::vector<VkImage> swapChainImages;
+        std::vector<VkImage> images;
 
         /**
          * All of the swap chain image views
          */
-        std::vector<VkImageView> swapChainImageViews;
+        std::vector<VkImageView> imageViews;
 
         /**
          * The image format used by the swap chain
          */
-        VkFormat swapChainFormat;
+        VkFormat format;
 
         /**
          * Creates a new Vulkan logical device

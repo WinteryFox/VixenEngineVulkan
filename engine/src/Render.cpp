@@ -102,7 +102,7 @@ namespace vixen {
         trace("Successfully created pipeline layout");
 
         VkAttachmentDescription colorAttachment = {};
-        colorAttachment.format = device->swapChainFormat;
+        colorAttachment.format = device->format;
         colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
         colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -165,9 +165,9 @@ namespace vixen {
             fatal("Failed to create graphics pipeline");
         info("Successfully created a graphics pipeline");
 
-        swapChainFramebuffers.resize(device->swapChainImageViews.size());
-        for (size_t i = 0; i < device->swapChainImageViews.size(); i++) {
-            VkImageView attachments[] = {device->swapChainImageViews[i]};
+        framebuffers.resize(device->imageViews.size());
+        for (size_t i = 0; i < device->imageViews.size(); i++) {
+            VkImageView attachments[] = {device->imageViews[i]};
 
             VkFramebufferCreateInfo framebufferCreateInfo = {};
             framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -178,7 +178,7 @@ namespace vixen {
             framebufferCreateInfo.height = device->extent.height;
             framebufferCreateInfo.layers = 1;
 
-            if (vkCreateFramebuffer(device->device, &framebufferCreateInfo, nullptr, &swapChainFramebuffers[i]) !=
+            if (vkCreateFramebuffer(device->device, &framebufferCreateInfo, nullptr, &framebuffers[i]) !=
                 VK_SUCCESS)
                 fatal("Failed to create a frame buffer");
         }
@@ -193,7 +193,7 @@ namespace vixen {
             fatal("Failed to create command pool");
         trace("Successfully created command pool");
 
-        commandBuffers.resize(swapChainFramebuffers.size());
+        commandBuffers.resize(framebuffers.size());
         VkCommandBufferAllocateInfo allocateInfo = {};
         allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocateInfo.commandPool = commandPool;
@@ -216,7 +216,7 @@ namespace vixen {
             VkRenderPassBeginInfo renderPassBeginInfo = {};
             renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassBeginInfo.renderPass = renderPass;
-            renderPassBeginInfo.framebuffer = swapChainFramebuffers[i];
+            renderPassBeginInfo.framebuffer = framebuffers[i];
             renderPassBeginInfo.renderArea.offset = {0, 0};
             renderPassBeginInfo.renderArea.extent = device->extent;
 
@@ -260,7 +260,7 @@ namespace vixen {
     Render::~Render() {
         vkDeviceWaitIdle(device->device);
 
-        for (const auto &framebuffer : swapChainFramebuffers)
+        for (const auto &framebuffer : framebuffers)
             vkDestroyFramebuffer(device->device, framebuffer, nullptr);
 
         for (int i = 0; i < framesInFlight; i++) {
@@ -320,7 +320,7 @@ namespace vixen {
     void Render::destroyPipeline() {
         vkDeviceWaitIdle(device->device);
 
-        for (const auto &framebuffer : swapChainFramebuffers)
+        for (const auto &framebuffer : framebuffers)
             vkDestroyFramebuffer(device->device, framebuffer, nullptr);
 
         vkFreeCommandBuffers(device->device, commandPool, static_cast<uint32_t>(commandBuffers.size()),
