@@ -73,9 +73,9 @@ namespace vixen {
          */
         std::shared_ptr<LogicalDevice> device = nullptr;
 
-        const Shader vertex;
+        const std::shared_ptr<Shader> vertex;
 
-        const Shader fragment;
+        const std::shared_ptr<Shader> fragment;
 
         /**
          * Construct a new render pipeline
@@ -86,7 +86,7 @@ namespace vixen {
          * @param[in] framesInFlight The maximum frames in flight to be used by this renderer
          */
         Render(const std::shared_ptr<LogicalDevice> &device, const std::shared_ptr<PhysicalDevice> &physicalDevice,
-               const Shader &vertex, const Shader &fragment, int framesInFlight);
+               const std::shared_ptr<Shader> &vertex, const std::shared_ptr<Shader> &fragment, int framesInFlight);
 
         ~Render();
 

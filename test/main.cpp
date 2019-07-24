@@ -41,8 +41,8 @@ int main() {
     std::shared_ptr<vixen::PhysicalDevice> physicalDevice(new vixen::PhysicalDevice(instance));
     std::shared_ptr<vixen::LogicalDevice> logicalDevice(new vixen::LogicalDevice(instance, window, physicalDevice));
 
-    vixen::Shader vertex(logicalDevice, "vert.spv");
-    vixen::Shader fragment(logicalDevice, "frag.spv");
+    std::shared_ptr<vixen::Shader> vertex(new vixen::Shader(logicalDevice, "vert.spv"));
+    std::shared_ptr<vixen::Shader> fragment(new vixen::Shader(logicalDevice, "frag.spv"));
 
     std::unique_ptr<vixen::Render> render(new vixen::Render(logicalDevice, physicalDevice, vertex, fragment, 3));
 

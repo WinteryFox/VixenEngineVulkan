@@ -2,7 +2,7 @@
 
 namespace vixen {
     Render::Render(const std::shared_ptr<LogicalDevice> &device, const std::shared_ptr<PhysicalDevice> &physicalDevice,
-                   const Shader &vertex, const Shader &fragment, int framesInFlight)
+                   const std::shared_ptr<Shader> &vertex, const std::shared_ptr<Shader> &fragment, int framesInFlight)
             : device(device), vertex(vertex), fragment(fragment), framesInFlight(framesInFlight) {
         /// Create graphics pipeline layout
         createPipelineLayout();
@@ -237,13 +237,13 @@ namespace vixen {
         VkPipelineShaderStageCreateInfo vertCreateInfo = {};
         vertCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         vertCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-        vertCreateInfo.module = vertex.shader;
+        vertCreateInfo.module = vertex->shader;
         vertCreateInfo.pName = "main";
 
         VkPipelineShaderStageCreateInfo fragCreateInfo = {};
         fragCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         fragCreateInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-        fragCreateInfo.module = fragment.shader;
+        fragCreateInfo.module = fragment->shader;
         fragCreateInfo.pName = "main";
 
         VkPipelineShaderStageCreateInfo shaders[] = {vertCreateInfo, fragCreateInfo};
