@@ -172,7 +172,7 @@ namespace vixen {
             renderPassBeginInfo.renderArea.offset = {0, 0};
             renderPassBeginInfo.renderArea.extent = device->extent;
 
-            VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
+            VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 0.0f};
             renderPassBeginInfo.clearValueCount = 1;
             renderPassBeginInfo.pClearValues = &clearColor;
 
@@ -307,9 +307,9 @@ namespace vixen {
         colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
         colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
         colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-        colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-        colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-        colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+        colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+        colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_SUBTRACT;
 
         VkPipelineColorBlendStateCreateInfo colorBlending = {};
         colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
