@@ -4,6 +4,8 @@ find_package(Vulkan REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(Threads REQUIRED)
 
+#add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/contrib/glslang)
+
 set(
         vixen_HEADERS
         include/Window.h
@@ -11,7 +13,8 @@ set(
         include/Logger.h
         include/PhysicalDevice.h
         include/LogicalDevice.h
-        include/Shader.h include/Render.h)
+        include/Shader.h
+        include/Render.h)
 set(
         vixen_SOURCES
         properties.rc
@@ -19,7 +22,8 @@ set(
         src/Instance.cpp
         src/PhysicalDevice.cpp
         src/LogicalDevice.cpp
-        src/Shader.cpp src/Render.cpp)
+        src/Shader.cpp
+        src/Render.cpp)
 
 add_library(
         VixenEngine
@@ -35,14 +39,16 @@ set_target_properties(
         PREFIX ""
         OUTPUT_NAME "VixenEngine"
 )
+
 target_include_directories(
         VixenEngine
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${Vulkan_INCLUDE_DIR}
         ${GLFW_INCLUDE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glm/
+        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glm
         ${CMAKE_CURRENT_SOURCE_DIR}/contrib/stb_image
+        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glslang
 )
 
 if (WIN32)
@@ -55,8 +61,13 @@ if (WIN32)
             -static
             Threads::Threads
             -dynamic
+            #glslang
+            #HLSL
+            #OSDependent
+            #OGLCompiler
+            #SPIRV
     )
-else ()
+else (WIN32)
     target_link_libraries(
             VixenEngine
             Vulkan::Vulkan
@@ -64,4 +75,4 @@ else ()
             -static-libstdc++
             -static-libgcc
     )
-endif ()
+endif (WIN32)

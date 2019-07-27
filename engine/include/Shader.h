@@ -1,6 +1,9 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+//#include <glslang/Public/ShaderLang.h>
+//#include <SPIRV/GlslangToSpv.h>
+//#include <StandAlone/DirStackFileIncluder.h>
 #include <fstream>
 #include <vector>
 #include <memory>
@@ -28,9 +31,16 @@ namespace vixen {
          */
         Shader(const std::shared_ptr<LogicalDevice> &device, const std::string &filePath);
 
+        Shader(const std::shared_ptr<LogicalDevice> &device, const std::vector<char> &bytecode);
+
         ~Shader();
 
     private:
         VkShaderModule createShader(const std::shared_ptr<LogicalDevice> &logicalDevice, const std::string &filePath);
+
+        VkShaderModule
+        createShader(const std::shared_ptr<LogicalDevice> &logicalDevice, const std::vector<char> &bytecode);
     };
+
+    //std::vector<char> compileShader(const std::string &filePath, EShLanguage kind);
 }
