@@ -6,16 +6,9 @@
  * @date 7/7/2019
  */
 
-#ifdef __WIN32__
-
-#include <windows.h>
-
-#endif
-
 #include <memory>
 #include <Window.h>
 #include <Instance.h>
-#include <Logger.h>
 #include <PhysicalDevice.h>
 #include <LogicalDevice.h>
 #include <Shader.h>
