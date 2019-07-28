@@ -1,0 +1,6 @@
+[submodule "engine/contrib/glm"]
+	path = engine/contrib/glm
+	url = https://github.com/g-truc/glm
+[submodule "engine/contrib/stb"]
+	path = engine/contrib/stb
+	url = https://github.com/nothings/stb

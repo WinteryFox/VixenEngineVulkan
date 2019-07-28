@@ -49,7 +49,7 @@ target_include_directories(
         ${Vulkan_INCLUDE_DIR}
         ${GLFW_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glm
-        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/stb_image
+        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/stb
         ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glslang
 )
 
