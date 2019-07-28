@@ -1,11 +1,11 @@
 #include "Shader.h"
 
 namespace vixen {
-    Shader::Shader(const std::shared_ptr<LogicalDevice> &device, const std::string &filePath) : device(device) {
+    Shader::Shader(const std::unique_ptr<LogicalDevice> &device, const std::string &filePath) : device(device) {
         shader = createShader(device, filePath);
     }
 
-    Shader::Shader(const std::shared_ptr<LogicalDevice> &device, const std::vector<char> &bytecode) {
+    Shader::Shader(const std::unique_ptr<LogicalDevice> &device, const std::vector<char> &bytecode) : device(device) {
         shader = createShader(device, bytecode);
     }
 
@@ -14,7 +14,7 @@ namespace vixen {
     }
 
     VkShaderModule
-    Shader::createShader(const std::shared_ptr<LogicalDevice> &logicalDevice, const std::string &filePath) {
+    Shader::createShader(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::string &filePath) {
         std::ifstream file(filePath, std::ios::ate | std::ios::binary);
         if (!file.is_open()) {
             error("Failed to open shader " + filePath);
@@ -31,7 +31,7 @@ namespace vixen {
     }
 
     VkShaderModule
-    Shader::createShader(const std::shared_ptr<LogicalDevice> &logicalDevice, const std::vector<char> &bytecode) {
+    Shader::createShader(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::vector<char> &bytecode) {
         VkShaderModuleCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         createInfo.codeSize = bytecode.size();

@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.h>
 #include <memory>
 #include "Shader.h"
+#include "Mesh.h"
 
 namespace vixen {
     class Render {
@@ -45,7 +46,7 @@ namespace vixen {
         /**
          * A list of command buffers associated with the corresponding framebuffer
          */
-        std::vector<VkCommandBuffer> commandBuffers;
+        std::vector<VkCommandBuffer> commandBuffers = {};
 
         /**
          * A list of all the semaphores for the image available signal for GPU-GPU synchronization
@@ -71,11 +72,11 @@ namespace vixen {
         /**
          * The logical device this renderer was made by and should be destroyed by
          */
-        std::shared_ptr<LogicalDevice> device = nullptr;
+        const std::unique_ptr<LogicalDevice> &device;
 
-        const std::shared_ptr<Shader> vertex;
+        const Shader &vertex;
 
-        const std::shared_ptr<Shader> fragment;
+        const Shader &fragment;
 
         /**
          * Construct a new render pipeline
@@ -85,8 +86,8 @@ namespace vixen {
          * @param[in] fragment The fragment shader this pipeline will use
          * @param[in] framesInFlight The maximum frames in flight to be used by this renderer
          */
-        Render(const std::shared_ptr<LogicalDevice> &device, const std::shared_ptr<PhysicalDevice> &physicalDevice,
-               const std::shared_ptr<Shader> &vertex, const std::shared_ptr<Shader> &fragment, int framesInFlight);
+        Render(const std::unique_ptr<LogicalDevice> &device, const std::unique_ptr<PhysicalDevice> &physicalDevice,
+               const Shader &vertex, const Shader &fragment, int framesInFlight);
 
         ~Render();
 
@@ -111,7 +112,16 @@ namespace vixen {
 
         void recreate();
 
+        /**
+         * Add a mesh to this render
+         *
+         * @param mesh
+         */
+        void addMesh(std::unique_ptr<Mesh> mesh);
+
     private:
+        std::vector<std::unique_ptr<Mesh>> meshes = {};
+
         /**
          * The current frame in relation to the maximum frames in flight
          */

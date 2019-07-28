@@ -1,7 +1,7 @@
 #include "PhysicalDevice.h"
 
 namespace vixen {
-    PhysicalDevice::PhysicalDevice(const std::shared_ptr<Instance> &instance,
+    PhysicalDevice::PhysicalDevice(const std::unique_ptr<Instance> &instance,
                                    const std::vector<const char *> &extensions)
             : instance(instance), enabledExtensions(extensions) {
         /// Get the physical devices installed in this system
@@ -164,5 +164,19 @@ namespace vixen {
 
     SwapChainSupportDetails PhysicalDevice::querySwapChainSupportDetails() {
         return querySwapChainSupportDetails(device);
+    }
+
+    bool PhysicalDevice::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, uint32_t &type) {
+        VkPhysicalDeviceMemoryProperties memoryProperties;
+        vkGetPhysicalDeviceMemoryProperties(device, &memoryProperties);
+        for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {
+            if ((typeFilter & (i << i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+                type = i;
+                return true;
+            }
+        }
+
+        error("Failed to find suitable memory type");
+        return false;
     }
 }

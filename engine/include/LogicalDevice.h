@@ -36,7 +36,7 @@ namespace vixen {
         /**
          * The minimum amount of images to be in the swap chain
          */
-        uint32_t imageCount;
+        uint32_t imageCount = 0;
 
         /**
          * The surface format this Vulkan physical device is currently using
@@ -46,7 +46,7 @@ namespace vixen {
         /**
          * The present mode this Vulkan physical device is currently using
          */
-        VkPresentModeKHR presentMode;
+        VkPresentModeKHR presentMode = {};
 
         /**
          * All of the images in the current swap chain
@@ -61,14 +61,17 @@ namespace vixen {
         /**
          * A pointer to the instance this logical device was created by
          */
-        std::shared_ptr<Instance> instance = nullptr;
+        const std::unique_ptr<Instance> &instance;
 
         /**
          * A pointer to the physical device this logical device was created by
          */
-        std::shared_ptr<PhysicalDevice> physicalDevice = nullptr;
+        const std::unique_ptr<PhysicalDevice> &physicalDevice;
 
-        std::shared_ptr<Window> window = nullptr;
+        /**
+         * A pointer to the window this device will use
+         */
+        const std::unique_ptr<Window> &window;
 
         /**
          * Creates a new Vulkan logical device
@@ -76,9 +79,9 @@ namespace vixen {
          * @param[in] instance The Vulkan instance to create the logical device for
          * @param[in] physicalDevice The Vulkan physical device to make the logical device for
          */
-        LogicalDevice(const std::shared_ptr<Instance> &instance,
-                      const std::shared_ptr<Window> &window,
-                      const std::shared_ptr<PhysicalDevice> &physicalDevice);
+        LogicalDevice(const std::unique_ptr<Instance> &instance,
+                      const std::unique_ptr<Window> &window,
+                      const std::unique_ptr<PhysicalDevice> &physicalDevice);
 
         ~LogicalDevice();
 

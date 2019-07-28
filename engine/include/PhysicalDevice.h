@@ -45,11 +45,11 @@ namespace vixen {
          */
         std::vector<const char *> enabledExtensions;
 
-        uint32_t graphicsFamilyIndex;
+        uint32_t graphicsFamilyIndex = 0;
 
-        uint32_t presentFamilyIndex;
+        uint32_t presentFamilyIndex = 0;
 
-        const std::shared_ptr<Instance> instance;
+        const std::unique_ptr<Instance> &instance;
 
         /**
          * Allocates a physical device for Vulkan use
@@ -58,10 +58,20 @@ namespace vixen {
          * @param[in] devices The list of Vulkan physical devices to pick from
          * @param[in] extensions The device extensions required by the application
          */
-        explicit PhysicalDevice(const std::shared_ptr<Instance> &instance,
+        explicit PhysicalDevice(const std::unique_ptr<Instance> &instance,
                                 const std::vector<const char *> &extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME});
 
         SwapChainSupportDetails querySwapChainSupportDetails();
+
+        /**
+         * Find the specified memory type
+         *
+         * @param[in] typeFilter The type filter to apply
+         * @param[in] properties The properties the memory needs to have
+         * @param[out] type The type of memory found to be best suited
+         * @return Returns false if no suitable memory type was found
+         */
+        bool findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, uint32_t &type);
     private:
         /**
          * Automatically pick the best suited Vulkan capable physical device and Vulkan queue family

@@ -1,9 +1,9 @@
 #include "LogicalDevice.h"
 
 namespace vixen {
-    LogicalDevice::LogicalDevice(const std::shared_ptr<Instance> &instance,
-                                 const std::shared_ptr<Window> &window,
-                                 const std::shared_ptr<PhysicalDevice> &physicalDevice) : instance(instance),
+    LogicalDevice::LogicalDevice(const std::unique_ptr<Instance> &instance,
+                                 const std::unique_ptr<Window> &window,
+                                 const std::unique_ptr<PhysicalDevice> &physicalDevice) : instance(instance),
                                                                                           window(window),
                                                                                           physicalDevice(
                                                                                                   physicalDevice) {
@@ -112,7 +112,7 @@ namespace vixen {
 
     void LogicalDevice::createImageViews() {
         imageViews.resize(images.size());
-        for (uint32_t i = 0; i < images.size(); i++) {
+        for (size_t i = 0; i < images.size(); i++) {
             VkImageViewCreateInfo createInfo = {};
             createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             createInfo.image = images[i];

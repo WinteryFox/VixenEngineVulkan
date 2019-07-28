@@ -1,21 +1,9 @@
 #include "Render.h"
 
 namespace vixen {
-    Render::Render(const std::shared_ptr<LogicalDevice> &device, const std::shared_ptr<PhysicalDevice> &physicalDevice,
-                   const std::shared_ptr<Shader> &vertex, const std::shared_ptr<Shader> &fragment, int framesInFlight)
+    Render::Render(const std::unique_ptr<LogicalDevice> &device, const std::unique_ptr<PhysicalDevice> &physicalDevice,
+                   const Shader &vertex, const Shader &fragment, int framesInFlight)
             : device(device), vertex(vertex), fragment(fragment), framesInFlight(framesInFlight) {
-        /// Create graphics pipeline layout
-        createPipelineLayout();
-
-        /// Create render pass
-        createRenderPass();
-
-        /// Create graphics pipeline
-        createPipeline();
-
-        /// Create framebuffers
-        createFramebuffers();
-
         /// Create command pool
         VkCommandPoolCreateInfo poolCreateInfo = {};
         poolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -25,9 +13,6 @@ namespace vixen {
         if (vkCreateCommandPool(device->device, &poolCreateInfo, nullptr, &commandPool) != VK_SUCCESS)
             fatal("Failed to create command pool");
         trace("Successfully created command pool");
-
-        /// Create command buffers
-        createCommandBuffers();
 
         createSyncObjects();
     }
@@ -156,7 +141,7 @@ namespace vixen {
             fatal("Failed to allocate command buffers");
         trace("Successfully allocated command buffers");
 
-        for (int i = 0; i < commandBuffers.size(); i++) {
+        for (size_t i = 0; i < commandBuffers.size(); i++) {
             VkCommandBufferBeginInfo beginInfo = {};
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
             beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
@@ -179,7 +164,16 @@ namespace vixen {
             vkCmdBeginRenderPass(commandBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
             vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-            vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+
+            for (const auto &mesh : meshes) {
+                /// Bind the mesh's buffers
+                std::vector<VkBuffer> buffers{mesh->vertexBuffer};
+                std::vector<VkDeviceSize> offsets{0};
+                vkCmdBindVertexBuffers(commandBuffers[i], 0, buffers.size(), buffers.data(), offsets.data());
+
+                /// Draw the mesh
+                vkCmdDraw(commandBuffers[i], mesh->vertexCount, 1, 0, 0);
+            }
 
             vkCmdEndRenderPass(commandBuffers[i]);
 
@@ -237,23 +231,23 @@ namespace vixen {
         VkPipelineShaderStageCreateInfo vertCreateInfo = {};
         vertCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         vertCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-        vertCreateInfo.module = vertex->shader;
+        vertCreateInfo.module = vertex.shader;
         vertCreateInfo.pName = "main";
 
         VkPipelineShaderStageCreateInfo fragCreateInfo = {};
         fragCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         fragCreateInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-        fragCreateInfo.module = fragment->shader;
+        fragCreateInfo.module = fragment.shader;
         fragCreateInfo.pName = "main";
 
         VkPipelineShaderStageCreateInfo shaders[] = {vertCreateInfo, fragCreateInfo};
 
         VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};
         vertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputCreateInfo.vertexBindingDescriptionCount = 0;
-        vertexInputCreateInfo.pVertexBindingDescriptions = nullptr;
-        vertexInputCreateInfo.vertexAttributeDescriptionCount = 0;
-        vertexInputCreateInfo.pVertexAttributeDescriptions = nullptr;
+        vertexInputCreateInfo.vertexBindingDescriptionCount = meshes.size();
+        vertexInputCreateInfo.pVertexBindingDescriptions = &meshes[0]->bindingDescription;
+        vertexInputCreateInfo.vertexAttributeDescriptionCount = meshes.size();
+        vertexInputCreateInfo.pVertexAttributeDescriptions = &meshes[0]->attributeDescription;
 
         VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo = {};
         inputAssemblyCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -387,5 +381,10 @@ namespace vixen {
         createPipeline();
         createFramebuffers();
         createCommandBuffers();
+    }
+
+    void Render::addMesh(std::unique_ptr<Mesh> mesh) {
+        meshes.push_back(std::move(mesh));
+        recreate();
     }
 }
