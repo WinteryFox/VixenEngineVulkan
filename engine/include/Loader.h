@@ -32,26 +32,17 @@ namespace vixen {
         void copyBuffer(VkBuffer src, VkBuffer dst, VkDeviceSize size);
 
         /**
-         * Creates and allocates a vertex buffer for a mesh
-         *
-         * @param[in] vertices The vertices of the mesh
-         * @param[out] vertexBuffer The vertex buffer to write to
-         * @param[out] vertexBufferAllocation The VMA allocation
-         * @return Returns true on success
-         */
-        bool createVertexBuffer(const std::vector<glm::vec3> &vertices, VkBuffer &vertexBuffer,
-                                VmaAllocation &vertexBufferAllocation);
-
-        /**
          * Creates and allocates an index buffer for a mesh
          *
+         * @param vertices The vertices of the mesh
          * @param indices The indices of the mesh
-         * @param indexBuffer The index buffer to write to
-         * @param indexBufferAllocation The VMA allocation
-         * @return
+         * @param buffer The index buffer to write to
+         * @param allocation The VMA allocation
+         * @return Returns the buffer and allocation for the mesh
          */
-        bool createIndexBuffer(const std::vector<uint32_t> &indices, VkBuffer &indexBuffer,
-                               VmaAllocation &indexBufferAllocation);
+        bool
+        createMeshBuffer(const std::vector<glm::vec3> &vertices, const std::vector<uint32_t> &indices, VkBuffer &buffer,
+                         VmaAllocation &allocation);
 
         /**
          * Create and allocate a new buffer, it is up to the user to delete the buffer and free the device memory

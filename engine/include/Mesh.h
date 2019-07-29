@@ -14,13 +14,9 @@ namespace vixen {
         /**
          * The vertex buffer for this mesh
          */
-        VkBuffer vertexBuffer;
+        VkBuffer buffer;
 
-        VmaAllocation vertexBufferAllocation;
-
-        VkBuffer indexBuffer;
-
-        VmaAllocation indexBufferAllocation;
+        VmaAllocation allocation;
 
         /**
          * The amount of vertices this mesh consists of
@@ -40,9 +36,8 @@ namespace vixen {
          * destroy the buffers
          * @param vertices The vertices for this mesh
          */
-        Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, const VkBuffer &vertexBuffer,
-             const VmaAllocation &vertexBufferAllocation, const VkBuffer &indexBuffer,
-             const VmaAllocation &indexBufferAllocation, uint32_t vertexCount, uint32_t indexCount);
+        Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, const VkBuffer &buffer,
+             const VmaAllocation &allocation, uint32_t vertexCount, uint32_t indexCount);
 
         ~Mesh();
     };

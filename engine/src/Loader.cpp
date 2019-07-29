@@ -75,57 +75,32 @@ namespace vixen {
         vkFreeCommandBuffers(logicalDevice->device, transferCommandPool, 1, &commandBuffer);
     }
 
-    bool Loader::createVertexBuffer(const std::vector<glm::vec3> &vertices, VkBuffer &vertexBuffer,
-                                    VmaAllocation &vertexBufferAllocation) {
-        VkDeviceSize bufferSize = sizeof(glm::vec3) * vertices.size();
+    bool Loader::createMeshBuffer(const std::vector<glm::vec3> &vertices, const std::vector<uint32_t> &indices,
+                                  VkBuffer &buffer, VmaAllocation &allocation) {
+        VkDeviceSize vertexBufferSize = sizeof(glm::vec3) * vertices.size();
+        VkDeviceSize indexBufferSize = sizeof(uint32_t) * indices.size();
 
         VkBuffer stagingBuffer = VK_NULL_HANDLE;
         VmaAllocation stagingAllocation = VK_NULL_HANDLE;
-        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY, stagingBuffer,
+        createBuffer(vertexBufferSize + indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY,
+                     stagingBuffer,
                      stagingAllocation);
 
         void *data;
         vmaMapMemory(logicalDevice->allocator, stagingAllocation, &data);
-        memcpy(data, vertices.data(), (size_t) bufferSize);
+        memcpy(data, vertices.data(), (size_t) vertexBufferSize);
+        memcpy(static_cast<char *>(data) + static_cast<size_t>(vertexBufferSize), indices.data(),
+               (size_t) indexBufferSize);
         vmaUnmapMemory(logicalDevice->allocator, stagingAllocation);
 
-        if (!createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                          VMA_MEMORY_USAGE_CPU_TO_GPU, vertexBuffer, vertexBufferAllocation)) {
+        if (!createBuffer(vertexBufferSize + indexBufferSize,
+                          VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
+                          VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, buffer, allocation)) {
             error("Failed to create buffer for vertices");
             return false;
         }
 
-        copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
-
-        vmaDestroyBuffer(logicalDevice->allocator, stagingBuffer, stagingAllocation);
-
-        return true;
-    }
-
-    bool Loader::createIndexBuffer(const std::vector<uint32_t> &indices, VkBuffer &indexBuffer,
-                                   VmaAllocation &indexBufferAllocation) {
-        VkDeviceSize bufferSize = sizeof(uint32_t) * indices.size();
-
-        VkBuffer stagingBuffer = VK_NULL_HANDLE;
-        VmaAllocation stagingAllocation = VK_NULL_HANDLE;
-        if (!createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY, stagingBuffer,
-                          stagingAllocation)) {
-            error("Failed to create buffer for indices");
-            return false;
-        }
-
-        void *data;
-        vmaMapMemory(logicalDevice->allocator, stagingAllocation, &data);
-        memcpy(data, indices.data(), (size_t) bufferSize);
-        vmaUnmapMemory(logicalDevice->allocator, stagingAllocation);
-
-        if (!createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-                          VMA_MEMORY_USAGE_CPU_TO_GPU, indexBuffer, indexBufferAllocation)) {
-            error("Failed to create buffer for vertices");
-            return false;
-        }
-
-        copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+        copyBuffer(stagingBuffer, buffer, vertexBufferSize + indexBufferSize);
 
         vmaDestroyBuffer(logicalDevice->allocator, stagingBuffer, stagingAllocation);
 
@@ -134,24 +109,15 @@ namespace vixen {
 
     bool Loader::createMesh(const std::vector<glm::vec3> &vertices, const std::vector<uint32_t> &indices,
                             std::unique_ptr<Mesh> &mesh) {
-        VkBuffer vertexBuffer = VK_NULL_HANDLE;
-        VmaAllocation vertexBufferAllocation = VK_NULL_HANDLE;
+        VkBuffer buffer = VK_NULL_HANDLE;
+        VmaAllocation allocation = VK_NULL_HANDLE;
 
-        VkBuffer indexBuffer = VK_NULL_HANDLE;
-        VmaAllocation indexBufferAllocation = VK_NULL_HANDLE;
-
-        if (!createVertexBuffer(vertices, vertexBuffer, vertexBufferAllocation)) {
+        if (!createMeshBuffer(vertices, indices, buffer, allocation)) {
             error("Failed to create vertex buffer");
             return false;
         }
 
-        if (!createIndexBuffer(indices, indexBuffer, indexBufferAllocation)) {
-            error("Failed to create indices buffer");
-            return false;
-        }
-
-        mesh = std::make_unique<Mesh>(logicalDevice, vertexBuffer, vertexBufferAllocation, indexBuffer,
-                                      indexBufferAllocation, vertices.size(), indices.size());
+        mesh = std::make_unique<Mesh>(logicalDevice, buffer, allocation, vertices.size(), indices.size());
         return true;
     }
 

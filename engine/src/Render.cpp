@@ -167,10 +167,11 @@ namespace vixen {
 
             for (const auto &mesh : meshes) {
                 /// Bind the mesh's buffers
-                std::vector<VkBuffer> buffers{mesh->vertexBuffer};
+                std::vector<VkBuffer> buffers{mesh->buffer};
                 std::vector<VkDeviceSize> offsets{0};
                 vkCmdBindVertexBuffers(commandBuffers[i], 0, buffers.size(), buffers.data(), offsets.data());
-                vkCmdBindIndexBuffer(commandBuffers[i], mesh->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+                vkCmdBindIndexBuffer(commandBuffers[i], mesh->buffer, sizeof(glm::vec3) * mesh->vertexCount,
+                                     VK_INDEX_TYPE_UINT32);
 
                 /// Draw the mesh
                 vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(mesh->indexCount), 1, 0, 0, 0);
