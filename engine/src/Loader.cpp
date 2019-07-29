@@ -82,9 +82,8 @@ namespace vixen {
 
         VkBuffer stagingBuffer = VK_NULL_HANDLE;
         VmaAllocation stagingAllocation = VK_NULL_HANDLE;
-        createBuffer(vertexBufferSize + indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY,
-                     stagingBuffer,
-                     stagingAllocation);
+        createBuffer(vertexBufferSize + indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU,
+                     stagingBuffer, stagingAllocation);
 
         void *data;
         vmaMapMemory(logicalDevice->allocator, stagingAllocation, &data);
@@ -95,7 +94,7 @@ namespace vixen {
 
         if (!createBuffer(vertexBufferSize + indexBufferSize,
                           VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
-                          VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, buffer, allocation)) {
+                          VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY, buffer, allocation)) {
             error("Failed to create buffer for vertices");
             return false;
         }
