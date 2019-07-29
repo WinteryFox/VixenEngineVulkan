@@ -15,7 +15,7 @@ namespace vixen {
         attributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
         attributeDescription.offset = 0;
 
-        createVertexBuffer(vertices, &vertexBuffer);
+        createVertexBuffer(vertices);
     }
 
     Mesh::~Mesh() {
@@ -23,42 +23,17 @@ namespace vixen {
         vkFreeMemory(logicalDevice->device, vertexBufferMemory, nullptr);
     }
 
-    bool Mesh::createVertexBuffer(const std::vector<glm::vec3> &vertices, VkBuffer *buffer) {
-        VkBufferCreateInfo bufferCreateInfo = {};
-        bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        bufferCreateInfo.size = sizeof(glm::vec3) * vertices.size();
-        bufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-        bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    bool Mesh::createVertexBuffer(const std::vector<glm::vec3> &vertices) {
+        VkDeviceSize bufferSize = sizeof(glm::vec3) * vertices.size();
 
-        if (vkCreateBuffer(logicalDevice->device, &bufferCreateInfo, nullptr, buffer) != VK_SUCCESS) {
-            error("Failed to create vertex buffer");
-            return false;
-        }
-
-        VkMemoryRequirements memoryRequirements;
-        vkGetBufferMemoryRequirements(logicalDevice->device, vertexBuffer, &memoryRequirements);
-
-        VkMemoryAllocateInfo allocateInfo = {};
-        allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        allocateInfo.allocationSize = memoryRequirements.size;
-        physicalDevice->findMemoryType(
-                memoryRequirements.memoryTypeBits,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                allocateInfo.memoryTypeIndex
-        );
-
-        if (vkAllocateMemory(logicalDevice->device, &allocateInfo, nullptr, &vertexBufferMemory) != VK_SUCCESS) {
-            error("Failed to allocate buffer memory");
-            return false;
-        }
-
-        vkBindBufferMemory(logicalDevice->device, vertexBuffer, vertexBufferMemory, 0);
+        createBuffer(logicalDevice, physicalDevice, bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexBuffer,
+                     vertexBufferMemory);
 
         void *data;
-        vkMapMemory(logicalDevice->device, vertexBufferMemory, 0, bufferCreateInfo.size, 0, &data);
-        memcpy(data, vertices.data(), (size_t) bufferCreateInfo.size);
+        vkMapMemory(logicalDevice->device, vertexBufferMemory, 0, bufferSize, 0, &data);
+        memcpy(data, vertices.data(), (size_t) bufferSize);
         vkUnmapMemory(logicalDevice->device, vertexBufferMemory);
-
         return true;
     }
 }
