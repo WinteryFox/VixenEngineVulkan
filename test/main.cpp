@@ -7,14 +7,8 @@
  */
 
 #include <memory>
-#include <Window.h>
-#include <Instance.h>
-#include <PhysicalDevice.h>
-#include <LogicalDevice.h>
-#include <Shader.h>
-#include <Render.h>
-#include <Mesh.h>
-#include <Loader.h>
+#include <vector>
+#include <VixenEngine.h>
 
 int main() {
     std::vector<const char *> extensions = {

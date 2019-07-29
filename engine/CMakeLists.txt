@@ -16,7 +16,8 @@ set(
         include/Shader.h
         include/Render.h
         include/Mesh.h
-        include/Loader.h)
+        include/Loader.h
+        include/VixenEngine.h)
 set(
         vixen_SOURCES
         properties.rc

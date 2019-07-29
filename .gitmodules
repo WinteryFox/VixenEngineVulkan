@@ -4,3 +4,6 @@
 [submodule "engine/contrib/stb"]
 	path = engine/contrib/stb
 	url = https://github.com/nothings/stb
+[submodule "engine/contrib/VMA"]
+	path = engine/contrib/VMA
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
