@@ -383,7 +383,7 @@ namespace vixen {
         createCommandBuffers();
     }
 
-    void Render::addMesh(std::unique_ptr<Mesh> mesh) {
+    void Render::addMesh(std::unique_ptr<Mesh> &mesh) {
         meshes.push_back(std::move(mesh));
         recreate();
     }

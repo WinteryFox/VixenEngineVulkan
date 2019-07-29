@@ -29,6 +29,11 @@ namespace vixen {
         VkQueue presentQueue = {};
 
         /**
+         * The memory transfer queue
+         */
+        VkQueue transferQueue = {};
+
+        /**
          * The extent currently being used by this Vulkan physical device
          */
         VkExtent2D extent = {};

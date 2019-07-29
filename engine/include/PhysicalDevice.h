@@ -49,6 +49,8 @@ namespace vixen {
 
         uint32_t presentFamilyIndex = 0;
 
+        uint32_t transferFamilyIndex = 0;
+
         const std::unique_ptr<Instance> &instance;
 
         /**
@@ -89,7 +91,7 @@ namespace vixen {
          *
          * @param[in] physicalDevice The physical device to find the queue families for
          */
-        std::pair<std::optional<uint32_t>, std::optional<uint32_t>>
+        std::tuple<std::optional<uint32_t>, std::optional<uint32_t>, std::optional<uint32_t>>
         findQueueFamilies(const VkPhysicalDevice &physicalDevice);
 
         SwapChainSupportDetails querySwapChainSupportDetails(VkPhysicalDevice physicalDevice);

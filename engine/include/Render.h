@@ -115,9 +115,9 @@ namespace vixen {
         /**
          * Add a mesh to this render
          *
-         * @param mesh
+         * @param[in] mesh The mesh to add to the renderer
          */
-        void addMesh(std::unique_ptr<Mesh> mesh);
+        void addMesh(std::unique_ptr<Mesh> &mesh);
 
     private:
         std::vector<std::unique_ptr<Mesh>> meshes = {};

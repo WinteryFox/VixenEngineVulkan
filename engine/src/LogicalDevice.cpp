@@ -7,7 +7,8 @@ namespace vixen {
                                                                                           window(window),
                                                                                           physicalDevice(
                                                                                                   physicalDevice) {
-        std::set<uint32_t> queueFamilies = {physicalDevice->graphicsFamilyIndex, physicalDevice->presentFamilyIndex};
+        std::set<uint32_t> queueFamilies = {physicalDevice->graphicsFamilyIndex, physicalDevice->presentFamilyIndex,
+                                            physicalDevice->transferFamilyIndex};
         /// Create all the queue create info structs specified in queueFamilies
         float queuePriority = 1.0f;
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -39,6 +40,9 @@ namespace vixen {
         /// Retrieve the presentation queue handle
         vkGetDeviceQueue(device, physicalDevice->presentFamilyIndex, 0, &presentQueue);
         trace("Successfully created presentation queue interface");
+
+        vkGetDeviceQueue(device, physicalDevice->transferFamilyIndex, 0, &transferQueue);
+        trace("Successfully created memory transfer queue interface");
 
         SwapChainSupportDetails details = physicalDevice->querySwapChainSupportDetails();
         imageCount = details.capabilities.minImageCount + 1;

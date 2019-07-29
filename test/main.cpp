@@ -14,6 +14,7 @@
 #include <Shader.h>
 #include <Render.h>
 #include <Mesh.h>
+#include <Loader.h>
 
 int main() {
     std::vector<const char *> extensions = {
@@ -40,6 +41,8 @@ int main() {
 
     std::unique_ptr<vixen::Render> render(new vixen::Render(logicalDevice, physicalDevice, vertex, fragment, 3));
 
+    std::unique_ptr<vixen::Loader> loader(new vixen::Loader(logicalDevice, physicalDevice));
+
     std::vector<glm::vec3> vertices = {
             glm::vec3(-0.5f, -0.5f, 0.0f),
             glm::vec3(0.5f, 0.5f, 0.0f),
@@ -49,7 +52,9 @@ int main() {
             glm::vec3(0.5f, 0.5f, 0.0f)
     };
 
-    render->addMesh(std::make_unique<vixen::Mesh>(logicalDevice, physicalDevice, vertices));
+    std::unique_ptr<vixen::Mesh> mesh;
+    loader->createMesh(vertices, mesh);
+    render->addMesh(mesh);
 
     while (!window->shouldClose()) {
         window->update();

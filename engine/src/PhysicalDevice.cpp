@@ -72,9 +72,10 @@ namespace vixen {
 
             score += physicalDeviceProperties.limits.maxImageDimension2D;
 
-            std::pair<std::optional<uint32_t>, std::optional<uint32_t>> pair = findQueueFamilies(physicalDevice);
+            std::tuple<std::optional<uint32_t>, std::optional<uint32_t>, std::optional<uint32_t>> tuple =
+                    findQueueFamilies(physicalDevice);
             /// If there are any queue families missing, this device is not suitable
-            if (!pair.first.has_value() || !pair.second.has_value())
+            if (!std::get<0>(tuple).has_value() || !std::get<1>(tuple).has_value() || !std::get<2>(tuple).has_value())
                 continue;
 
             uint32_t extensionCount;
@@ -100,18 +101,20 @@ namespace vixen {
             if (score > 0 && score > currentScore) {
                 currentScore = score;
                 currentDevice = physicalDevice;
-                graphicsFamilyIndex = pair.first.value();
-                presentFamilyIndex = pair.second.value();
+                graphicsFamilyIndex = std::get<0>(tuple).value();
+                presentFamilyIndex = std::get<1>(tuple).value();
+                transferFamilyIndex = std::get<2>(tuple).value();
             }
         }
 
         return currentDevice;
     }
 
-    std::pair<std::optional<uint32_t>, std::optional<uint32_t>>
+    std::tuple<std::optional<uint32_t>, std::optional<uint32_t>, std::optional<uint32_t>>
     PhysicalDevice::findQueueFamilies(const VkPhysicalDevice &physicalDevice) {
         std::optional<uint32_t> graphicsIndex;
         std::optional<uint32_t> presentIndex;
+        std::optional<uint32_t> transferIndex;
 
         /// Get a list of all the queue families on this physical device
         uint32_t queueFamilyCount = 0;
@@ -126,7 +129,10 @@ namespace vixen {
             if (properties.queueCount > 0 && properties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
                 graphicsIndex = i;
 
-            VkBool32 presentSupport = false;
+            if (properties.queueCount > 0 && properties.queueFlags & VK_QUEUE_TRANSFER_BIT)
+                transferIndex = i;
+
+            VkBool32 presentSupport = VK_FALSE;
             vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, instance->surface, &presentSupport);
             if (presentSupport)
                 presentIndex = i;
@@ -134,7 +140,9 @@ namespace vixen {
             i++;
         }
 
-        return std::make_pair(graphicsIndex, presentIndex);
+        return std::tuple<std::optional<uint32_t>, std::optional<uint32_t>, std::optional<uint32_t>>(graphicsIndex,
+                                                                                                     presentIndex,
+                                                                                                     transferIndex);
     }
 
     SwapChainSupportDetails PhysicalDevice::querySwapChainSupportDetails(VkPhysicalDevice physicalDevice) {
