@@ -8,6 +8,10 @@
 #include "Mesh.h"
 
 namespace vixen {
+    /**
+     * Loads, allocates and creates all buffers. Due to the way VMA allocates memory, the loader must exist
+     * for the entire lifetime duration of all objects using it.
+     */
     class Loader {
         /**
          * The command pool used for memory transfer operations

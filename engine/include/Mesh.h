@@ -39,6 +39,10 @@ namespace vixen {
         Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, const VkBuffer &buffer,
              const VmaAllocation &allocation, uint32_t vertexCount, uint32_t indexCount);
 
+        Mesh(const Mesh &) = delete;
+
+        Mesh &operator=(const Mesh &mesh) = delete;
+
         ~Mesh();
     };
 }

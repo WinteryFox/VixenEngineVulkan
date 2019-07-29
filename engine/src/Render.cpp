@@ -46,7 +46,7 @@ namespace vixen {
             recreate();
             return;
         } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-            fatal("Failed to acquire image");
+            fatal("Failed to acquire image " + std::to_string(result));
         }
 
         VkSubmitInfo submitInfo = {};

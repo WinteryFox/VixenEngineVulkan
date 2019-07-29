@@ -33,15 +33,15 @@ int main() {
     vixen::Shader vertex(logicalDevice, "vert.spv");
     vixen::Shader fragment(logicalDevice, "frag.spv");
 
-    std::unique_ptr<vixen::Render> render(new vixen::Render(logicalDevice, physicalDevice, vertex, fragment, 3));
-
     std::unique_ptr<vixen::Loader> loader(new vixen::Loader(logicalDevice, physicalDevice));
 
+    std::unique_ptr<vixen::Render> render(new vixen::Render(logicalDevice, physicalDevice, vertex, fragment, 3));
+
     std::vector<glm::vec3> vertices = {
-            glm::vec3(-0.5f, -0.5f, 0.0f),
-            glm::vec3(0.5f, -0.5f, 0.0f),
-            glm::vec3(0.5f, 0.5f, 0.0f),
-            glm::vec3(-0.5f, 0.5f, 0.0f),
+            {-0.5f, -0.5f, 0.0f},
+            {0.5f,  -0.5f, 0.0f},
+            {0.5f,  0.5f,  0.0f},
+            {-0.5f, 0.5f,  0.0f},
     };
 
     std::vector<uint32_t> indices = {
