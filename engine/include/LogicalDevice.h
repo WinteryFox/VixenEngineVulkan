@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <vk_mem_alloc.h>
 #include <set>
 #include <memory>
 #include "PhysicalDevice.h"
@@ -12,6 +13,8 @@ namespace vixen {
          * The Vulkan logical device
          */
         VkDevice device = VK_NULL_HANDLE;
+
+        VmaAllocator allocator = VK_NULL_HANDLE;
 
         /**
          * The Vulkan swap chain

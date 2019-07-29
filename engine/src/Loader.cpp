@@ -21,6 +21,14 @@ namespace vixen {
         if (vkCreateFence(logicalDevice->device, &fenceCreateInfo, nullptr, &transferFence) != VK_SUCCESS) {
             fatal("Failed to create memory transfer fence");
         }
+
+        VmaAllocatorCreateInfo allocatorCreateInfo = {};
+        allocatorCreateInfo.device = logicalDevice->device;
+        allocatorCreateInfo.physicalDevice = physicalDevice->device;
+
+        if (vmaCreateAllocator(&allocatorCreateInfo, &logicalDevice->allocator) != VK_SUCCESS) {
+            fatal("Failed to create VMA allocator");
+        }
     }
 
     Loader::~Loader() {
@@ -28,6 +36,7 @@ namespace vixen {
 
         vkDestroyFence(logicalDevice->device, transferFence, nullptr);
 
+        vmaDestroyAllocator(logicalDevice->allocator);
         vkDestroyCommandPool(logicalDevice->device, transferCommandPool, nullptr);
     }
 
@@ -69,40 +78,58 @@ namespace vixen {
     }
 
     bool Loader::createVertexBuffer(const std::vector<glm::vec3> &vertices, VkBuffer &vertexBuffer,
-                                    VkDeviceMemory &vertexBufferMemory) {
+                                    VmaAllocation &vertexBufferAllocation) {
         VkDeviceSize bufferSize = sizeof(glm::vec3) * vertices.size();
 
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-        createBuffer(logicalDevice, physicalDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer,
-                     stagingBufferMemory);
+        VkBuffer stagingBuffer = VK_NULL_HANDLE;
+        VmaAllocation stagingAllocation = VK_NULL_HANDLE;
+        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY, stagingBuffer,
+                     stagingAllocation);
 
         void *data;
-        vkMapMemory(logicalDevice->device, stagingBufferMemory, 0, bufferSize, 0, &data);
+        vmaMapMemory(logicalDevice->allocator, stagingAllocation, &data);
         memcpy(data, vertices.data(), (size_t) bufferSize);
-        vkUnmapMemory(logicalDevice->device, stagingBufferMemory);
+        vmaUnmapMemory(logicalDevice->allocator, stagingAllocation);
 
-        createBuffer(logicalDevice, physicalDevice, bufferSize,
-                     VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                     VMA_MEMORY_USAGE_CPU_TO_GPU, vertexBuffer, vertexBufferAllocation);
 
         copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
-        vkDestroyBuffer(logicalDevice->device, stagingBuffer, nullptr);
-        vkFreeMemory(logicalDevice->device, stagingBufferMemory, nullptr);
+        vmaDestroyBuffer(logicalDevice->allocator, stagingBuffer, stagingAllocation);
 
         return true;
     }
 
     bool Loader::createMesh(const std::vector<glm::vec3> &vertices, std::unique_ptr<Mesh> &mesh) {
-        VkBuffer vertexBuffer;
-        VkDeviceMemory vertexBufferMemory;
+        VkBuffer vertexBuffer = VK_NULL_HANDLE;
+        VmaAllocation vertexBufferAllocation = VK_NULL_HANDLE;
 
-        if (!createVertexBuffer(vertices, vertexBuffer, vertexBufferMemory))
+        if (!createVertexBuffer(vertices, vertexBuffer, vertexBufferAllocation))
             return false;
 
-        mesh = std::make_unique<Mesh>(logicalDevice, vertexBuffer, vertexBufferMemory, vertices.size());
+        mesh = std::make_unique<Mesh>(logicalDevice, vertexBuffer, vertexBufferAllocation, vertices.size());
+        return true;
+    }
+
+    bool Loader::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage vmaUsage, VkBuffer &buffer,
+                              VmaAllocation &allocation) {
+        VkBufferCreateInfo bufferCreateInfo = {};
+        bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferCreateInfo.size = size;
+        bufferCreateInfo.usage = usage;
+        bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        VmaAllocationCreateInfo allocationCreateInfo = {};
+        allocationCreateInfo.usage = vmaUsage;
+
+        if (vmaCreateBuffer(logicalDevice->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation,
+                            nullptr) != VK_SUCCESS) {
+            error("Failed to allocate buffer memory");
+            vkDestroyBuffer(logicalDevice->device, buffer, nullptr);
+            return false;
+        }
+
         return true;
     }
 }

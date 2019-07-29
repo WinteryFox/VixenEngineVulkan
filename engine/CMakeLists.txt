@@ -53,7 +53,8 @@ target_include_directories(
         ${GLFW_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glm
         ${CMAKE_CURRENT_SOURCE_DIR}/contrib/stb
-        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glslang
+        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/VMA/src
+        #${CMAKE_CURRENT_SOURCE_DIR}/contrib/glslang
 )
 
 if (WIN32)

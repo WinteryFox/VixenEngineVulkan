@@ -1,3 +1,5 @@
+#define VMA_IMPLEMENTATION
+
 #include "LogicalDevice.h"
 
 namespace vixen {
@@ -33,6 +35,14 @@ namespace vixen {
             fatal("Failed to create logical device");
         trace("Successfully created logical device");
 
+        VmaAllocatorCreateInfo allocatorCreateInfo = {};
+        allocatorCreateInfo.device = device;
+        allocatorCreateInfo.physicalDevice = physicalDevice->device;
+
+        if (vmaCreateAllocator(&allocatorCreateInfo, &allocator) != VK_SUCCESS) {
+            fatal("Failed to create VMA allocator");
+        }
+
         /// Retrieve the graphics queue handle
         vkGetDeviceQueue(device, physicalDevice->graphicsFamilyIndex, 0, &graphicsQueue);
         trace("Successfully created graphics queue interface");
@@ -47,7 +57,7 @@ namespace vixen {
         SwapChainSupportDetails details = physicalDevice->querySwapChainSupportDetails();
         imageCount = details.capabilities.minImageCount + 1;
         if (details.capabilities.minImageCount > 0 &&
-            imageCount > details.capabilities.maxImageCount)
+                imageCount > details.capabilities.maxImageCount)
             imageCount = details.capabilities.maxImageCount;
 
         createSwapchain();
@@ -86,7 +96,7 @@ namespace vixen {
         SwapChainSupportDetails details = physicalDevice->querySwapChainSupportDetails();
 
         if (details.capabilities.currentExtent.width !=
-            std::numeric_limits<uint32_t>::max()) {
+                std::numeric_limits<uint32_t>::max()) {
             extent = details.capabilities.currentExtent;
         } else {
             int width, height;
@@ -110,8 +120,8 @@ namespace vixen {
         }
 
         trace("Using the following swap surface format and swap present mode; " + std::to_string(surfaceFormat.format) +
-              "(" + std::to_string(surfaceFormat.colorSpace) + ")" + ", " + std::to_string(presentMode) +
-              " with the following extent " + std::to_string(extent.width) + ", " + std::to_string(extent.height));
+                      "(" + std::to_string(surfaceFormat.colorSpace) + ")" + ", " + std::to_string(presentMode) +
+                      " with the following extent " + std::to_string(extent.width) + ", " + std::to_string(extent.height));
     }
 
     void LogicalDevice::createImageViews() {

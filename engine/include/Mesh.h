@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 #include <glm/glm.hpp>
 #include "LogicalDevice.h"
@@ -15,10 +16,7 @@ namespace vixen {
          */
         VkBuffer vertexBuffer;
 
-        /**
-         * The memory allocated for the vertex buffer
-         */
-        VkDeviceMemory vertexBufferMemory;
+        VmaAllocation vertexBufferAllocation;
 
         /**
          * The amount of vertices this mesh consists of
@@ -37,7 +35,7 @@ namespace vixen {
          * @param vertices The vertices for this mesh
          */
         Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, const VkBuffer &vertexBuffer,
-             const VkDeviceMemory &vertexBufferMemory, uint32_t vertexCount);
+             const VmaAllocation &vertexBufferAllocation, uint32_t vertexCount);
 
         ~Mesh();
     };
