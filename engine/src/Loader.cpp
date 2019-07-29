@@ -18,17 +18,15 @@ namespace vixen {
         fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-        if (vkCreateFence(logicalDevice->device, &fenceCreateInfo, nullptr, &transferFence) != VK_SUCCESS) {
+        if (vkCreateFence(logicalDevice->device, &fenceCreateInfo, nullptr, &transferFence) != VK_SUCCESS)
             fatal("Failed to create memory transfer fence");
-        }
 
         VmaAllocatorCreateInfo allocatorCreateInfo = {};
         allocatorCreateInfo.device = logicalDevice->device;
         allocatorCreateInfo.physicalDevice = physicalDevice->device;
 
-        if (vmaCreateAllocator(&allocatorCreateInfo, &logicalDevice->allocator) != VK_SUCCESS) {
+        if (vmaCreateAllocator(&allocatorCreateInfo, &logicalDevice->allocator) != VK_SUCCESS)
             fatal("Failed to create VMA allocator");
-        }
     }
 
     Loader::~Loader() {
