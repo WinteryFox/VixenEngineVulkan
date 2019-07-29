@@ -43,6 +43,17 @@ namespace vixen {
                                 VmaAllocation &vertexBufferAllocation);
 
         /**
+         * Creates and allocates an index buffer for a mesh
+         *
+         * @param indices The indices of the mesh
+         * @param indexBuffer The index buffer to write to
+         * @param indexBufferAllocation The VMA allocation
+         * @return
+         */
+        bool createIndexBuffer(const std::vector<uint32_t> &indices, VkBuffer &indexBuffer,
+                               VmaAllocation &indexBufferAllocation);
+
+        /**
          * Create and allocate a new buffer, it is up to the user to delete the buffer and free the device memory
          *
          * @param[in] logicalDevice The logical device to create this buffer on
@@ -63,6 +74,7 @@ namespace vixen {
 
         ~Loader();
 
-        bool createMesh(const std::vector<glm::vec3> &vertices, std::unique_ptr<Mesh> &mesh);
+        bool createMesh(const std::vector<glm::vec3> &vertices, const std::vector<uint32_t> &indices,
+                        std::unique_ptr<Mesh> &mesh);
     };
 }

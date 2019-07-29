@@ -18,10 +18,16 @@ namespace vixen {
 
         VmaAllocation vertexBufferAllocation;
 
+        VkBuffer indexBuffer;
+
+        VmaAllocation indexBufferAllocation;
+
         /**
          * The amount of vertices this mesh consists of
          */
         const uint32_t vertexCount;
+
+        const uint32_t indexCount;
 
         VkVertexInputBindingDescription bindingDescription = {};
 
@@ -35,7 +41,8 @@ namespace vixen {
          * @param vertices The vertices for this mesh
          */
         Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, const VkBuffer &vertexBuffer,
-             const VmaAllocation &vertexBufferAllocation, uint32_t vertexCount);
+             const VmaAllocation &vertexBufferAllocation, const VkBuffer &indexBuffer,
+             const VmaAllocation &indexBufferAllocation, uint32_t vertexCount, uint32_t indexCount);
 
         ~Mesh();
     };

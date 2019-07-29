@@ -39,15 +39,17 @@ int main() {
 
     std::vector<glm::vec3> vertices = {
             glm::vec3(-0.5f, -0.5f, 0.0f),
+            glm::vec3(0.5f, -0.5f, 0.0f),
             glm::vec3(0.5f, 0.5f, 0.0f),
             glm::vec3(-0.5f, 0.5f, 0.0f),
-            glm::vec3(-0.5f, -0.5f, 0.0f),
-            glm::vec3(0.5f, -0.5f, 0.0f),
-            glm::vec3(0.5f, 0.5f, 0.0f)
+    };
+
+    std::vector<uint32_t> indices = {
+            0, 1, 2, 2, 3, 0
     };
 
     std::unique_ptr<vixen::Mesh> mesh;
-    loader->createMesh(vertices, mesh);
+    loader->createMesh(vertices, indices, mesh);
     render->addMesh(mesh);
 
     while (!window->shouldClose()) {

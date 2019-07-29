@@ -2,9 +2,11 @@
 
 namespace vixen {
     Mesh::Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, const VkBuffer &vertexBuffer,
-               const VmaAllocation &vertexBufferAllocation, uint32_t vertexCount)
+               const VmaAllocation &vertexBufferAllocation, const VkBuffer &indexBuffer,
+               const VmaAllocation &indexBufferAllocation, uint32_t vertexCount, uint32_t indexCount)
             : logicalDevice(logicalDevice), vertexBuffer(vertexBuffer), vertexBufferAllocation(vertexBufferAllocation),
-              vertexCount(vertexCount) {
+              indexBuffer(indexBuffer), indexBufferAllocation(indexBufferAllocation), vertexCount(vertexCount),
+              indexCount(indexCount) {
         bindingDescription.binding = 0;
         bindingDescription.stride = sizeof(glm::vec3);
         bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
@@ -17,5 +19,6 @@ namespace vixen {
 
     Mesh::~Mesh() {
         vmaDestroyBuffer(logicalDevice->allocator, vertexBuffer, vertexBufferAllocation);
+        vmaDestroyBuffer(logicalDevice->allocator, indexBuffer, indexBufferAllocation);
     }
 }
