@@ -42,6 +42,4 @@ namespace vixen {
         static VkShaderModule
         createShader(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::vector<char> &bytecode);
     };
-
-    //std::vector<char> compileShader(const std::string &filePath, EShLanguage kind);
 }

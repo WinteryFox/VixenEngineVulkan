@@ -4,8 +4,6 @@ find_package(Vulkan REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(Threads REQUIRED)
 
-#add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/contrib/glslang)
-
 set(
         vixen_HEADERS
         include/Window.h
@@ -54,7 +52,6 @@ target_include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glm
         ${CMAKE_CURRENT_SOURCE_DIR}/contrib/stb
         ${CMAKE_CURRENT_SOURCE_DIR}/contrib/VMA/src
-        #${CMAKE_CURRENT_SOURCE_DIR}/contrib/glslang
 )
 
 if (WIN32)
@@ -67,11 +64,6 @@ if (WIN32)
             -static
             Threads::Threads
             -dynamic
-            #glslang
-            #HLSL
-            #OSDependent
-            #OGLCompiler
-            #SPIRV
     )
 else (WIN32)
     target_link_libraries(
