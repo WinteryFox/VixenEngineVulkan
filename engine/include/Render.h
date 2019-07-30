@@ -117,10 +117,10 @@ namespace vixen {
          *
          * @param[in] mesh The mesh to add to the renderer
          */
-        void addMesh(std::unique_ptr<Mesh> &mesh);
+        void addMesh(std::shared_ptr<Mesh> &mesh);
 
     private:
-        std::vector<std::unique_ptr<Mesh>> meshes = {};
+        std::vector<std::shared_ptr<Mesh>> meshes = {};
 
         /**
          * The current frame in relation to the maximum frames in flight

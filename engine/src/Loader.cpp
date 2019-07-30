@@ -25,17 +25,20 @@ namespace vixen {
         allocatorCreateInfo.device = logicalDevice->device;
         allocatorCreateInfo.physicalDevice = physicalDevice->device;
 
-        if (vmaCreateAllocator(&allocatorCreateInfo, &logicalDevice->allocator) != VK_SUCCESS)
+        if (vmaCreateAllocator(&allocatorCreateInfo, &allocator) != VK_SUCCESS)
             fatal("Failed to create VMA allocator");
     }
 
     Loader::~Loader() {
         vkDeviceWaitIdle(logicalDevice->device);
 
+        for (auto &mesh : meshes)
+            vmaDestroyBuffer(allocator, mesh->buffer, mesh->allocation);
+
         vkDestroyFence(logicalDevice->device, transferFence, nullptr);
 
-        vmaDestroyAllocator(logicalDevice->allocator);
         vkDestroyCommandPool(logicalDevice->device, transferCommandPool, nullptr);
+        vmaDestroyAllocator(allocator);
     }
 
     void Loader::copyBuffer(VkBuffer src, VkBuffer dst, VkDeviceSize size) {
@@ -86,11 +89,11 @@ namespace vixen {
                      stagingBuffer, stagingAllocation);
 
         void *data;
-        vmaMapMemory(logicalDevice->allocator, stagingAllocation, &data);
+        vmaMapMemory(allocator, stagingAllocation, &data);
         memcpy(data, vertices.data(), (size_t) vertexBufferSize);
         memcpy(static_cast<char *>(data) + static_cast<size_t>(vertexBufferSize), indices.data(),
                (size_t) indexBufferSize);
-        vmaUnmapMemory(logicalDevice->allocator, stagingAllocation);
+        vmaUnmapMemory(allocator, stagingAllocation);
 
         if (!createBuffer(vertexBufferSize + indexBufferSize,
                           VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
@@ -101,13 +104,13 @@ namespace vixen {
 
         copyBuffer(stagingBuffer, buffer, vertexBufferSize + indexBufferSize);
 
-        vmaDestroyBuffer(logicalDevice->allocator, stagingBuffer, stagingAllocation);
+        vmaDestroyBuffer(allocator, stagingBuffer, stagingAllocation);
 
         return true;
     }
 
     bool Loader::createMesh(const std::vector<glm::vec3> &vertices, const std::vector<uint32_t> &indices,
-                            std::unique_ptr<Mesh> &mesh) {
+                            std::shared_ptr<Mesh> &mesh) {
         VkBuffer buffer = VK_NULL_HANDLE;
         VmaAllocation allocation = VK_NULL_HANDLE;
 
@@ -116,7 +119,8 @@ namespace vixen {
             return false;
         }
 
-        mesh = std::make_unique<Mesh>(logicalDevice, buffer, allocation, vertices.size(), indices.size());
+        meshes.push_back(std::make_shared<Mesh>(buffer, allocation, vertices.size(), indices.size()));
+        mesh = meshes[0];
         return true;
     }
 
@@ -131,10 +135,9 @@ namespace vixen {
         VmaAllocationCreateInfo allocationCreateInfo = {};
         allocationCreateInfo.usage = vmaUsage;
 
-        if (vmaCreateBuffer(logicalDevice->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation,
+        if (vmaCreateBuffer(allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation,
                             nullptr) != VK_SUCCESS) {
             error("Failed to allocate buffer memory");
-            vkDestroyBuffer(logicalDevice->device, buffer, nullptr);
             return false;
         }
 

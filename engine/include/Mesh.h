@@ -8,8 +8,6 @@
 
 namespace vixen {
     class Mesh {
-        const std::unique_ptr<LogicalDevice> &logicalDevice;
-
     public:
         /**
          * The vertex buffer for this mesh
@@ -32,17 +30,15 @@ namespace vixen {
         /**
          * Create a new mesh
          *
-         * @param logicalDevice The logical device to be used when creating the buffers, will retain a reference to
-         * destroy the buffers
-         * @param vertices The vertices for this mesh
+         * @param buffer The buffer this mesh is allocated in
+         * @param allocation The allocation this mesh is in
+         * @param vertexCount The amount of vertices this mesh has
+         * @param indexCount The amount of indices this mesh has
          */
-        Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, const VkBuffer &buffer,
-             const VmaAllocation &allocation, uint32_t vertexCount, uint32_t indexCount);
+        Mesh(const VkBuffer &buffer, const VmaAllocation &allocation, uint32_t vertexCount, uint32_t indexCount);
 
         Mesh(const Mesh &) = delete;
 
         Mesh &operator=(const Mesh &mesh) = delete;
-
-        ~Mesh();
     };
 }

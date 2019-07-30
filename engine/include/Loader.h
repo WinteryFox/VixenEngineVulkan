@@ -8,10 +8,6 @@
 #include "Mesh.h"
 
 namespace vixen {
-    /**
-     * Loads, allocates and creates all buffers. Due to the way VMA allocates memory, the loader must exist
-     * for the entire lifetime duration of all objects using it.
-     */
     class Loader {
         /**
          * The command pool used for memory transfer operations
@@ -22,6 +18,13 @@ namespace vixen {
          * The memory transfer fence
          */
         VkFence transferFence = VK_NULL_HANDLE;
+
+        VmaAllocator allocator = VK_NULL_HANDLE;
+
+        /**
+         * All the meshes this loader has created, they will all be destroyed when this loader is destroyed
+         */
+        std::vector<std::shared_ptr<Mesh>> meshes;
 
         const std::unique_ptr<LogicalDevice> &logicalDevice;
         const std::unique_ptr<PhysicalDevice> &physicalDevice;
@@ -70,6 +73,6 @@ namespace vixen {
         ~Loader();
 
         bool createMesh(const std::vector<glm::vec3> &vertices, const std::vector<uint32_t> &indices,
-                        std::unique_ptr<Mesh> &mesh);
+                        std::shared_ptr<Mesh> &mesh);
     };
 }

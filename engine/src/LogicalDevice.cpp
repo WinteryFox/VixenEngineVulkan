@@ -35,14 +35,6 @@ namespace vixen {
             fatal("Failed to create logical device");
         trace("Successfully created logical device");
 
-        VmaAllocatorCreateInfo allocatorCreateInfo = {};
-        allocatorCreateInfo.device = device;
-        allocatorCreateInfo.physicalDevice = physicalDevice->device;
-
-        if (vmaCreateAllocator(&allocatorCreateInfo, &allocator) != VK_SUCCESS) {
-            fatal("Failed to create VMA allocator");
-        }
-
         /// Retrieve the graphics queue handle
         vkGetDeviceQueue(device, physicalDevice->graphicsFamilyIndex, 0, &graphicsQueue);
         trace("Successfully created graphics queue interface");

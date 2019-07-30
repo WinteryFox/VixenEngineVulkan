@@ -14,8 +14,6 @@ namespace vixen {
          */
         VkDevice device = VK_NULL_HANDLE;
 
-        VmaAllocator allocator = VK_NULL_HANDLE;
-
         /**
          * The Vulkan swap chain
          */
