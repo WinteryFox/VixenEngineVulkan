@@ -55,9 +55,41 @@ namespace vixen {
         createSwapchain();
 
         createImageViews();
+
+        VkCommandPoolCreateInfo transferCommandPoolCreateInfo = {};
+        transferCommandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        transferCommandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+        transferCommandPoolCreateInfo.queueFamilyIndex = physicalDevice->transferFamilyIndex;
+
+        if (vkCreateCommandPool(device, &transferCommandPoolCreateInfo, nullptr, &transferCommandPool) !=
+            VK_SUCCESS)
+            fatal("Failed to create memory transfer command pool");
+        trace("Successfully created memory transfer command pool");
+
+        VkFenceCreateInfo fenceCreateInfo = {};
+        fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+        if (vkCreateFence(device, &fenceCreateInfo, nullptr, &transferFence) != VK_SUCCESS)
+            fatal("Failed to create memory transfer fence");
+
+        /// Create the VMA allocator
+        VmaAllocatorCreateInfo allocatorCreateInfo = {};
+        allocatorCreateInfo.device = device;
+        allocatorCreateInfo.physicalDevice = physicalDevice->device;
+
+        if (vmaCreateAllocator(&allocatorCreateInfo, &allocator) != VK_SUCCESS)
+            fatal("Failed to create VMA allocator");
     }
 
     LogicalDevice::~LogicalDevice() {
+        vkDeviceWaitIdle(device);
+
+        vkDestroyFence(device, transferFence, nullptr);
+
+        vkDestroyCommandPool(device, transferCommandPool, nullptr);
+        vmaDestroyAllocator(allocator);
+
         destroySwapchain();
         vkDestroyDevice(device, nullptr);
     }

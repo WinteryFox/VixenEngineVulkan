@@ -2,48 +2,47 @@
 
 namespace vixen {
     Render::Render(const std::unique_ptr<LogicalDevice> &device, const std::unique_ptr<PhysicalDevice> &physicalDevice,
-                   const Shader &vertex, const Shader &fragment, int framesInFlight)
-            : device(device), vertex(vertex), fragment(fragment), framesInFlight(framesInFlight) {
-        /// Create command pool
-        VkCommandPoolCreateInfo poolCreateInfo = {};
-        poolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        poolCreateInfo.queueFamilyIndex = physicalDevice->graphicsFamilyIndex;
-        poolCreateInfo.flags = 0;
-
-        if (vkCreateCommandPool(device->device, &poolCreateInfo, nullptr, &commandPool) != VK_SUCCESS)
-            fatal("Failed to create command pool");
-        trace("Successfully created command pool");
-
+                   const Scene &scene, const std::unique_ptr<Shader> &vertex, const std::unique_ptr<Shader> &fragment,
+                   const int framesInFlight)
+            : logicalDevice(device), physicalDevice(physicalDevice), scene(scene), vertex(vertex), fragment(fragment),
+              framesInFlight(framesInFlight) {
         createSyncObjects();
+        createDescriptorSetLayout();
+        createUniformBuffers();
+        createRenderPass();
+        createFramebuffers();
+        createCommandPool();
+        createPipelineLayout();
+        createPipeline();
+        createCommandBuffers();
     }
 
     Render::~Render() {
-        vkDeviceWaitIdle(device->device);
+        vkDeviceWaitIdle(logicalDevice->device);
 
-        for (const auto &framebuffer : framebuffers)
-            vkDestroyFramebuffer(device->device, framebuffer, nullptr);
-
-        for (int i = 0; i < framesInFlight; i++) {
-            vkDestroySemaphore(device->device, imageAvailableSemaphores[i], nullptr);
-            vkDestroySemaphore(device->device, renderFinishedSemaphores[i], nullptr);
-            vkDestroyFence(device->device, fences[i], nullptr);
-        }
-
-        vkDestroyCommandPool(device->device, commandPool, nullptr);
-        vkDestroyPipelineLayout(device->device, pipelineLayout, nullptr);
-        vkDestroyRenderPass(device->device, renderPass, nullptr);
-        vkDestroyPipeline(device->device, pipeline, nullptr);
+        destroyUniformBuffers();
+        destroyDescriptorSetLayout();
+        destroyFramebuffers();
+        destroyCommandBuffers();
+        destroyCommandPool();
+        destroyRenderPass();
+        destroyPipelineLayout();
+        destroyPipeline();
+        destroySyncObjects();
     }
 
     void Render::render() {
-        vkWaitForFences(device->device, 1, &fences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
+        vkWaitForFences(logicalDevice->device, 1, &fences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
 
         uint32_t imageIndex;
-        VkResult result = vkAcquireNextImageKHR(device->device, device->swapchain, std::numeric_limits<uint64_t>::max(),
+        VkResult result = vkAcquireNextImageKHR(logicalDevice->device, logicalDevice->swapchain,
+                                                std::numeric_limits<uint64_t>::max(),
                                                 imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
+        updateUniformBuffer(scene->entities[0], imageIndex);
+
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-            recreate();
+            invalidate();
             return;
         } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
             fatal("Failed to acquire image " + std::to_string(result));
@@ -64,9 +63,9 @@ namespace vixen {
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
-        vkResetFences(device->device, 1, &fences[currentFrame]);
+        vkResetFences(logicalDevice->device, 1, &fences[currentFrame]);
 
-        if (vkQueueSubmit(device->graphicsQueue, 1, &submitInfo, fences[currentFrame]) != VK_SUCCESS)
+        if (vkQueueSubmit(logicalDevice->graphicsQueue, 1, &submitInfo, fences[currentFrame]) != VK_SUCCESS)
             fatal("Failed to submit command to queue");
 
         VkPresentInfoKHR presentInfo = {};
@@ -74,36 +73,57 @@ namespace vixen {
         presentInfo.waitSemaphoreCount = 1;
         presentInfo.pWaitSemaphores = signalSemaphores;
 
-        VkSwapchainKHR swapChains[] = {device->swapchain};
+        VkSwapchainKHR swapChains[] = {logicalDevice->swapchain};
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = swapChains;
         presentInfo.pImageIndices = &imageIndex;
         presentInfo.pResults = nullptr;
 
-        vkQueuePresentKHR(device->presentQueue, &presentInfo);
+        vkQueuePresentKHR(logicalDevice->presentQueue, &presentInfo);
 
         currentFrame = (currentFrame + 1) % framesInFlight;
     }
 
+    void Render::updateUniformBuffer(Entity entity, uint32_t imageIndex) {
+        vertex->mvp.model = entity.getModelMatrix();
+        vertex->mvp.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f),
+                                       glm::vec3(0.0f, 0.0f, 1.0f));
+        vertex->mvp.projection = glm::perspective(glm::radians(45.0f), (float) logicalDevice->extent.width /
+                                                                       (float) logicalDevice->extent.height, 0.1f,
+                                                  10.0f);
+        vertex->mvp.projection[1][1] *= -1.0f;
+
+        void *data;
+        vmaMapMemory(logicalDevice->allocator, uniformBuffersMemory[imageIndex], &data);
+        memcpy(data, &vertex->mvp, sizeof(vertex->mvp));
+        vmaUnmapMemory(logicalDevice->allocator, uniformBuffersMemory[imageIndex]);
+    }
+
     void Render::createFramebuffers() {
-        framebuffers.resize(device->imageViews.size());
-        for (size_t i = 0; i < device->imageViews.size(); i++) {
-            VkImageView attachments[] = {device->imageViews[i]};
+        framebuffers.resize(logicalDevice->imageViews.size());
+        for (size_t i = 0; i < logicalDevice->imageViews.size(); i++) {
+            VkImageView attachments[] = {logicalDevice->imageViews[i]};
 
             VkFramebufferCreateInfo framebufferCreateInfo = {};
             framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebufferCreateInfo.renderPass = renderPass;
             framebufferCreateInfo.attachmentCount = 1;
             framebufferCreateInfo.pAttachments = attachments;
-            framebufferCreateInfo.width = device->extent.width;
-            framebufferCreateInfo.height = device->extent.height;
+            framebufferCreateInfo.width = logicalDevice->extent.width;
+            framebufferCreateInfo.height = logicalDevice->extent.height;
             framebufferCreateInfo.layers = 1;
 
-            if (vkCreateFramebuffer(device->device, &framebufferCreateInfo, nullptr, &framebuffers[i]) !=
+            if (vkCreateFramebuffer(logicalDevice->device, &framebufferCreateInfo, nullptr, &framebuffers[i]) !=
                 VK_SUCCESS)
                 fatal("Failed to create a frame buffer");
         }
         trace("Successfully created frame buffers");
+    }
+
+    void Render::destroyFramebuffers() {
+        for (auto &framebuffer : framebuffers)
+            vkDestroyFramebuffer(logicalDevice->device, framebuffer, nullptr);
+        trace("Destroyed framebuffers");
     }
 
     void Render::createSyncObjects() {
@@ -119,14 +139,23 @@ namespace vixen {
         fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-        for (int i = 0; i < framesInFlight; i++)
-            if (vkCreateSemaphore(device->device, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]) !=
+        for (size_t i = 0; i < framesInFlight; i++)
+            if (vkCreateSemaphore(logicalDevice->device, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]) !=
                 VK_SUCCESS ||
-                vkCreateSemaphore(device->device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]) !=
+                vkCreateSemaphore(logicalDevice->device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]) !=
                 VK_SUCCESS ||
-                vkCreateFence(device->device, &fenceCreateInfo, nullptr, &fences[i]) != VK_SUCCESS)
+                vkCreateFence(logicalDevice->device, &fenceCreateInfo, nullptr, &fences[i]) != VK_SUCCESS)
                 fatal("Failed to create semaphores and fences");
         trace("Successfully created semaphores and fences");
+    }
+
+    void Render::destroySyncObjects() {
+        for (size_t i = 0; i < framesInFlight; i++) {
+            vkDestroySemaphore(logicalDevice->device, imageAvailableSemaphores[i], nullptr);
+            vkDestroySemaphore(logicalDevice->device, renderFinishedSemaphores[i], nullptr);
+            vkDestroyFence(logicalDevice->device, fences[i], nullptr);
+        }
+        trace("Destroyed sync objects");
     }
 
     void Render::createCommandBuffers() {
@@ -137,7 +166,7 @@ namespace vixen {
         allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocateInfo.commandBufferCount = (uint32_t) commandBuffers.size();
 
-        if (vkAllocateCommandBuffers(device->device, &allocateInfo, commandBuffers.data()) != VK_SUCCESS)
+        if (vkAllocateCommandBuffers(logicalDevice->device, &allocateInfo, commandBuffers.data()) != VK_SUCCESS)
             fatal("Failed to allocate command buffers");
         trace("Successfully allocated command buffers");
 
@@ -155,7 +184,7 @@ namespace vixen {
             renderPassBeginInfo.renderPass = renderPass;
             renderPassBeginInfo.framebuffer = framebuffers[i];
             renderPassBeginInfo.renderArea.offset = {0, 0};
-            renderPassBeginInfo.renderArea.extent = device->extent;
+            renderPassBeginInfo.renderArea.extent = logicalDevice->extent;
 
             VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 0.0f};
             renderPassBeginInfo.clearValueCount = 1;
@@ -165,7 +194,8 @@ namespace vixen {
 
             vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-            for (const auto &mesh : meshes) {
+            for (const auto &entity : scene.entities) {
+                const auto &mesh = entity.mesh;
                 /// Bind the mesh's buffers
                 std::vector<VkBuffer> buffers{mesh->buffer};
                 std::vector<VkDeviceSize> offsets{0};
@@ -185,10 +215,15 @@ namespace vixen {
         trace("Successfully created command buffers");
     }
 
+    void Render::destroyCommandBuffers() {
+        vkFreeCommandBuffers(logicalDevice->device, commandPool, commandBuffers.size(), commandBuffers.data());
+        trace("Freed command buffers");
+    }
+
     void Render::createRenderPass() {
         /// Create render pass
         VkAttachmentDescription colorAttachment = {};
-        colorAttachment.format = device->surfaceFormat.format;
+        colorAttachment.format = logicalDevice->surfaceFormat.format;
         colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
         colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -223,9 +258,14 @@ namespace vixen {
         renderPassCreateInfo.dependencyCount = 1;
         renderPassCreateInfo.pDependencies = &dependency;
 
-        if (vkCreateRenderPass(device->device, &renderPassCreateInfo, nullptr, &renderPass) != VK_SUCCESS)
+        if (vkCreateRenderPass(logicalDevice->device, &renderPassCreateInfo, nullptr, &renderPass) != VK_SUCCESS)
             fatal("Failed to create render pass");
         trace("Successfully created render pass");
+    }
+
+    void Render::destroyRenderPass() {
+        vkDestroyRenderPass(logicalDevice->device, renderPass, nullptr);
+        trace("Destroyed render pass");
     }
 
     void Render::createPipeline() {
@@ -233,23 +273,23 @@ namespace vixen {
         VkPipelineShaderStageCreateInfo vertCreateInfo = {};
         vertCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         vertCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-        vertCreateInfo.module = vertex.shader;
+        vertCreateInfo.module = vertex->shader;
         vertCreateInfo.pName = "main";
 
         VkPipelineShaderStageCreateInfo fragCreateInfo = {};
         fragCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         fragCreateInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-        fragCreateInfo.module = fragment.shader;
+        fragCreateInfo.module = fragment->shader;
         fragCreateInfo.pName = "main";
 
         VkPipelineShaderStageCreateInfo shaders[] = {vertCreateInfo, fragCreateInfo};
 
         VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};
         vertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputCreateInfo.vertexBindingDescriptionCount = meshes.size();
-        vertexInputCreateInfo.pVertexBindingDescriptions = &meshes[0]->bindingDescription;
-        vertexInputCreateInfo.vertexAttributeDescriptionCount = meshes.size();
-        vertexInputCreateInfo.pVertexAttributeDescriptions = &meshes[0]->attributeDescription;
+        vertexInputCreateInfo.vertexBindingDescriptionCount = scene.entities.size();
+        vertexInputCreateInfo.pVertexBindingDescriptions = &scene.entities[0].mesh->bindingDescription;
+        vertexInputCreateInfo.vertexAttributeDescriptionCount = scene.entities.size();
+        vertexInputCreateInfo.pVertexAttributeDescriptions = &scene.entities[0].mesh->attributeDescription;
 
         VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo = {};
         inputAssemblyCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -258,13 +298,13 @@ namespace vixen {
 
         viewport.x = 0.0f;
         viewport.y = 0.0f;
-        viewport.width = (float) device->extent.width;
-        viewport.height = (float) device->extent.height;
+        viewport.width = (float) logicalDevice->extent.width;
+        viewport.height = (float) logicalDevice->extent.height;
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
 
         scissor.offset = {0, 0};
-        scissor.extent = device->extent;
+        scissor.extent = logicalDevice->extent;
 
         VkPipelineViewportStateCreateInfo viewportStateCreateInfo = {};
         viewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -336,57 +376,116 @@ namespace vixen {
         pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
         pipelineCreateInfo.basePipelineIndex = -1;
 
-        if (vkCreateGraphicsPipelines(device->device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &pipeline) !=
+        if (vkCreateGraphicsPipelines(logicalDevice->device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr,
+                                      &pipeline) !=
             VK_SUCCESS)
             fatal("Failed to create graphics pipeline");
         info("Successfully created a graphics pipeline");
+    }
+
+    void Render::destroyPipeline() {
+        vkDestroyPipeline(logicalDevice->device, pipeline, nullptr);
+        trace("Destroyed pipeline");
     }
 
     void Render::createPipelineLayout() {
         /// Create graphics pipeline layout
         VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
         pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutCreateInfo.setLayoutCount = 0;
-        pipelineLayoutCreateInfo.pSetLayouts = nullptr;
+        pipelineLayoutCreateInfo.setLayoutCount = 1;
+        pipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
         pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
         pipelineLayoutCreateInfo.pPushConstantRanges = nullptr;
 
-        if (vkCreatePipelineLayout(device->device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
+        if (vkCreatePipelineLayout(logicalDevice->device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) !=
+            VK_SUCCESS)
             fatal("Failed to create pipeline layout");
         trace("Successfully created pipeline layout");
     }
 
-    void Render::destroyPipeline() {
-        vkDeviceWaitIdle(device->device);
-
-        for (const auto &framebuffer : framebuffers)
-            vkDestroyFramebuffer(device->device, framebuffer, nullptr);
-
-        vkFreeCommandBuffers(device->device, commandPool, static_cast<uint32_t>(commandBuffers.size()),
-                             commandBuffers.data());
-
-        vkDestroyPipeline(device->device, pipeline, nullptr);
-        vkDestroyPipelineLayout(device->device, pipelineLayout, nullptr);
-        vkDestroyRenderPass(device->device, renderPass, nullptr);
-
-        trace("Destroyed pipeline");
+    void Render::destroyPipelineLayout() {
+        vkDestroyPipelineLayout(logicalDevice->device, pipelineLayout, nullptr);
+        trace("Destroyed pipeline layout");
     }
 
-    void Render::recreate() {
-        trace("Recreating swap chain and pipeline");
-        device->destroySwapchain();
+    void Render::createCommandPool() {
+        /// Create command pool
+        VkCommandPoolCreateInfo poolCreateInfo = {};
+        poolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        poolCreateInfo.queueFamilyIndex = physicalDevice->graphicsFamilyIndex;
+        poolCreateInfo.flags = 0;
+
+        if (vkCreateCommandPool(logicalDevice->device, &poolCreateInfo, nullptr, &commandPool) != VK_SUCCESS)
+            fatal("Failed to create command pool");
+        trace("Successfully created command pool");
+    }
+
+    void Render::destroyCommandPool() {
+        vkDestroyCommandPool(logicalDevice->device, commandPool, nullptr);
+    }
+
+    void Render::createDescriptorSetLayout() {
+        VkDescriptorSetLayoutBinding layoutBinding = {};
+        layoutBinding.binding = 0;
+        layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        layoutBinding.descriptorCount = 1;
+        layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        layoutBinding.pImmutableSamplers = nullptr;
+
+        VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
+        descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        descriptorSetLayoutCreateInfo.bindingCount = 1;
+        descriptorSetLayoutCreateInfo.pBindings = &layoutBinding;
+
+        if (vkCreateDescriptorSetLayout(logicalDevice->device, &descriptorSetLayoutCreateInfo, nullptr,
+                                        &descriptorSetLayout) != VK_SUCCESS)
+            fatal("Failed to create descriptor set layout");
+    }
+
+    void Render::destroyDescriptorSetLayout() {
+        vkDestroyDescriptorSetLayout(logicalDevice->device, descriptorSetLayout, nullptr);
+    }
+
+    void Render::createUniformBuffers() {
+        VkDeviceSize bufferSize = sizeof(Shader::ModelViewProjection);
+        uniformBuffers.resize(logicalDevice->images.size());
+        uniformBuffersMemory.resize(logicalDevice->images.size());
+
+        for (size_t i = 0; i < logicalDevice->images.size(); i++)
+            createBuffer(logicalDevice, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY,
+                         uniformBuffers[i], uniformBuffersMemory[i]);
+    }
+
+    void Render::destroyUniformBuffers() {
+        for (size_t i = 0; i < uniformBuffers.size(); i++)
+            vmaDestroyBuffer(logicalDevice->allocator, uniformBuffers[i], uniformBuffersMemory[i]);
+    }
+
+    /// TODO: Redo this shit, it sucks
+    void Render::invalidate() {
+        double oldTime = glfwGetTime();
+        info("Invalidating render...");
+        logicalDevice->destroySwapchain();
+        destroyUniformBuffers();
+        destroyDescriptorSetLayout();
+        destroyFramebuffers();
+        destroySyncObjects();
+        destroyCommandBuffers();
+        destroyCommandPool();
+        destroyRenderPass();
+        destroyPipelineLayout();
         destroyPipeline();
-        device->createSwapchain();
-        device->createImageViews();
+        logicalDevice->createSwapchain();
+        logicalDevice->createImageViews();
+        createDescriptorSetLayout();
+        createUniformBuffers();
         createRenderPass();
+        createFramebuffers();
         createPipelineLayout();
         createPipeline();
-        createFramebuffers();
         createCommandBuffers();
-    }
-
-    void Render::addMesh(std::shared_ptr<Mesh> &mesh) {
-        meshes.push_back(std::move(mesh));
-        recreate();
+        createCommandPool();
+        createSyncObjects();
+        info("Invalidation took " + std::to_string(glfwGetTime() - oldTime));
     }
 }

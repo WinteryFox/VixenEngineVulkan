@@ -1,9 +1,6 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
-//#include <glslang/Public/ShaderLang.h>
-//#include <SPIRV/GlslangToSpv.h>
-//#include <StandAlone/DirStackFileIncluder.h>
 #include <fstream>
 #include <vector>
 #include <memory>
@@ -13,6 +10,12 @@
 namespace vixen {
     class Shader {
     public:
+        struct ModelViewProjection {
+            glm::mat4 model;
+            glm::mat4 view;
+            glm::mat4 projection;
+        } mvp{};
+
         /**
          * The vertex shader module
          */

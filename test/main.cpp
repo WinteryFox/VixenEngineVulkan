@@ -30,12 +30,8 @@ int main() {
     std::unique_ptr<vixen::PhysicalDevice> physicalDevice(new vixen::PhysicalDevice(instance));
     std::unique_ptr<vixen::LogicalDevice> logicalDevice(new vixen::LogicalDevice(instance, window, physicalDevice));
 
-    vixen::Shader vertex(logicalDevice, "vert.spv");
-    vixen::Shader fragment(logicalDevice, "frag.spv");
-
-    std::unique_ptr<vixen::Render> render(new vixen::Render(logicalDevice, physicalDevice, vertex, fragment, 3));
-
-    std::unique_ptr<vixen::Loader> loader(new vixen::Loader(logicalDevice, physicalDevice));
+    std::unique_ptr<vixen::Shader> vertex(new vixen::Shader(logicalDevice, "vert.spv"));
+    std::unique_ptr<vixen::Shader> fragment(new vixen::Shader(logicalDevice, "frag.spv"));
 
     std::vector<glm::vec3> vertices = {
             {-0.5f, -0.5f, 0.0f},
@@ -48,9 +44,14 @@ int main() {
             0, 1, 2, 2, 3, 0
     };
 
-    std::shared_ptr<vixen::Mesh> mesh;
-    loader->createMesh(vertices, indices, mesh);
-    render->addMesh(mesh);
+    std::shared_ptr<vixen::Mesh> mesh(new vixen::Mesh(logicalDevice, vertices, indices));
+
+    vixen::Scene scene = {};
+    scene.entities.emplace_back(mesh);
+    std::unique_ptr<vixen::Render> render(new vixen::Render(logicalDevice, physicalDevice, scene, vertex, fragment, 3));
+
+    int fps = 0;
+    double lastTime = 0;
 
     while (!window->shouldClose()) {
         window->update();
@@ -58,6 +59,14 @@ int main() {
         render->render();
 
         window->swap();
+
+        double currentTime = glfwGetTime();
+        fps++;
+        if (currentTime - lastTime >= 1.0) {
+            vixen::info("FPS: " + std::to_string(fps));
+            fps = 0;
+            lastTime = currentTime;
+        }
     }
 
     return EXIT_SUCCESS;

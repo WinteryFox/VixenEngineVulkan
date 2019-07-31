@@ -14,6 +14,18 @@ namespace vixen {
          */
         VkDevice device = VK_NULL_HANDLE;
 
+        VmaAllocator allocator = VK_NULL_HANDLE;
+
+        /**
+         * The command pool used for memory transfer operations
+         */
+        VkCommandPool transferCommandPool = VK_NULL_HANDLE;
+
+        /**
+         * The memory transfer fence
+         */
+        VkFence transferFence = VK_NULL_HANDLE;
+
         /**
          * The Vulkan swap chain
          */

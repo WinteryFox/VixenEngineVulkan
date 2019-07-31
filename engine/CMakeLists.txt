@@ -15,7 +15,9 @@ set(
         include/Render.h
         include/Mesh.h
         include/Loader.h
-        include/VixenEngine.h)
+        include/VixenEngine.h
+        include/Entity.h
+        include/Scene.h)
 set(
         vixen_SOURCES
         properties.rc
@@ -26,7 +28,7 @@ set(
         src/Shader.cpp
         src/Render.cpp
         src/Mesh.cpp
-        src/Loader.cpp)
+)
 
 add_library(
         VixenEngine

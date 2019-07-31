@@ -5,22 +5,28 @@
 #include <vulkan/vulkan.h>
 #include <glm/glm.hpp>
 #include "LogicalDevice.h"
+#include "Loader.h"
 
 namespace vixen {
-    class Mesh {
-    public:
+    struct Mesh {
         /**
          * The vertex buffer for this mesh
          */
-        VkBuffer buffer;
+        VkBuffer buffer = VK_NULL_HANDLE;
 
-        VmaAllocation allocation;
+        /**
+         * The memory allocation for this mesh
+         */
+        VmaAllocation allocation = VK_NULL_HANDLE;
 
         /**
          * The amount of vertices this mesh consists of
          */
         const uint32_t vertexCount;
 
+        /**
+         * The amount of indices this mesh consists of
+         */
         const uint32_t indexCount;
 
         VkVertexInputBindingDescription bindingDescription = {};
@@ -30,15 +36,20 @@ namespace vixen {
         /**
          * Create a new mesh
          *
-         * @param buffer The buffer this mesh is allocated in
-         * @param allocation The allocation this mesh is in
+         * @param logicalDevice The device to be used to allocate the mesh for
          * @param vertexCount The amount of vertices this mesh has
          * @param indexCount The amount of indices this mesh has
          */
-        Mesh(const VkBuffer &buffer, const VmaAllocation &allocation, uint32_t vertexCount, uint32_t indexCount);
+        Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::vector<glm::vec3> &vertices,
+             const std::vector<uint32_t> &indices);
 
         Mesh(const Mesh &) = delete;
 
+        ~Mesh();
+
         Mesh &operator=(const Mesh &mesh) = delete;
+
+    private:
+        const std::unique_ptr<LogicalDevice> &logicalDevice;
     };
 }

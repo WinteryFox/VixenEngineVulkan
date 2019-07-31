@@ -4,10 +4,10 @@
 #include <memory>
 #include "Shader.h"
 #include "Mesh.h"
+#include "Scene.h"
 
 namespace vixen {
     class Render {
-    public:
         /**
          * The view port used by the renderer
          */
@@ -63,21 +63,77 @@ namespace vixen {
          */
         std::vector<VkFence> fences = {};
 
+        VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
+
+        std::vector<VkBuffer> uniformBuffers;
+
+        std::vector<VmaAllocation> uniformBuffersMemory;
+
         /**
          * The maximum number of frames in flight, also known as concurrently rendered frames
          * ensuring that the GPU is always being utilized
          */
         const int framesInFlight;
 
+        const std::unique_ptr<Shader> &vertex;
+
+        const std::unique_ptr<Shader> &fragment;
+
+        const Scene &scene;
+
         /**
          * The logical device this renderer was made by and should be destroyed by
          */
-        const std::unique_ptr<LogicalDevice> &device;
+        const std::unique_ptr<LogicalDevice> &logicalDevice;
 
-        const Shader &vertex;
+        const std::unique_ptr<PhysicalDevice> &physicalDevice;
 
-        const Shader &fragment;
+        /**
+         * The current frame in relation to the maximum frames in flight
+         */
+        size_t currentFrame = 0;
 
+        void createCommandBuffers();
+
+        void destroyCommandBuffers();
+
+        void createFramebuffers();
+
+        void destroyFramebuffers();
+
+        void createSyncObjects();
+
+        void destroySyncObjects();
+
+        void createRenderPass();
+
+        void destroyRenderPass();
+
+        void createPipeline();
+
+        void destroyPipeline();
+
+        void createPipelineLayout();
+
+        void destroyPipelineLayout();
+
+        void createDescriptorSetLayout();
+
+        void destroyDescriptorSetLayout();
+
+        void createUniformBuffers();
+
+        void destroyUniformBuffers();
+
+        void createCommandPool();
+
+        void destroyCommandPool();
+
+        void invalidate();
+
+        void updateUniformBuffer(Entity entity, uint32_t imageIndex);
+
+    public:
         /**
          * Construct a new render pipeline
          *
@@ -87,7 +143,8 @@ namespace vixen {
          * @param[in] framesInFlight The maximum frames in flight to be used by this renderer
          */
         Render(const std::unique_ptr<LogicalDevice> &device, const std::unique_ptr<PhysicalDevice> &physicalDevice,
-               const Shader &vertex, const Shader &fragment, int framesInFlight);
+               const Scene &scene, const std::unique_ptr<Shader> &vertex, const std::unique_ptr<Shader> &fragment,
+               int framesInFlight);
 
         ~Render();
 
@@ -95,36 +152,5 @@ namespace vixen {
          * Renders the current scene
          */
         void render();
-
-        void createCommandBuffers();
-
-        void createFramebuffers();
-
-        void createSyncObjects();
-
-        void createRenderPass();
-
-        void createPipeline();
-
-        void createPipelineLayout();
-
-        void destroyPipeline();
-
-        void recreate();
-
-        /**
-         * Add a mesh to this render
-         *
-         * @param[in] mesh The mesh to add to the renderer
-         */
-        void addMesh(std::shared_ptr<Mesh> &mesh);
-
-    private:
-        std::vector<std::shared_ptr<Mesh>> meshes = {};
-
-        /**
-         * The current frame in relation to the maximum frames in flight
-         */
-        size_t currentFrame = 0;
     };
 }
