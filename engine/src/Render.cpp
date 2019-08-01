@@ -6,32 +6,11 @@ namespace Vixen {
                    const int framesInFlight)
             : logicalDevice(device), physicalDevice(physicalDevice), scene(scene), vertex(vertex), fragment(fragment),
               framesInFlight(framesInFlight) {
-        createSyncObjects();
-        createDescriptorSetLayout();
-        createUniformBuffers();
-        descriptorPool = createDescriptorPool();
-        descriptorSets = createDescriptorSets();
-        createRenderPass();
-        createFramebuffers();
-        createCommandPool();
-        createPipelineLayout();
-        createPipeline();
-        createCommandBuffers();
+        create();
     }
 
     Render::~Render() {
-        vkDeviceWaitIdle(logicalDevice->device);
-
-        destroyUniformBuffers();
-        destroyDescriptorSetLayout();
-        destroyFramebuffers();
-        destroyCommandBuffers();
-        destroyCommandPool();
-        destroyRenderPass();
-        destroyPipelineLayout();
-        destroyPipeline();
-        destroySyncObjects();
-        destroyDescriptorPool();
+        destroy();
     }
 
     void Render::render() {
@@ -104,7 +83,7 @@ namespace Vixen {
 
     void Render::createFramebuffers() {
         framebuffers.resize(logicalDevice->imageViews.size());
-        for (size_t i = 0; i < logicalDevice->imageViews.size(); i++) {
+        for (std::vector<VkImageView>::size_type i = 0; i < logicalDevice->imageViews.size(); i++) {
             VkImageView attachments[] = {logicalDevice->imageViews[i]};
 
             VkFramebufferCreateInfo framebufferCreateInfo = {};
@@ -173,7 +152,7 @@ namespace Vixen {
             fatal("Failed to allocate command buffers");
         trace("Successfully allocated command buffers");
 
-        for (size_t i = 0; i < commandBuffers.size(); i++) {
+        for (std::vector<VkCommandBuffer>::size_type i = 0; i < commandBuffers.size(); i++) {
             VkCommandBufferBeginInfo beginInfo = {};
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
             beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
@@ -460,14 +439,14 @@ namespace Vixen {
         uniformBuffers.resize(logicalDevice->images.size());
         uniformBuffersMemory.resize(logicalDevice->images.size());
 
-        for (size_t i = 0; i < logicalDevice->images.size(); i++)
+        for (std::vector<VkImage>::size_type i = 0; i < logicalDevice->images.size(); i++)
             createBuffer(logicalDevice, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY,
                          uniformBuffers[i], uniformBuffersMemory[i]);
         trace("Successfully created uniform buffers");
     }
 
     void Render::destroyUniformBuffers() {
-        for (size_t i = 0; i < uniformBuffers.size(); i++)
+        for (std::vector<VkBuffer>::size_type i = 0; i < uniformBuffers.size(); i++)
             vmaDestroyBuffer(logicalDevice->allocator, uniformBuffers[i], uniformBuffersMemory[i]);
         trace("Destroyed uniform buffers");
     }
@@ -512,7 +491,7 @@ namespace Vixen {
             fatal("Failed to allocate descriptor sets");
         trace("Successfully allocated descriptor sets");
 
-        for (size_t i = 0; i < logicalDevice->images.size(); i++) {
+        for (std::vector<VkImage>::size_type i = 0; i < logicalDevice->images.size(); i++) {
             VkDescriptorBufferInfo descriptorBufferInfo{};
             descriptorBufferInfo.buffer = uniformBuffers[i];
             descriptorBufferInfo.offset = 0;
@@ -536,32 +515,44 @@ namespace Vixen {
         return sets;
     }
 
-    /// TODO: Redo this shit, it sucks
-    void Render::invalidate() {
-        double oldTime = glfwGetTime();
-        info("Invalidating render...");
-        logicalDevice->destroySwapchain();
+    void Render::create() {
+        createSyncObjects();
+        createDescriptorSetLayout();
+        createUniformBuffers();
+        descriptorPool = createDescriptorPool();
+        descriptorSets = createDescriptorSets();
+        createRenderPass();
+        createFramebuffers();
+        createCommandPool();
+        createPipelineLayout();
+        createPipeline();
+        createCommandBuffers();
+    }
+
+    void Render::destroy() {
+        vkDeviceWaitIdle(logicalDevice->device);
+
         destroyUniformBuffers();
         destroyDescriptorSetLayout();
         destroyFramebuffers();
-        destroySyncObjects();
         destroyCommandBuffers();
         destroyCommandPool();
         destroyRenderPass();
         destroyPipelineLayout();
         destroyPipeline();
+        destroySyncObjects();
         destroyDescriptorPool();
+    }
+
+    /// TODO: Redo this shit, it sucks
+    void Render::invalidate() {
+        double oldTime = glfwGetTime();
+        trace("Invalidating render...");
+        logicalDevice->destroySwapchain();
+        destroy();
         logicalDevice->createSwapchain();
         logicalDevice->createImageViews();
-        createDescriptorSetLayout();
-        createUniformBuffers();
-        createRenderPass();
-        createFramebuffers();
-        createPipelineLayout();
-        createPipeline();
-        createCommandBuffers();
-        createCommandPool();
-        createSyncObjects();
-        info("Invalidation took " + std::to_string(glfwGetTime() - oldTime));
+        create();
+        trace("Invalidation took " + std::to_string(glfwGetTime() - oldTime));
     }
 }

@@ -63,7 +63,7 @@ namespace Vixen {
          */
         std::vector<VkFence> fences = {};
 
-        VkDescriptorPool descriptorPool;
+        VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 
         VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
 
@@ -140,6 +140,10 @@ namespace Vixen {
         std::vector<VkDescriptorSet> createDescriptorSets();
 
         void invalidate();
+
+        void create();
+
+        void destroy();
 
         void updateUniformBuffer(Entity entity, uint32_t imageIndex);
 

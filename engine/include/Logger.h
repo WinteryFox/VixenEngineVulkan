@@ -58,34 +58,30 @@ namespace Vixen {
 
         std::ofstream stream(LOG_DIR + LOG_FILE, std::ofstream::out | std::ofstream::app);
 
-        std::cout << stamp;
-        stream << stamp;
+        std::stringstream out;
+        out << stamp;
         switch (severity) {
             case LogSeverity::LOG_SEVERITY_TRACE:
-                std::cout << " [TRACE] ";
-                stream << " [TRACE] ";
+                out << " [TRACE] ";
                 break;
             case LogSeverity::LOG_SEVERITY_INFO:
-                std::cout << " [INFO] ";
-                stream << " [INFO] ";
+                out << " [INFO] ";
                 break;
             case LogSeverity::LOG_SEVERITY_WARNING:
-                std::cerr << " [WARNING] ";
-                stream << " [WARNING] ";
+                out << " [WARNING] ";
                 break;
             case LogSeverity::LOG_SEVERITY_ERR:
-                std::cerr << " [ERROR] ";
-                stream << " [ERROR] ";
+                out << " [ERROR] ";
                 break;
             case LogSeverity::LOG_SEVERITY_FATAL:
-                std::cerr << " [FATAL] ";
-                stream << " [FATAL] ";
+                out << " [FATAL] ";
             case LogSeverity::LOG_SEVERITY_NONE:
                 break;
         }
 
-        std::cout << message << std::endl;
-        stream << message << std::endl;
+        out << message << std::endl;
+        std::cout << out.str();
+        stream << out.str();
 
         stream.flush();
         stream.close();
