@@ -63,11 +63,15 @@ namespace Vixen {
          */
         std::vector<VkFence> fences = {};
 
+        VkDescriptorPool descriptorPool;
+
         VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
 
         std::vector<VkBuffer> uniformBuffers;
 
         std::vector<VmaAllocation> uniformBuffersMemory;
+
+        std::vector<VkDescriptorSet> descriptorSets;
 
         /**
          * The maximum number of frames in flight, also known as concurrently rendered frames
@@ -128,6 +132,14 @@ namespace Vixen {
         void createCommandPool();
 
         void destroyCommandPool();
+
+        VkDescriptorPool createDescriptorPool();
+
+        void destroyDescriptorPool();
+
+        std::vector<VkDescriptorSet> createDescriptorSets();
+
+        void destroyDescriptorSets();
 
         void invalidate();
 
