@@ -5,7 +5,7 @@
 #include <stb_image.h>
 #include "Logger.h"
 
-namespace vixen {
+namespace Vixen {
     class Window {
     public:
         /**

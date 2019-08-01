@@ -6,7 +6,7 @@
 #include <memory>
 #include "Instance.h"
 
-namespace vixen {
+namespace Vixen {
     struct SwapChainSupportDetails {
         VkSurfaceCapabilitiesKHR capabilities;
         std::vector<VkSurfaceFormatKHR> formats;

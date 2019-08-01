@@ -5,7 +5,7 @@
 #include "Mesh.h"
 #include "Entity.h"
 
-namespace vixen {
+namespace Vixen {
     struct Scene {
         std::vector<Entity> entities;
     };

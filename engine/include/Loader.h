@@ -5,7 +5,7 @@
 #include <memory>
 #include "LogicalDevice.h"
 
-namespace vixen {
+namespace Vixen {
     /**
      * Create and allocate a new buffer, it is up to the user to delete the buffer and free the device memory
      *

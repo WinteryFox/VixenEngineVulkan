@@ -2,7 +2,7 @@
 
 #include "Window.h"
 
-namespace vixen {
+namespace Vixen {
     Window::Window(const std::string &name, const std::string &icon, GLFWmonitor *monitor, int width, int height) {
         glfwInit();
 

@@ -7,7 +7,7 @@
 #include "LogicalDevice.h"
 #include "Loader.h"
 
-namespace vixen {
+namespace Vixen {
     struct Mesh {
         /**
          * The vertex buffer for this mesh

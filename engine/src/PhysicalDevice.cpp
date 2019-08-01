@@ -1,6 +1,6 @@
 #include "PhysicalDevice.h"
 
-namespace vixen {
+namespace Vixen {
     PhysicalDevice::PhysicalDevice(const std::unique_ptr<Instance> &instance,
                                    const std::vector<const char *> &extensions)
             : instance(instance), enabledExtensions(extensions) {

@@ -18,17 +18,17 @@
 #include <fstream>
 #include <iostream>
 
-namespace vixen {
-    enum class SEVERITY : int {
-        TRACE = 5,
-        INFO = 4,
-        WARNING = 3,
-        ERR = 2,
-        FATAL = 1,
-        NONE = 0
-    };
+namespace Vixen {
+    typedef enum LogSeverity {
+        LOG_SEVERITY_TRACE = 5,
+        LOG_SEVERITY_INFO = 4,
+        LOG_SEVERITY_WARNING = 3,
+        LOG_SEVERITY_ERR = 2,
+        LOG_SEVERITY_FATAL = 1,
+        LOG_SEVERITY_NONE = 0
+    } LogSeverity;
 
-    static void log(SEVERITY severity, const std::string &message) {
+    static void log(LogSeverity severity, const std::string &message) {
         if (VIXEN_DEBUG_LEVEL < (int) severity)
             return;
 
@@ -46,26 +46,26 @@ namespace vixen {
         std::cout << stamp;
         stream << stamp;
         switch (severity) {
-            case SEVERITY::TRACE:
+            case LOG_SEVERITY_TRACE:
                 std::cout << " [TRACE] ";
                 stream << " [TRACE] ";
                 break;
-            case SEVERITY::INFO:
+            case LOG_SEVERITY_INFO:
                 std::cout << " [INFO] ";
                 stream << " [INFO] ";
                 break;
-            case SEVERITY::WARNING:
+            case LOG_SEVERITY_WARNING:
                 std::cerr << " [WARNING] ";
                 stream << " [WARNING] ";
                 break;
-            case SEVERITY::ERR:
+            case LOG_SEVERITY_ERR:
                 std::cerr << " [ERROR] ";
                 stream << " [ERROR] ";
                 break;
-            case SEVERITY::FATAL:
+            case LOG_SEVERITY_FATAL:
                 std::cerr << " [FATAL] ";
                 stream << " [FATAL] ";
-            case SEVERITY::NONE:
+            case LOG_SEVERITY_NONE:
                 break;
         }
 
@@ -77,23 +77,23 @@ namespace vixen {
     }
 
     static void trace(const std::string &message) {
-        log(SEVERITY::TRACE, message);
+        log(LOG_SEVERITY_TRACE, message);
     }
 
     static void info(const std::string &message) {
-        log(SEVERITY::INFO, message);
+        log(LOG_SEVERITY_INFO, message);
     }
 
     static void warning(const std::string &message) {
-        log(SEVERITY::WARNING, message);
+        log(LOG_SEVERITY_WARNING, message);
     }
 
     static void error(const std::string &message) {
-        log(SEVERITY::ERR, message);
+        log(LOG_SEVERITY_ERR, message);
     }
 
     static void fatal(const std::string &message) {
-        log(SEVERITY::FATAL, message);
+        log(LOG_SEVERITY_FATAL, message);
 #ifdef __WIN32__
         MessageBox(
                 nullptr,

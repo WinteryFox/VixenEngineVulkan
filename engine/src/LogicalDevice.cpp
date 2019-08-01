@@ -2,7 +2,7 @@
 
 #include "LogicalDevice.h"
 
-namespace vixen {
+namespace Vixen {
     LogicalDevice::LogicalDevice(const std::unique_ptr<Instance> &instance,
                                  const std::unique_ptr<Window> &window,
                                  const std::unique_ptr<PhysicalDevice> &physicalDevice) : instance(instance),

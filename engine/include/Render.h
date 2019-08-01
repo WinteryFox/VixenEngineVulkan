@@ -6,7 +6,7 @@
 #include "Mesh.h"
 #include "Scene.h"
 
-namespace vixen {
+namespace Vixen {
     class Render {
         /**
          * The view port used by the renderer

@@ -9,7 +9,7 @@
 #include <memory>
 #include "Mesh.h"
 
-namespace vixen {
+namespace Vixen {
     struct Entity {
         glm::vec3 position{};
         glm::vec3 rotation{};

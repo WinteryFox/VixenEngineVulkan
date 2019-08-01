@@ -12,7 +12,7 @@
 #include "Logger.h"
 #include "Window.h"
 
-namespace vixen {
+namespace Vixen {
     class Instance {
     public:
         /**

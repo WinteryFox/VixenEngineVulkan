@@ -1,6 +1,6 @@
 #include "Mesh.h"
 
-namespace vixen {
+namespace Vixen {
     Mesh::Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::vector<glm::vec3> &vertices,
                const std::vector<uint32_t> &indices)
             : logicalDevice(logicalDevice), vertexCount(vertices.size()), indexCount(indices.size()) {

@@ -6,7 +6,7 @@
 #include <memory>
 #include "PhysicalDevice.h"
 
-namespace vixen {
+namespace Vixen {
     class LogicalDevice {
     public:
         /**

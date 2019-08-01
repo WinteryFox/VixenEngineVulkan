@@ -1,6 +1,6 @@
 #include "Render.h"
 
-namespace vixen {
+namespace Vixen {
     Render::Render(const std::unique_ptr<LogicalDevice> &device, const std::unique_ptr<PhysicalDevice> &physicalDevice,
                    const Scene &scene, const std::unique_ptr<Shader> &vertex, const std::unique_ptr<Shader> &fragment,
                    const int framesInFlight)
@@ -39,7 +39,7 @@ namespace vixen {
                                                 std::numeric_limits<uint64_t>::max(),
                                                 imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
-        updateUniformBuffer(scene->entities[0], imageIndex);
+        updateUniformBuffer(scene.entities[0], imageIndex);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
             invalidate();

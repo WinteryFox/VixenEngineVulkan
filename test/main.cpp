@@ -24,14 +24,14 @@ int main() {
 #endif
     };
 
-    std::unique_ptr<vixen::Window> window(new vixen::Window("Vixen Engine Test Application"));
-    std::unique_ptr<vixen::Instance> instance(
-            new vixen::Instance(*window, "Vixen Engine Test Application", glm::ivec3(0, 0, 1), extensions, layers));
-    std::unique_ptr<vixen::PhysicalDevice> physicalDevice(new vixen::PhysicalDevice(instance));
-    std::unique_ptr<vixen::LogicalDevice> logicalDevice(new vixen::LogicalDevice(instance, window, physicalDevice));
+    std::unique_ptr<Vixen::Window> window(new Vixen::Window("Vixen Engine Test Application"));
+    std::unique_ptr<Vixen::Instance> instance(
+            new Vixen::Instance(*window, "Vixen Engine Test Application", glm::ivec3(0, 0, 1), extensions, layers));
+    std::unique_ptr<Vixen::PhysicalDevice> physicalDevice(new Vixen::PhysicalDevice(instance));
+    std::unique_ptr<Vixen::LogicalDevice> logicalDevice(new Vixen::LogicalDevice(instance, window, physicalDevice));
 
-    std::unique_ptr<vixen::Shader> vertex(new vixen::Shader(logicalDevice, "vert.spv"));
-    std::unique_ptr<vixen::Shader> fragment(new vixen::Shader(logicalDevice, "frag.spv"));
+    std::unique_ptr<Vixen::Shader> vertex(new Vixen::Shader(logicalDevice, Vixen::SHADER_TYPE_VERTEX, "vert.spv"));
+    std::unique_ptr<Vixen::Shader> fragment(new Vixen::Shader(logicalDevice, Vixen::SHADER_TYPE_FRAGMENT, "frag.spv"));
 
     std::vector<glm::vec3> vertices = {
             {-0.5f, -0.5f, 0.0f},
@@ -44,11 +44,11 @@ int main() {
             0, 1, 2, 2, 3, 0
     };
 
-    std::shared_ptr<vixen::Mesh> mesh(new vixen::Mesh(logicalDevice, vertices, indices));
+    std::shared_ptr<Vixen::Mesh> mesh(new Vixen::Mesh(logicalDevice, vertices, indices));
 
-    vixen::Scene scene = {};
+    Vixen::Scene scene = {};
     scene.entities.emplace_back(mesh);
-    std::unique_ptr<vixen::Render> render(new vixen::Render(logicalDevice, physicalDevice, scene, vertex, fragment, 3));
+    std::unique_ptr<Vixen::Render> render(new Vixen::Render(logicalDevice, physicalDevice, scene, vertex, fragment, 3));
 
     int fps = 0;
     double lastTime = 0;
@@ -63,7 +63,7 @@ int main() {
         double currentTime = glfwGetTime();
         fps++;
         if (currentTime - lastTime >= 1.0) {
-            vixen::info("FPS: " + std::to_string(fps));
+            Vixen::info("FPS: " + std::to_string(fps));
             fps = 0;
             lastTime = currentTime;
         }
