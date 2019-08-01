@@ -139,8 +139,6 @@ namespace Vixen {
 
         std::vector<VkDescriptorSet> createDescriptorSets();
 
-        void destroyDescriptorSets();
-
         void invalidate();
 
         void updateUniformBuffer(Entity entity, uint32_t imageIndex);

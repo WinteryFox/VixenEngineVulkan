@@ -536,10 +536,6 @@ namespace Vixen {
         return sets;
     }
 
-    void Render::destroyDescriptorSets() {
-        vkFreeDescriptorSets(logicalDevice->device, descriptorPool, descriptorSets.size(), descriptorSets.data());
-    }
-
     /// TODO: Redo this shit, it sucks
     void Render::invalidate() {
         double oldTime = glfwGetTime();
