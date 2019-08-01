@@ -30,8 +30,8 @@ int main() {
     std::unique_ptr<Vixen::PhysicalDevice> physicalDevice(new Vixen::PhysicalDevice(instance));
     std::unique_ptr<Vixen::LogicalDevice> logicalDevice(new Vixen::LogicalDevice(instance, window, physicalDevice));
 
-    std::unique_ptr<Vixen::Shader> vertex(new Vixen::Shader(logicalDevice, Vixen::SHADER_TYPE_VERTEX, "vert.spv"));
-    std::unique_ptr<Vixen::Shader> fragment(new Vixen::Shader(logicalDevice, Vixen::SHADER_TYPE_FRAGMENT, "frag.spv"));
+    std::unique_ptr<Vixen::Shader> vertex(new Vixen::Shader(logicalDevice, "vert.spv"));
+    std::unique_ptr<Vixen::Shader> fragment(new Vixen::Shader(logicalDevice, "frag.spv"));
 
     std::vector<glm::vec3> vertices = {
             {-0.5f, -0.5f, 0.0f},

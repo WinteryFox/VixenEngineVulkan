@@ -1,12 +1,12 @@
 #include "Shader.h"
 
 namespace Vixen {
-    Shader::Shader(const std::unique_ptr<LogicalDevice> &logicalDevice, ShaderType type, const std::string &filePath)
-            : logicalDevice(logicalDevice), type(type), shader(createShader(filePath)) {}
+    Shader::Shader(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::string &filePath)
+            : logicalDevice(logicalDevice), shader(createShader(filePath)) {}
 
-    Shader::Shader(const std::unique_ptr<LogicalDevice> &logicalDevice, ShaderType type,
+    Shader::Shader(const std::unique_ptr<LogicalDevice> &logicalDevice,
                    const std::vector<char> &bytecode)
-            : logicalDevice(logicalDevice), type(type), shader(createShader(bytecode)) {}
+            : logicalDevice(logicalDevice), shader(createShader(bytecode)) {}
 
     Shader::~Shader() {
         vkDestroyShaderModule(logicalDevice->device, shader, nullptr);
