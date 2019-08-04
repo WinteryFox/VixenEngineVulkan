@@ -33,6 +33,8 @@ int main() {
     std::unique_ptr<Vixen::Shader> vertex(new Vixen::Shader(logicalDevice, "vert.spv"));
     std::unique_ptr<Vixen::Shader> fragment(new Vixen::Shader(logicalDevice, "frag.spv"));
 
+    std::unique_ptr<Vixen::Camera> camera(new Vixen::Camera({2.0f, 2.0f, 2.0f}));
+
     std::vector<glm::vec3> vertices = {
             {-0.5f, -0.5f, 0.0f},
             {0.5f,  -0.5f, 0.0f},
@@ -45,10 +47,10 @@ int main() {
     };
 
     std::shared_ptr<Vixen::Mesh> mesh(new Vixen::Mesh(logicalDevice, vertices, indices));
-
     Vixen::Scene scene = {};
     scene.entities.emplace_back(mesh);
-    std::unique_ptr<Vixen::Render> render(new Vixen::Render(logicalDevice, physicalDevice, scene, vertex, fragment, 3));
+    std::unique_ptr<Vixen::Render> render(
+            new Vixen::Render(logicalDevice, physicalDevice, camera, scene, vertex, fragment, 3));
 
     int fps = 0;
     double lastTime = 0;
