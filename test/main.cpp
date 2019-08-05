@@ -35,15 +35,21 @@ int main() {
 
     std::unique_ptr<Vixen::Camera> camera(new Vixen::Camera({2.0f, 2.0f, 2.0f}));
 
+    std::unique_ptr<Vixen::Input> input(new Vixen::Input(window));
+
     std::vector<glm::vec3> vertices = {
-            {-0.5f, -0.5f, 0.0f},
-            {0.5f,  -0.5f, 0.0f},
-            {0.5f,  0.5f,  0.0f},
-            {-0.5f, 0.5f,  0.0f},
+            {-1.0, -1.0, 1.0},
+            {1.0,  -1.0, 1.0},
+            {-1.0, 1.0,  1.0},
+            {1.0,  1.0,  1.0},
+            {-1.0, -1.0, -1.0},
+            {1.0,  -1.0, -1.0},
+            {-1.0, 1.0,  -1.0},
+            {1.0,  1.0,  -1.0},
     };
 
     std::vector<uint32_t> indices = {
-            0, 1, 2, 2, 3, 0
+            0, 1, 2, 3, 7, 1, 5, 4, 7, 6, 2, 4, 0, 1
     };
 
     std::shared_ptr<Vixen::Mesh> mesh(new Vixen::Mesh(logicalDevice, vertices, indices));
@@ -58,6 +64,7 @@ int main() {
     while (!window->shouldClose()) {
         window->update();
 
+        input->update(camera);
         render->render();
 
         window->swap();

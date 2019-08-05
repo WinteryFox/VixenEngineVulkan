@@ -28,7 +28,7 @@ set(
         src/Shader.cpp
         src/Render.cpp
         src/Mesh.cpp
-        include/Input.h)
+        include/Input.h src/Input.cpp)
 
 add_library(
         VixenEngine

@@ -44,6 +44,11 @@ namespace Vixen {
 
         stbi_image_free(pixels);
 
+        /// Set mouse cursor disabled and enable raw input
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        if (glfwRawMouseMotionSupported())
+            glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+
         /// Make the window visible
         glfwShowWindow(window);
     }
