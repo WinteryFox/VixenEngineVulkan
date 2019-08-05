@@ -33,7 +33,9 @@ int main() {
     std::unique_ptr<Vixen::Shader> vertex(new Vixen::Shader(logicalDevice, "vert.spv"));
     std::unique_ptr<Vixen::Shader> fragment(new Vixen::Shader(logicalDevice, "frag.spv"));
 
-    std::unique_ptr<Vixen::Camera> camera(new Vixen::Camera({2.0f, 2.0f, 2.0f}));
+    std::unique_ptr<Vixen::Camera> camera(new Vixen::Camera(
+            {0.0f, 0.0f, 5.0f}
+    ));
 
     std::unique_ptr<Vixen::Input> input(new Vixen::Input(window));
 

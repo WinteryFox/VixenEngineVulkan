@@ -8,7 +8,7 @@ namespace Vixen {
         const float fieldOfView;
         glm::vec3 position;
         glm::vec3 rotation;
-        glm::vec3 right;
+        glm::vec3 right{};
         const float nearPlane;
         const float farPlane;
 
