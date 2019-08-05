@@ -3,6 +3,7 @@
 find_package(Vulkan REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(Threads REQUIRED)
+find_package(assimp REQUIRED)
 
 set(
         vixen_HEADERS
@@ -50,6 +51,7 @@ target_include_directories(
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${Vulkan_INCLUDE_DIR}
+        ${ASSIMP_INCLUDE_DIR}
         ${GLFW_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glm
         ${CMAKE_CURRENT_SOURCE_DIR}/contrib/stb
@@ -60,6 +62,7 @@ if (WIN32)
     target_link_libraries(
             VixenEngine
             Vulkan::Vulkan
+            ${assimp_LIBRARIES}
             ${GLFW_LIBRARIES}
             -static-libstdc++
             -static-libgcc
@@ -71,6 +74,7 @@ else (WIN32)
     target_link_libraries(
             VixenEngine
             Vulkan::Vulkan
+            ${assimp_LIBRARIES}
             ${GLFW_LIBRARIES}
             -static-libstdc++
             -static-libgcc
