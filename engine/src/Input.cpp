@@ -6,14 +6,6 @@ namespace Vixen {
     }
 
     void Input::update(const std::unique_ptr<Camera> &camera) {
-        /// Break out of focus by pressing escape and back into focus if it is hit again
-        if (glfwGetKey(window->window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-            if (glfwGetInputMode(window->window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)
-                glfwSetInputMode(window->window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-            else
-                glfwSetInputMode(window->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        }
-
         /// Mouse input
         double currentX, currentY;
         double offsetX, offsetY;
@@ -23,11 +15,12 @@ namespace Vixen {
         lastX = currentX;
         lastY = currentY;
 
-        horizontal -= 0.01 * offsetX;
-        vertical -= 0.01 * offsetY;
+        camera->horizontal -= 0.01 * offsetX;
+        camera->vertical -= 0.01 * offsetY;
 
-        camera->rotation = {cos(vertical) * sin(horizontal), sin(vertical), cos(vertical) * cos(horizontal)};
-        camera->right = {sin(horizontal - 3.14f / 2.0f), 0, cos(horizontal - 3.14f / 2.0f)};
+        camera->rotation = {cos(camera->vertical) * sin(camera->horizontal), sin(camera->vertical),
+                            cos(camera->vertical) * cos(camera->horizontal)};
+        camera->right = {sin(camera->horizontal - 3.14f / 2.0f), 0, cos(camera->horizontal - 3.14f / 2.0f)};
 
         /// Keyboard input
         glm::vec3 advance = {0.0f, 0.0f, 0.0f};

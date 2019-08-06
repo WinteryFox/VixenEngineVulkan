@@ -57,8 +57,7 @@ int main() {
     std::shared_ptr<Vixen::Mesh> mesh(new Vixen::Mesh(logicalDevice, vertices, indices));
     Vixen::Scene scene = {};
     scene.entities.emplace_back(mesh);
-    std::unique_ptr<Vixen::Render> render(
-            new Vixen::Render(logicalDevice, physicalDevice, camera, scene, vertex, fragment, 3));
+    std::unique_ptr<Vixen::Render> render(new Vixen::Render(logicalDevice, physicalDevice, scene, vertex, fragment, 3));
 
     int fps = 0;
     double lastTime = 0;
@@ -67,7 +66,7 @@ int main() {
         window->update();
 
         input->update(camera);
-        render->render();
+        render->render(camera);
 
         window->swap();
 

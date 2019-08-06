@@ -2,9 +2,9 @@
 
 namespace Vixen {
     Render::Render(const std::unique_ptr<LogicalDevice> &device, const std::unique_ptr<PhysicalDevice> &physicalDevice,
-                   std::unique_ptr<Camera> &camera, const Scene &scene, const std::unique_ptr<Shader> &vertex,
+                   const Scene &scene, const std::unique_ptr<Shader> &vertex,
                    const std::unique_ptr<Shader> &fragment, const int framesInFlight)
-            : logicalDevice(device), physicalDevice(physicalDevice), camera(camera), scene(scene), vertex(vertex),
+            : logicalDevice(device), physicalDevice(physicalDevice), scene(scene), vertex(vertex),
               fragment(fragment), framesInFlight(framesInFlight) {
         create();
     }
@@ -13,7 +13,7 @@ namespace Vixen {
         destroy();
     }
 
-    void Render::render() {
+    void Render::render(const std::unique_ptr<Camera> &camera) {
         vkWaitForFences(logicalDevice->device, 1, &fences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
 
         uint32_t imageIndex;
@@ -21,6 +21,8 @@ namespace Vixen {
                                                 std::numeric_limits<uint64_t>::max(),
                                                 imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
+        vertex->mvp.view = camera->getView();
+        vertex->mvp.projection = camera->getProjection();
         updateUniformBuffer(scene.entities[0], imageIndex);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -68,13 +70,6 @@ namespace Vixen {
 
     void Render::updateUniformBuffer(Entity entity, uint32_t imageIndex) {
         vertex->mvp.model = entity.getModelMatrix();
-        //vertex->mvp.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f),
-        //                               glm::vec3(0.0f, 0.0f, 1.0f));
-        vertex->mvp.view = camera->getView();
-        //vertex->mvp.projection = glm::perspective(glm::radians(45.0f), (float) logicalDevice->extent.width /
-        //                                                               (float) logicalDevice->extent.height, 0.1f,
-        //                                          10.0f);
-        vertex->mvp.projection = camera->getProjection();
         vertex->mvp.projection[1][1] *= -1.0f;
 
         void *data;

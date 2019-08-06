@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <memory>
+#include <map>
 #include "Window.h"
 #include "Camera.h"
 
@@ -18,7 +19,6 @@ namespace Vixen {
         void update(const std::unique_ptr<Camera> &camera);
 
     private:
-        double horizontal = 3.14, vertical = 0.0;
         double lastX = 0, lastY = 0;
     };
 }

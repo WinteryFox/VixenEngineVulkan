@@ -86,8 +86,6 @@ namespace Vixen {
 
         const Scene &scene;
 
-        std::unique_ptr<Camera> &camera;
-
         /**
          * The logical device this renderer was made by and should be destroyed by
          */
@@ -160,7 +158,7 @@ namespace Vixen {
          * @param[in] framesInFlight The maximum frames in flight to be used by this renderer
          */
         Render(const std::unique_ptr<LogicalDevice> &device, const std::unique_ptr<PhysicalDevice> &physicalDevice,
-               std::unique_ptr<Camera> &camera, const Scene &scene, const std::unique_ptr<Shader> &vertex,
+               const Scene &scene, const std::unique_ptr<Shader> &vertex,
                const std::unique_ptr<Shader> &fragment, int framesInFlight);
 
         ~Render();
@@ -168,6 +166,6 @@ namespace Vixen {
         /**
          * Renders the current scene
          */
-        void render();
+        void render(const std::unique_ptr<Camera> &camera);
     };
 }
