@@ -3,7 +3,7 @@
 find_package(Vulkan REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(Threads REQUIRED)
-find_package(assimp REQUIRED)
+find_package(Assimp REQUIRED)
 
 set(
         vixen_HEADERS
@@ -18,7 +18,9 @@ set(
         include/Loader.h
         include/VixenEngine.h
         include/Entity.h
-        include/Scene.h include/Camera.h)
+        include/Scene.h
+        include/Camera.h
+        include/Input.h)
 set(
         vixen_SOURCES
         properties.rc
@@ -29,7 +31,7 @@ set(
         src/Shader.cpp
         src/Render.cpp
         src/Mesh.cpp
-        include/Input.h src/Input.cpp)
+        src/Input.cpp)
 
 add_library(
         VixenEngine
@@ -62,7 +64,7 @@ if (WIN32)
     target_link_libraries(
             VixenEngine
             Vulkan::Vulkan
-            ${assimp_LIBRARIES}
+            ${ASSIMP_LIBRARIES}
             ${GLFW_LIBRARIES}
             -static-libstdc++
             -static-libgcc

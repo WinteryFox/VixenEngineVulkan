@@ -23,6 +23,7 @@ namespace Vixen {
 
         vertex->mvp.view = camera->getView();
         vertex->mvp.projection = camera->getProjection();
+        vertex->mvp.projection[1][1] *= -1.0f;
         updateUniformBuffer(scene.entities[0], imageIndex);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -70,7 +71,6 @@ namespace Vixen {
 
     void Render::updateUniformBuffer(Entity entity, uint32_t imageIndex) {
         vertex->mvp.model = entity.getModelMatrix();
-        vertex->mvp.projection[1][1] *= -1.0f;
 
         void *data;
         vmaMapMemory(logicalDevice->allocator, uniformBuffersMemory[imageIndex], &data);

@@ -4,6 +4,9 @@
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 #include <glm/glm.hpp>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 #include "LogicalDevice.h"
 #include "Loader.h"
 
@@ -22,12 +25,12 @@ namespace Vixen {
         /**
          * The amount of vertices this mesh consists of
          */
-        const uint32_t vertexCount;
+        uint32_t vertexCount;
 
         /**
          * The amount of indices this mesh consists of
          */
-        const uint32_t indexCount;
+        uint32_t indexCount;
 
         VkVertexInputBindingDescription bindingDescription = {};
 
@@ -42,6 +45,8 @@ namespace Vixen {
          */
         Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::vector<glm::vec3> &vertices,
              const std::vector<uint32_t> &indices);
+
+        Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::string &path);
 
         Mesh(const Mesh &) = delete;
 
