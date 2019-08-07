@@ -6,6 +6,9 @@ namespace Vixen {
     }
 
     void Input::update(const std::unique_ptr<Camera> &camera) {
+        if (glfwGetKey(window->window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            exit(0); /// Just a shortcut to exit the app
+
         /// Mouse input
         double currentX, currentY;
         double offsetX, offsetY;
