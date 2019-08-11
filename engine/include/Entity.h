@@ -21,8 +21,8 @@ namespace Vixen {
                         float scale = 1.0f) : mesh(mesh), position(position), rotation(rotation), scale(scale) {};
 
         glm::mat4 getModelMatrix() {
-            return glm::mat4(glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::quat(rotation)) *
-                             glm::scale(glm::mat4(1.0f), glm::vec3(scale)));
+            return glm::mat4(glm::scale(glm::mat4(1.0f), glm::vec3(scale)) * glm::rotate(glm::quat(1.0f), rotation) *
+                             glm::translate(glm::mat4(1.0f), position));
         }
     };
 }
