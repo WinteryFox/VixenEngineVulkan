@@ -10,12 +10,6 @@
 namespace Vixen {
     class Shader {
     public:
-        struct ModelViewProjection {
-            alignas(16) glm::mat4 model{};
-            alignas(16) glm::mat4 view{};
-            alignas(16) glm::mat4 projection{};
-        } mvp;
-
         /**
          * The logical device this shader is made by, required to be stored to destroy the shader
          */

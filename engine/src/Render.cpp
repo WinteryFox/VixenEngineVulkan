@@ -2,8 +2,8 @@
 
 namespace Vixen {
     Render::Render(const std::unique_ptr<LogicalDevice> &device, const std::unique_ptr<PhysicalDevice> &physicalDevice,
-                   const Scene &scene, const std::unique_ptr<Shader> &vertex,
-                   const std::unique_ptr<Shader> &fragment, const int framesInFlight)
+                   const Scene &scene, const std::unique_ptr<VertexShader> &vertex,
+                   const std::unique_ptr<FragmentShader> &fragment, const int framesInFlight)
             : logicalDevice(device), physicalDevice(physicalDevice), scene(scene), vertex(vertex),
               fragment(fragment), framesInFlight(framesInFlight) {
         create();
@@ -433,7 +433,7 @@ namespace Vixen {
     }
 
     void Render::createUniformBuffers() {
-        VkDeviceSize bufferSize = sizeof(Shader::ModelViewProjection);
+        VkDeviceSize bufferSize = sizeof(VertexShader::ModelViewProjection);
         uniformBuffers.resize(logicalDevice->images.size());
         uniformBuffersMemory.resize(logicalDevice->images.size());
 
@@ -493,7 +493,7 @@ namespace Vixen {
             VkDescriptorBufferInfo descriptorBufferInfo{};
             descriptorBufferInfo.buffer = uniformBuffers[i];
             descriptorBufferInfo.offset = 0;
-            descriptorBufferInfo.range = sizeof(Shader::ModelViewProjection);
+            descriptorBufferInfo.range = sizeof(VertexShader::ModelViewProjection);
 
             VkWriteDescriptorSet writeDescriptorSet{};
             writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

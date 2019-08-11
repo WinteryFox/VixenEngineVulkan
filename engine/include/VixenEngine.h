@@ -7,6 +7,7 @@
 #include "Mesh.h"
 #include "PhysicalDevice.h"
 #include "Render.h"
-#include "Shader.h"
+#include "VertexShader.h"
+#include "FragmentShader.h"
 #include "Window.h"
 #include "Input.h"

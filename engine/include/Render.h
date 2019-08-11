@@ -2,7 +2,8 @@
 
 #include <vulkan/vulkan.h>
 #include <memory>
-#include "Shader.h"
+#include "VertexShader.h"
+#include "FragmentShader.h"
 #include "Mesh.h"
 #include "Scene.h"
 #include "Camera.h"
@@ -80,9 +81,9 @@ namespace Vixen {
          */
         const int framesInFlight;
 
-        const std::unique_ptr<Shader> &vertex;
+        const std::unique_ptr<VertexShader> &vertex;
 
-        const std::unique_ptr<Shader> &fragment;
+        const std::unique_ptr<FragmentShader> &fragment;
 
         const Scene &scene;
 
@@ -158,8 +159,8 @@ namespace Vixen {
          * @param[in] framesInFlight The maximum frames in flight to be used by this renderer
          */
         Render(const std::unique_ptr<LogicalDevice> &device, const std::unique_ptr<PhysicalDevice> &physicalDevice,
-               const Scene &scene, const std::unique_ptr<Shader> &vertex,
-               const std::unique_ptr<Shader> &fragment, int framesInFlight);
+               const Scene &scene, const std::unique_ptr<VertexShader> &vertex,
+               const std::unique_ptr<FragmentShader> &fragment, int framesInFlight);
 
         ~Render();
 

@@ -30,8 +30,8 @@ int main() {
     std::unique_ptr<Vixen::PhysicalDevice> physicalDevice(new Vixen::PhysicalDevice(instance));
     std::unique_ptr<Vixen::LogicalDevice> logicalDevice(new Vixen::LogicalDevice(instance, window, physicalDevice));
 
-    std::unique_ptr<Vixen::Shader> vertex(new Vixen::Shader(logicalDevice, "vert.spv"));
-    std::unique_ptr<Vixen::Shader> fragment(new Vixen::Shader(logicalDevice, "frag.spv"));
+    std::unique_ptr<Vixen::VertexShader> vertex(new Vixen::VertexShader(logicalDevice, "vert.spv"));
+    std::unique_ptr<Vixen::FragmentShader> fragment(new Vixen::FragmentShader(logicalDevice, "frag.spv"));
 
     std::unique_ptr<Vixen::Camera> camera(new Vixen::Camera(
             {0.0f, 2.25f, 7.0f}

@@ -20,7 +20,9 @@ set(
         include/Entity.h
         include/Scene.h
         include/Camera.h
-        include/Input.h)
+        include/Input.h
+        include/VertexShader.h
+        include/FragmentShader.h)
 set(
         vixen_SOURCES
         properties.rc
