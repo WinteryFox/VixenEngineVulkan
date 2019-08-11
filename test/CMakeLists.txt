@@ -17,7 +17,7 @@ target_include_directories(
 )
 if (CMAKE_BUILD_TYPE MATCHES "Release")
     target_link_libraries(test -mwindows)
-endif ()
+endif (CMAKE_BUILD_TYPE MATCHES "Release")
 if (WIN32)
     target_link_libraries(
             test
@@ -28,14 +28,14 @@ if (WIN32)
             Threads::Threads
             -dynamic
     )
-else ()
+else (WIN32)
     target_link_libraries(
             test
             VixenEngine
             -static-libstdc++
             -static-libgcc
     )
-endif ()
+endif (WIN32)
 
 set_target_properties(
         test PROPERTIES

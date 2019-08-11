@@ -11,16 +11,18 @@
 
 namespace Vixen {
     struct Entity {
-        glm::vec3 position{};
-        glm::vec3 rotation{};
-        float scale = 1.0f;
+        glm::vec3 position;
+        glm::vec3 rotation;
+        float scale;
 
         const std::shared_ptr<Mesh> &mesh;
 
-        explicit Entity(const std::shared_ptr<Mesh> &mesh) : mesh(mesh) {};
+        explicit Entity(const std::shared_ptr<Mesh> &mesh, glm::vec3 position = {}, glm::vec3 rotation = {},
+                        float scale = 1.0f) : mesh(mesh), position(position), rotation(rotation), scale(scale) {};
 
         glm::mat4 getModelMatrix() {
-            return glm::mat4(glm::translate(glm::mat4(1.0f) * glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+            return glm::mat4(glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::quat(rotation)) *
+                             glm::scale(glm::mat4(1.0f), glm::vec3(scale)));
         }
     };
 }
