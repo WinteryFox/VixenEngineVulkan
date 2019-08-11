@@ -22,7 +22,8 @@ namespace Vixen {
                                                 imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
         vertex->mvp.view = camera->getView();
-        vertex->mvp.projection = camera->getProjection();
+        vertex->mvp.projection = camera->getProjection(
+                (float) logicalDevice->extent.width / (float) logicalDevice->extent.height);
         vertex->mvp.projection[1][1] *= -1.0f;
         updateUniformBuffer(scene.entities[0], imageIndex);
 

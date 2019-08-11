@@ -21,8 +21,8 @@ namespace Vixen {
             return glm::lookAt(position, position + rotation, {0.0f, 1.0f, 0.0f});
         }
 
-        glm::mat4 getProjection() {
-            return glm::perspective(glm::radians(fieldOfView), 16.0f / 9.0f, nearPlane, farPlane);
+        glm::mat4 getProjection(const float aspectRatio) {
+            return glm::perspective(glm::radians(fieldOfView), aspectRatio, nearPlane, farPlane);
         }
     };
 }
