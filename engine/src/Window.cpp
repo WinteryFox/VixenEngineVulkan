@@ -30,7 +30,7 @@ namespace Vixen {
 
         /// Load the window icon and set it
         int iconWidth, iconHeight, channels;
-        stbi_uc *pixels = stbi_load(icon.c_str(), &iconWidth, &iconHeight, &channels, 4);
+        stbi_uc *pixels = stbi_load(icon.c_str(), &iconWidth, &iconHeight, &channels, STBI_rgb_alpha);
         if (!pixels) {
             glfwTerminate();
             fatal("Failed to load the window icon");

@@ -56,7 +56,7 @@ namespace Vixen {
         std::tm *localtime = std::localtime(&time);
         const auto &stamp = std::put_time(localtime, "%Y-%m-%d %H:%M:%S");
 
-        std::ofstream stream(LOG_DIR + LOG_FILE, std::ofstream::out | std::ofstream::app);
+        std::ofstream stream(LOG_DIR + LOG_FILE, std::ios::ate | std::ios::out | std::ios::app);
 
         std::stringstream out;
         out << stamp;

@@ -6,6 +6,10 @@
  * @date 7/7/2019
  */
 
+#define VIXEN_TEST_VERSION_MAJOR 0
+#define VIXEN_TEST_VERSION_MINOR 0
+#define VIXEN_TEST_VERSION_PATCH 1
+
 #include <memory>
 #include <vector>
 #include <VixenEngine.h>
@@ -26,7 +30,9 @@ int main() {
 
     std::unique_ptr<Vixen::Window> window(new Vixen::Window("Vixen Engine Test Application"));
     std::unique_ptr<Vixen::Instance> instance(
-            new Vixen::Instance(*window, "Vixen Engine Test Application", glm::ivec3(0, 0, 1), extensions, layers));
+            new Vixen::Instance(*window, "Vixen Engine Test Application",
+                                glm::ivec3(VIXEN_TEST_VERSION_MAJOR, VIXEN_TEST_VERSION_MINOR,
+                                           VIXEN_TEST_VERSION_PATCH), extensions, layers));
     std::unique_ptr<Vixen::PhysicalDevice> physicalDevice(new Vixen::PhysicalDevice(instance));
     std::unique_ptr<Vixen::LogicalDevice> logicalDevice(new Vixen::LogicalDevice(instance, window, physicalDevice));
 

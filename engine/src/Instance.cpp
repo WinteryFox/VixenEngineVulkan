@@ -72,8 +72,9 @@ namespace Vixen {
         appInfo.pApplicationName = appName.c_str();
         appInfo.applicationVersion = VK_MAKE_VERSION(appVersion.x, appVersion.y, appVersion.z);
         appInfo.pEngineName = "Vixen Engine";
-        appInfo.engineVersion = VK_MAKE_VERSION(0, 0, 1);
-        appInfo.apiVersion = VK_API_VERSION_1_1;
+        appInfo.engineVersion = VK_MAKE_VERSION(VIXEN_ENGINE_VERSION_MAJOR, VIXEN_ENGINE_VERSION_MINOR,
+                                                VIXEN_ENGINE_VERSION_PATCH);
+        appInfo.apiVersion = VIXEN_ENGINE_VULKAN_VERSION;
 
         /// The instance info
         VkInstanceCreateInfo createInfo = {};
@@ -120,13 +121,6 @@ namespace Vixen {
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
         availableLayers.resize(layerCount);
         vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-        std::string output(std::to_string(layerCount) + " layers available; ");
-        for (auto const &layer : availableLayers)
-            output += std::string(layer.layerName) + "(" +
-                      std::to_string(VK_VERSION_MAJOR(layer.specVersion)) + "." +
-                      std::to_string(VK_VERSION_MINOR(layer.specVersion)) + "." +
-                      std::to_string(VK_VERSION_PATCH(layer.specVersion)) + ") ";
-        trace(output);
     }
 
     void Instance::queryExtensions() {
@@ -134,13 +128,6 @@ namespace Vixen {
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
         availableExtensions.resize(extensionCount);
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, availableExtensions.data());
-        std::string output(std::to_string(extensionCount) + " extensions available; ");
-        for (auto const &extension : availableExtensions)
-            output += std::string(extension.extensionName) + "(" +
-                      std::to_string(VK_VERSION_MAJOR(extension.specVersion)) + "." +
-                      std::to_string(VK_VERSION_MINOR(extension.specVersion)) + "." +
-                      std::to_string(VK_VERSION_PATCH(extension.specVersion)) + ") ";
-        trace(output);
     }
 
     void Instance::checkExtensions(const std::vector<const char *> &requiredExtensions) {
@@ -189,8 +176,8 @@ namespace Vixen {
         VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
         createInfo.messageSeverity =
-                VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+                VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+                VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
         createInfo.messageType =
                 VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
                 VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
@@ -202,7 +189,7 @@ namespace Vixen {
         if (func != nullptr) {
             func(instance, &createInfo, nullptr, &debugMessenger);
         } else {
-            std::cerr << "Validation layers not present, Vulkan debugging is OFF!" << std::endl;
+            warning("Validation layers not present, Vulkan validation output is disabled!");
         }
     }
 }
