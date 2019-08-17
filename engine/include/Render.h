@@ -9,6 +9,12 @@
 #include "Camera.h"
 
 namespace Vixen {
+    enum class BufferType {
+        SINGLE_BUFFER = 1,
+        DOUBLE_BUFFER = 2,
+        TRIPLE_BUFFER = 3
+    };
+
     class Render {
         /**
          * The view port used by the renderer
@@ -160,7 +166,7 @@ namespace Vixen {
          */
         Render(const std::unique_ptr<LogicalDevice> &device, const std::unique_ptr<PhysicalDevice> &physicalDevice,
                const Scene &scene, const std::unique_ptr<VertexShader> &vertex,
-               const std::unique_ptr<FragmentShader> &fragment, int framesInFlight);
+               const std::unique_ptr<FragmentShader> &fragment, BufferType bufferType = BufferType::DOUBLE_BUFFER);
 
         ~Render();
 

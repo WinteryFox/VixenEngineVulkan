@@ -3,9 +3,9 @@
 namespace Vixen {
     Render::Render(const std::unique_ptr<LogicalDevice> &device, const std::unique_ptr<PhysicalDevice> &physicalDevice,
                    const Scene &scene, const std::unique_ptr<VertexShader> &vertex,
-                   const std::unique_ptr<FragmentShader> &fragment, const int framesInFlight)
+                   const std::unique_ptr<FragmentShader> &fragment, BufferType bufferType)
             : logicalDevice(device), physicalDevice(physicalDevice), scene(scene), vertex(vertex),
-              fragment(fragment), framesInFlight(framesInFlight) {
+              fragment(fragment), framesInFlight(static_cast<const int>(bufferType)) {
         create();
     }
 

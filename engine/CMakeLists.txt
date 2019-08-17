@@ -42,8 +42,6 @@ add_library(
         ${vixen_HEADERS}
 )
 
-target_compile_options(VixenEngine PRIVATE -fno-exceptions -fno-rtti)
-
 set_target_properties(
         VixenEngine PROPERTIES
         PREFIX ""
@@ -66,19 +64,15 @@ if (WIN32)
     target_link_libraries(
             VixenEngine
             Vulkan::Vulkan
-            ${ASSIMP_LIBRARIES}
             ${GLFW_LIBRARIES}
-            -static-libstdc++
-            -static-libgcc
-            -static
+            ${ASSIMP_LIBRARIES}
             Threads::Threads
-            -dynamic
     )
 else (WIN32)
     target_link_libraries(
             VixenEngine
             Vulkan::Vulkan
-            ${assimp_LIBRARIES}
+            ${ASSIMP_LIBRARIES}
             ${GLFW_LIBRARIES}
             -static-libstdc++
             -static-libgcc

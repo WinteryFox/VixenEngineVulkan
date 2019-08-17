@@ -8,8 +8,6 @@ add_executable(
         properties.rc
 )
 
-target_compile_options(test PRIVATE -fno-exceptions -fno-rtti)
-
 target_include_directories(
         test
         PUBLIC
@@ -22,11 +20,7 @@ if (WIN32)
     target_link_libraries(
             test
             VixenEngine
-            -static-libstdc++
-            -static-libgcc
-            -static
             Threads::Threads
-            -dynamic
     )
 else (WIN32)
     target_link_libraries(

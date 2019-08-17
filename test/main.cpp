@@ -40,15 +40,16 @@ int main() {
     std::unique_ptr<Vixen::FragmentShader> fragment(new Vixen::FragmentShader(logicalDevice, "frag.spv"));
 
     std::unique_ptr<Vixen::Camera> camera(new Vixen::Camera(
-            {0.0f, 2.25f, 7.0f}
+            {0.0f, 0.9f, 1.0f},
+            {0.0f, 0.0f, -1.0f}
     ));
 
     std::unique_ptr<Vixen::Input> input(new Vixen::Input(window));
 
-    std::shared_ptr<Vixen::Mesh> mesh(new Vixen::Mesh(logicalDevice, "tree.dae"));
+    std::shared_ptr<Vixen::Mesh> mesh(new Vixen::Mesh(logicalDevice, R"(C:\Users\drago\Desktop\fox.fbx)"));
     Vixen::Scene scene = {};
     scene.entities.emplace_back(mesh);
-    std::unique_ptr<Vixen::Render> render(new Vixen::Render(logicalDevice, physicalDevice, scene, vertex, fragment, 3));
+    std::unique_ptr<Vixen::Render> render(new Vixen::Render(logicalDevice, physicalDevice, scene, vertex, fragment));
 
     int fps = 0;
     double lastTime = 0;
