@@ -36,8 +36,8 @@ int main() {
     std::unique_ptr<Vixen::PhysicalDevice> physicalDevice(new Vixen::PhysicalDevice(instance));
     std::unique_ptr<Vixen::LogicalDevice> logicalDevice(new Vixen::LogicalDevice(instance, window, physicalDevice));
 
-    std::unique_ptr<Vixen::VertexShader> vertex(new Vixen::VertexShader(logicalDevice, "vert.spv"));
-    std::unique_ptr<Vixen::FragmentShader> fragment(new Vixen::FragmentShader(logicalDevice, "frag.spv"));
+    std::unique_ptr<Vixen::VertexShader> vertex(new Vixen::VertexShader(logicalDevice, "/home/winteryfox/Desktop/VixenEngineVulkan/test/shaders/vert.spv"));
+    std::unique_ptr<Vixen::FragmentShader> fragment(new Vixen::FragmentShader(logicalDevice, "/home/winteryfox/Desktop/VixenEngineVulkan/test/shaders/frag.spv"));
 
     std::unique_ptr<Vixen::Camera> camera(new Vixen::Camera(
             {0.0f, 0.9f, 1.0f},
@@ -46,7 +46,7 @@ int main() {
 
     std::unique_ptr<Vixen::Input> input(new Vixen::Input(window));
 
-    std::shared_ptr<Vixen::Mesh> mesh(new Vixen::Mesh(logicalDevice, R"(C:\Users\drago\Desktop\fox.fbx)"));
+    std::shared_ptr<Vixen::Mesh> mesh(new Vixen::Mesh(logicalDevice, "/home/winteryfox/Desktop/fox.fbx"));
     Vixen::Scene scene = {};
     scene.entities.emplace_back(mesh);
     std::unique_ptr<Vixen::Render> render(new Vixen::Render(logicalDevice, physicalDevice, scene, vertex, fragment));

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <stb_image.h>
 #include "Logger.h"
@@ -38,5 +39,7 @@ namespace Vixen {
          * Swaps the GLFW3 window display buffers, draws the current frame to the window
          */
         void swap();
+
+        bool setIcon(const std::string &path);
     };
 }

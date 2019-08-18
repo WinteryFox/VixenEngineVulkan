@@ -25,24 +25,14 @@ namespace Vixen {
         }
 
         /// Centralize the window on the screen
-        const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        glfwSetWindowPos(window, mode->width / 2 - width / 2, mode->height / 2 - height / 2);
+        const auto primary = glfwGetPrimaryMonitor();
+        const auto mode = glfwGetVideoMode(primary);
+        int x, y;
+        glfwGetMonitorPos(primary, &x, &y);
+        glfwSetWindowPos(window, x + mode->width / 2 - width / 2, y + mode->height / 2 - height / 2);
 
         /// Load the window icon and set it
-        int iconWidth, iconHeight, channels;
-        stbi_uc *pixels = stbi_load(icon.c_str(), &iconWidth, &iconHeight, &channels, STBI_rgb_alpha);
-        if (!pixels) {
-            glfwTerminate();
-            fatal("Failed to load the window icon");
-        }
-
-        GLFWimage image;
-        image.pixels = pixels;
-        image.width = iconWidth;
-        image.height = iconHeight;
-        glfwSetWindowIcon(window, 1, &image);
-
-        stbi_image_free(pixels);
+        setIcon(icon);
 
         /// Set mouse cursor disabled and enable raw input
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -69,5 +59,24 @@ namespace Vixen {
 
     void Window::swap() {
         glfwSwapBuffers(window);
+    }
+
+    bool Window::setIcon(const std::string &path) {
+        int width, height, channels;
+        stbi_uc *pixels = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+        if (!pixels) {
+            glfwTerminate();
+            error("Failed to load the window icon");
+            return false;
+        }
+
+        GLFWimage image;
+        image.pixels = pixels;
+        image.width = width;
+        image.height = height;
+        glfwSetWindowIcon(window, 1, &image);
+
+        stbi_image_free(pixels);
+        return true;
     }
 }
