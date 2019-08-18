@@ -7,6 +7,7 @@
 #define VIXEN_ENGINE_VERSION_PATCH 1
 #define VIXEN_ENGINE_VULKAN_VERSION VK_API_VERSION_1_1;
 
+#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <string>
