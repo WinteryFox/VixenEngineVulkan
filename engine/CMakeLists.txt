@@ -3,7 +3,12 @@
 find_package(Vulkan REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(Threads REQUIRED)
-find_package(Assimp REQUIRED)
+
+if (vixen_BUILD_FBXImport)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/contrib/FBXImport)
+else (vixen_BUILD_FBXImport)
+    find_package(FBXImport REQUIRED)
+endif (vixen_BUILD_FBXImport)
 
 set(
         vixen_HEADERS
@@ -67,6 +72,7 @@ if (WIN32)
             ${GLFW_LIBRARIES}
             ${ASSIMP_LIBRARIES}
             Threads::Threads
+            FBXImport
     )
 else (WIN32)
     target_link_libraries(
@@ -76,5 +82,6 @@ else (WIN32)
             ${GLFW_LIBRARIES}
             -static-libstdc++
             -static-libgcc
+            FBXImport
     )
 endif (WIN32)

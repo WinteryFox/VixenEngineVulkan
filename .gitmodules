@@ -7,3 +7,6 @@
 [submodule "engine/contrib/VMA"]
 	path = engine/contrib/VMA
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+[submodule "engine/contrib/FBXImport"]
+	path = engine/contrib/FBXImport
+	url = https://github.com/WinteryFox/FBXImport
