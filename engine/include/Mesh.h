@@ -4,9 +4,7 @@
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 #include <glm/glm.hpp>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+#include <FBX/FBXImport.hpp>
 #include "LogicalDevice.h"
 #include "Loader.h"
 

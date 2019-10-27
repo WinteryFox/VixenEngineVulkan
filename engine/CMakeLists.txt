@@ -4,19 +4,8 @@ find_package(Vulkan REQUIRED)
 find_package(Threads REQUIRED)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/contrib/FBXImport)
 
-set(
-        vixen_LIBRARY
-        Vulkan::Vulkan
-        Threads::Threads
-        FBXImport
-)
-set(
-        vixen_INCLUDE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${Vulkan_INCLUDE_DIR}
-        ${GLFW_INCLUDE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/FBXImport/importer/include
-)
+set(vixen_LIBRARY Vulkan::Vulkan Threads::Threads FBXImport)
+set(vixen_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/include ${Vulkan_INCLUDE_DIR} ${GLFW_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/contrib/FBXImport/importer/include ${CMAKE_CURRENT_SOURCE_DIR}/contrib/stb ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glm ${CMAKE_CURRENT_SOURCE_DIR}/contrib/VMA/src")
 
 if (vixen_BUILD_GLFW)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/contrib/glfw)
@@ -45,7 +34,8 @@ set(
         include/Camera.h
         include/Input.h
         include/VertexShader.h
-        include/FragmentShader.h)
+        include/FragmentShader.h
+)
 set(
         vixen_SOURCES
         properties.rc
@@ -56,7 +46,8 @@ set(
         src/Shader.cpp
         src/Render.cpp
         src/Mesh.cpp
-        src/Input.cpp)
+        src/Input.cpp
+)
 
 add_library(
         VixenEngine
@@ -65,7 +56,6 @@ add_library(
         ${vixen_HEADERS}
 )
 
-message(${vixen_INCLUDE})
 target_include_directories(
         VixenEngine
         PRIVATE

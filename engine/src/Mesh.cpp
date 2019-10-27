@@ -20,13 +20,11 @@ namespace Vixen {
 
     Mesh::Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::string &path) :
             logicalDevice(logicalDevice) {
-        Assimp::Importer importer{};
-        const auto scene = importer.ReadFile(path, aiProcessPreset_TargetRealtime_MaxQuality |
-                                                   aiProcess_PreTransformVertices | aiProcess_CalcTangentSpace |
-                                                   aiProcess_Triangulate);
-        if (!scene)
-            fatal("Failed to load mesh " + path);
-        const auto mesh = scene->mMeshes[0];
+        try {
+
+        } catch (const std::runtime_error &e) {
+            fatal("Failed to load model" + path);
+        }
 
         std::vector<glm::vec3> vertices;
         std::vector<uint32_t> indices;
