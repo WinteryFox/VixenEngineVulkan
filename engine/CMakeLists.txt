@@ -2,29 +2,30 @@
 
 find_package(Vulkan REQUIRED)
 find_package(Threads REQUIRED)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/contrib/FBXImport)
 
 set(
         vixen_LIBRARY
         Vulkan::Vulkan
         Threads::Threads
+        FBXImport
 )
 set(
         vixen_INCLUDE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${Vulkan_INCLUDE_DIR}
         ${GLFW_INCLUDE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/FBXImport/importer/include
 )
-
-if (vixen_BUILD_FBXImport)
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/contrib/FBXImport)
-else (vixen_BUILD_FBXImport)
-    find_package(FBXImport REQUIRED)
-endif (vixen_BUILD_FBXImport)
 
 if (vixen_BUILD_GLFW)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/contrib/glfw)
+    list(APPEND vixen_LIBRARY glfw)
+    list(APPEND vixen_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glfw/include)
 else (vixen_BUILD_GLFW)
     find_package(GLFW REQUIRED)
+    list(APPEND vixen_LIBRARY ${GLFW_LIBRARY})
+    list(APPEND vixen_INCLUDE ${GLFW_INCLUDE})
 endif (vixen_BUILD_GLFW)
 
 set(
@@ -64,6 +65,7 @@ add_library(
         ${vixen_HEADERS}
 )
 
+message(${vixen_INCLUDE})
 target_include_directories(
         VixenEngine
         PRIVATE
