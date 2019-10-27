@@ -19,6 +19,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
 option(VIXEN_BUILD_TEST "Build the test executable" ON)
 option(vixen_BUILD_FBXImport "Build FBXImport" ON)
+option(vixen_BUILD_GLFW "Build GLFW" ON)
 
 if (CMAKE_BUILD_TYPE MATCHES "Debug")
     add_compile_definitions(VIXEN_DEBUG=1)
