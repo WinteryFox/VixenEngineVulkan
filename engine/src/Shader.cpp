@@ -16,7 +16,7 @@ namespace Vixen {
     Shader::createShader(const std::string &filePath) {
         std::ifstream file(filePath, std::ios::ate | std::ios::binary);
         if (!file.is_open()) {
-            error("Failed to open shader " + filePath);
+            fatal("Failed to open shader " + filePath);
             return VK_NULL_HANDLE;
         }
 
@@ -38,7 +38,7 @@ namespace Vixen {
 
         VkShaderModule shaderModule;
         if (vkCreateShaderModule(logicalDevice->device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-            error("Failed to create shader module");
+            fatal("Failed to create shader module");
             return VK_NULL_HANDLE;
         }
         trace("Successfully created shader module");

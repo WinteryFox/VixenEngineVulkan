@@ -20,24 +20,25 @@ namespace Vixen {
 
     Mesh::Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::string &path) :
             logicalDevice(logicalDevice) {
-        try {
-
-        } catch (const std::runtime_error &e) {
-            fatal("Failed to load model" + path);
-        }
-
         std::vector<glm::vec3> vertices;
         std::vector<uint32_t> indices;
-        vertices.reserve(mesh->mNumVertices);
-        vertices.reserve(mesh->mNumFaces * 3);
 
-        for (size_t i = 0; i < mesh->mNumVertices; i++)
-            vertices.emplace_back(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
+        try {
+            const auto &mesh = FBX::importFile(path, FBX::Process::TRIANGULATE);
 
-        for (size_t i = 0; i < mesh->mNumFaces; i++) {
-            indices.emplace_back(static_cast<uint32_t>(mesh->mFaces[i].mIndices[0]));
-            indices.emplace_back(static_cast<uint32_t>(mesh->mFaces[i].mIndices[1]));
-            indices.emplace_back(static_cast<uint32_t>(mesh->mFaces[i].mIndices[2]));
+            vertices.reserve(mesh.vertices.size());
+            vertices.reserve(mesh.faces.size() * 3);
+
+            for (const auto &vertex : mesh.vertices)
+                vertices.emplace_back(vertex.x, vertex.y, vertex.z);
+
+            for (const auto &face : mesh.faces) {
+                indices.push_back(face.indices[0]);
+                indices.push_back(face.indices[1]);
+                indices.push_back(face.indices[2]);
+            }
+        } catch (const std::runtime_error &e) {
+            fatal("Failed to load model" + path);
         }
 
         vertexCount = vertices.size();

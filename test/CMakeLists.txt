@@ -3,28 +3,28 @@
 find_package(Threads REQUIRED)
 
 add_executable(
-        test
+        VixenEngineTest
         main.cpp
         properties.rc
 )
 
 target_include_directories(
-        test
+        VixenEngineTest
         PUBLIC
         ${CMAKE_SOURCE_DIR}/engine/include
 )
 if (CMAKE_BUILD_TYPE MATCHES "Release")
-    target_link_libraries(test -mwindows)
+    target_link_libraries(VixenEngineTest -mwindows)
 endif (CMAKE_BUILD_TYPE MATCHES "Release")
 if (WIN32)
     target_link_libraries(
-            test
+            VixenEngineTest
             VixenEngine
             Threads::Threads
     )
 else (WIN32)
     target_link_libraries(
-            test
+            VixenEngineTest
             VixenEngine
             -static-libstdc++
             -static-libgcc
@@ -32,6 +32,6 @@ else (WIN32)
 endif (WIN32)
 
 set_target_properties(
-        test PROPERTIES
+        VixenEngineTest PROPERTIES
         OUTPUT_NAME "Vixen Engine Test Application"
 )

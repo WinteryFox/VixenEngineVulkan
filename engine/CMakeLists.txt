@@ -4,8 +4,22 @@ find_package(Vulkan REQUIRED)
 find_package(Threads REQUIRED)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/contrib/FBXImport)
 
-set(vixen_LIBRARY Vulkan::Vulkan Threads::Threads FBXImport)
-set(vixen_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/include ${Vulkan_INCLUDE_DIR} ${GLFW_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/contrib/FBXImport/importer/include ${CMAKE_CURRENT_SOURCE_DIR}/contrib/stb ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glm ${CMAKE_CURRENT_SOURCE_DIR}/contrib/VMA/src")
+set(
+        vixen_LIBRARY
+        Vulkan::Vulkan
+        Threads::Threads
+        FBXImport
+)
+set(
+        vixen_INCLUDE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${Vulkan_INCLUDE_DIR}
+        ${GLFW_INCLUDE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/FBXImport/importer/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/stb
+        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glm
+        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/VMA/src
+)
 
 if (vixen_BUILD_GLFW)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/contrib/glfw)
@@ -58,7 +72,7 @@ add_library(
 
 target_include_directories(
         VixenEngine
-        PRIVATE
+        PUBLIC
         ${vixen_INCLUDE}
 )
 
