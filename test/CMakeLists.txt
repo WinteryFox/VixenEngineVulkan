@@ -28,8 +28,10 @@ add_custom_target(
         frag glsLangValidator -V test.frag -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/frag.spv
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/shaders
 )
-
 add_dependencies(VixenEngineTest vert frag)
+
+# Copy model
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/models/Fox.FBX ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Fox.FBX COPYONLY)
 
 target_link_libraries(
         VixenEngineTest

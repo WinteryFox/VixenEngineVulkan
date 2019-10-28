@@ -46,7 +46,7 @@ int main() {
 
     std::unique_ptr<Vixen::Input> input(new Vixen::Input(window));
 
-    std::shared_ptr<Vixen::Mesh> mesh(new Vixen::Mesh(logicalDevice, "/home/winteryfox/Desktop/fox.fbx"));
+    std::shared_ptr<Vixen::Mesh> mesh(new Vixen::Mesh(logicalDevice, "Fox.FBX"));
     Vixen::Scene scene = {};
     scene.entities.emplace_back(mesh);
     std::unique_ptr<Vixen::Render> render(new Vixen::Render(logicalDevice, physicalDevice, scene, vertex, fragment));

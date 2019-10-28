@@ -38,7 +38,7 @@ namespace Vixen {
                 indices.push_back(face.indices[2]);
             }
         } catch (const std::runtime_error &e) {
-            fatal("Failed to load model" + path);
+            fatal("Failed to load model " + path);
         }
 
         vertexCount = vertices.size();
