@@ -36,8 +36,8 @@ int main() {
     std::unique_ptr<Vixen::PhysicalDevice> physicalDevice(new Vixen::PhysicalDevice(instance));
     std::unique_ptr<Vixen::LogicalDevice> logicalDevice(new Vixen::LogicalDevice(instance, window, physicalDevice));
 
-    std::unique_ptr<Vixen::VertexShader> vertex(new Vixen::VertexShader(logicalDevice, "/home/winteryfox/Desktop/VixenEngineVulkan/test/shaders/vert.spv"));
-    std::unique_ptr<Vixen::FragmentShader> fragment(new Vixen::FragmentShader(logicalDevice, "/home/winteryfox/Desktop/VixenEngineVulkan/test/shaders/frag.spv"));
+    std::unique_ptr<Vixen::VertexShader> vertex(new Vixen::VertexShader(logicalDevice, "vert.spv"));
+    std::unique_ptr<Vixen::FragmentShader> fragment(new Vixen::FragmentShader(logicalDevice, "frag.spv"));
 
     std::unique_ptr<Vixen::Camera> camera(new Vixen::Camera(
             {0.0f, 0.9f, 1.0f},
