@@ -44,8 +44,6 @@ namespace Vixen {
         Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::vector<glm::vec3> &vertices,
              const std::vector<uint32_t> &indices);
 
-        Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::string &path);
-
         Mesh(const Mesh &) = delete;
 
         ~Mesh();

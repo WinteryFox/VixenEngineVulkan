@@ -46,9 +46,27 @@ int main() {
 
     std::unique_ptr<Vixen::Input> input(new Vixen::Input(window));
 
-    std::shared_ptr<Vixen::Mesh> mesh(new Vixen::Mesh(logicalDevice, "Fox.FBX"));
     Vixen::Scene scene = {};
-    scene.entities.emplace_back(mesh);
+    try {
+        const auto &fbxScene = FBX::importFile("Fox.FBX", FBX::Process::TRIANGULATE);
+        const auto &mesh = fbxScene.meshes[0];
+        std::vector<glm::vec3> vertices;
+        std::vector<uint32_t> indices;
+
+        for (const auto &v : mesh.vertices)
+            vertices.emplace_back(v.x, v.y, v.z);
+
+        for (const auto &face : mesh.faces) {
+            indices.push_back(face[0]);
+            indices.push_back(face[1]);
+            indices.push_back(face[2]);
+        }
+
+        scene.entities.emplace_back(std::make_shared<Vixen::Mesh>(logicalDevice, vertices, indices));
+    } catch (const std::runtime_error &e) {
+        Vixen::fatal(e.what());
+    }
+
     std::unique_ptr<Vixen::Render> render(new Vixen::Render(logicalDevice, physicalDevice, scene, vertex, fragment));
 
     int fps = 0;
