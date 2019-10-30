@@ -81,6 +81,10 @@ namespace Vixen {
 
         std::vector<VkDescriptorSet> descriptorSets;
 
+        VkVertexInputBindingDescription bindingDescription = {};
+
+        VkVertexInputAttributeDescription attributeDescription = {};
+
         /**
          * The maximum number of frames in flight, also known as concurrently rendered frames
          * ensuring that the GPU is always being utilized

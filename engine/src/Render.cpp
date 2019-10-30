@@ -174,6 +174,9 @@ namespace Vixen {
 
             vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
+            vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
+                                    &descriptorSets[i], 0, nullptr);
+
             for (const auto &entity : scene.entities) {
                 const auto &mesh = entity.mesh;
                 /// Bind the mesh's buffers
@@ -182,9 +185,6 @@ namespace Vixen {
                 vkCmdBindVertexBuffers(commandBuffers[i], 0, buffers.size(), buffers.data(), offsets.data());
                 vkCmdBindIndexBuffer(commandBuffers[i], mesh->buffer, sizeof(glm::vec3) * mesh->vertexCount,
                                      VK_INDEX_TYPE_UINT32);
-
-                vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
-                                        &descriptorSets[i], 0, nullptr);
 
                 /// Draw the mesh
                 vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(mesh->indexCount), 1, 0, 0, 0);
@@ -269,10 +269,10 @@ namespace Vixen {
 
         VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};
         vertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputCreateInfo.vertexBindingDescriptionCount = scene.entities.size();
-        vertexInputCreateInfo.pVertexBindingDescriptions = &scene.entities[0].mesh->bindingDescription;
-        vertexInputCreateInfo.vertexAttributeDescriptionCount = scene.entities.size();
-        vertexInputCreateInfo.pVertexAttributeDescriptions = &scene.entities[0].mesh->attributeDescription;
+        vertexInputCreateInfo.vertexBindingDescriptionCount = 1;
+        vertexInputCreateInfo.pVertexBindingDescriptions = &bindingDescription;
+        vertexInputCreateInfo.vertexAttributeDescriptionCount = 1;
+        vertexInputCreateInfo.pVertexAttributeDescriptions = &attributeDescription;
 
         VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo = {};
         inputAssemblyCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -360,8 +360,7 @@ namespace Vixen {
         pipelineCreateInfo.basePipelineIndex = -1;
 
         if (vkCreateGraphicsPipelines(logicalDevice->device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr,
-                                      &pipeline) !=
-            VK_SUCCESS)
+                                      &pipeline) != VK_SUCCESS)
             fatal("Failed to create graphics pipeline");
         trace("Successfully created a graphics pipeline");
     }
@@ -475,6 +474,15 @@ namespace Vixen {
     }
 
     std::vector<VkDescriptorSet> Render::createDescriptorSets() {
+        bindingDescription.binding = 0;
+        bindingDescription.stride = sizeof(glm::vec3);
+        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+        attributeDescription.binding = 0;
+        attributeDescription.location = 0;
+        attributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescription.offset = 0;
+
         std::vector<VkDescriptorSet> sets;
         std::vector<VkDescriptorSetLayout> layouts(logicalDevice->images.size(), descriptorSetLayout);
 

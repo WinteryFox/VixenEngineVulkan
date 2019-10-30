@@ -49,7 +49,7 @@ set(
         include/Input.h
         include/VertexShader.h
         include/FragmentShader.h
-)
+        include/MeshStore.h)
 set(
         vixen_SOURCES
         properties.rc

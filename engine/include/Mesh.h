@@ -30,10 +30,6 @@ namespace Vixen {
          */
         uint32_t indexCount;
 
-        VkVertexInputBindingDescription bindingDescription = {};
-
-        VkVertexInputAttributeDescription attributeDescription = {};
-
         /**
          * Create a new mesh
          *

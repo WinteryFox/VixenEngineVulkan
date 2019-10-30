@@ -15,10 +15,18 @@ namespace Vixen {
                 info("[VULKAN] " + std::string(pCallbackData->pMessage));
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+#ifdef VIXEN_DEBUG
+                fatal("[VULKAN] " + std::string(pCallbackData->pMessage));
+#elif
                 warning("[VULKAN] " + std::string(pCallbackData->pMessage));
+#endif
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+#ifdef VIXEN_DEBUG
+                fatal("[VULKAN] " + std::string(pCallbackData->pMessage));
+#elif
                 error("[VULKAN] " + std::string(pCallbackData->pMessage));
+#endif
                 break;
         }
 
