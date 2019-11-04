@@ -25,7 +25,7 @@ namespace Vixen {
         vertex->mvp.projection = camera->getProjection(
                 (float) logicalDevice->extent.width / (float) logicalDevice->extent.height);
         vertex->mvp.projection[1][1] *= -1.0f;
-        updateUniformBuffer(scene.entities[0], imageIndex);
+        updateUniformBuffer(imageIndex);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
             invalidate();
@@ -70,9 +70,7 @@ namespace Vixen {
         currentFrame = (currentFrame + 1) % framesInFlight;
     }
 
-    void Render::updateUniformBuffer(Entity entity, uint32_t imageIndex) {
-        vertex->mvp.model = entity.getModelMatrix();
-
+    void Render::updateUniformBuffer(uint32_t imageIndex) {
         void *data;
         vmaMapMemory(logicalDevice->allocator, uniformBuffersMemory[imageIndex], &data);
         memcpy(data, &vertex->mvp, sizeof(vertex->mvp));
@@ -177,18 +175,8 @@ namespace Vixen {
             vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
                                     &descriptorSets[i], 0, nullptr);
 
-            for (const auto &entity : scene.entities) {
-                const auto &mesh = entity.mesh;
-                /// Bind the mesh's buffers
-                std::vector<VkBuffer> buffers{mesh->buffer};
-                std::vector<VkDeviceSize> offsets{0};
-                vkCmdBindVertexBuffers(commandBuffers[i], 0, buffers.size(), buffers.data(), offsets.data());
-                vkCmdBindIndexBuffer(commandBuffers[i], mesh->buffer, sizeof(glm::vec3) * mesh->vertexCount,
-                                     VK_INDEX_TYPE_UINT32);
-
-                /// Draw the mesh
-                vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(mesh->indexCount), 1, 0, 0, 0);
-            }
+            /// Draw the mesh
+            vkCmdDraw(commandBuffers[i], 6, 1, 0, 0);
 
             vkCmdEndRenderPass(commandBuffers[i]);
 
@@ -269,10 +257,10 @@ namespace Vixen {
 
         VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};
         vertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputCreateInfo.vertexBindingDescriptionCount = 1;
-        vertexInputCreateInfo.pVertexBindingDescriptions = &bindingDescription;
-        vertexInputCreateInfo.vertexAttributeDescriptionCount = 1;
-        vertexInputCreateInfo.pVertexAttributeDescriptions = &attributeDescription;
+        vertexInputCreateInfo.vertexBindingDescriptionCount = 0;
+        vertexInputCreateInfo.pVertexBindingDescriptions = nullptr;
+        vertexInputCreateInfo.vertexAttributeDescriptionCount = 0;
+        vertexInputCreateInfo.pVertexAttributeDescriptions = nullptr;
 
         VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo = {};
         inputAssemblyCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -303,7 +291,7 @@ namespace Vixen {
         rasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
         rasterizationStateCreateInfo.lineWidth = 1.0f;
         rasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-        rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+        rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
         rasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
         rasterizationStateCreateInfo.depthBiasConstantFactor = 0.0f;
         rasterizationStateCreateInfo.depthBiasClamp = 0.0f;

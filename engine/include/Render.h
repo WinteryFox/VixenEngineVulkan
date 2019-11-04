@@ -157,7 +157,7 @@ namespace Vixen {
 
         void destroy();
 
-        void updateUniformBuffer(Entity entity, uint32_t imageIndex);
+        void updateUniformBuffer(uint32_t imageIndex);
 
     public:
         /**

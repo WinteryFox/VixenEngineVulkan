@@ -50,8 +50,6 @@ int main() {
     meshStore->loadMesh("Fox.FBX");
 
     Vixen::Scene scene = {};
-    scene.entities.emplace_back(meshStore->meshes[0]);
-    scene.entities.emplace_back(meshStore->meshes[1]);
 
     std::unique_ptr<Vixen::Render> render(new Vixen::Render(logicalDevice, physicalDevice, scene, vertex, fragment));
 
