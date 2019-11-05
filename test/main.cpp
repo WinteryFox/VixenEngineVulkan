@@ -16,16 +16,9 @@
 
 int main() {
     std::vector<const char *> extensions = {
-#ifdef VIXEN_DEBUG
-            "VK_EXT_debug_utils",
-#endif
-            "VK_KHR_get_physical_device_properties2"
     };
 
     std::vector<const char *> layers = {
-#ifdef VIXEN_DEBUG
-            "VK_LAYER_LUNARG_standard_validation"
-#endif
     };
 
     std::unique_ptr<Vixen::Window> window(new Vixen::Window("Vixen Engine Test Application"));
