@@ -11,13 +11,11 @@ const float mie = 1.0;
 const float rayleighAtt = 1.0;
 const float mieAtt = 1.2;
 const float g = -0.9;
+const vec3 sunPosition = vec3(0.0, 0.0, -1.0);
+const vec3 _betaR = vec3(1.95e-2, 1.1e-1, 2.94e-1);
+const vec3 _betaM = vec3(4e-2, 4e-2, 4e-2);
 
-vec3 _betaR = vec3(1.95e-2, 1.1e-1, 2.94e-1);
-vec3 _betaM = vec3(4e-2, 4e-2, 4e-2);
-
-const vec2 resolution = vec2(16.0, 9.0);
-
-vec3 ACESFilm(vec3 x)
+vec4 ACESFilm(vec4 x)
 {
     float tA = 2.51;
     float tB = 0.03;
@@ -27,20 +25,22 @@ vec3 ACESFilm(vec3 x)
     return clamp((x*(tA*x+tB))/(x*(tC*x+tD)+tE), 0.0, 1.0);
 }
 
-const vec3 sunPosition = vec3(-20.0, 7.5, -20.0);
-
 void main() {
-    float sR = rayleighAtt / 10.0;// TODO
-    float sM = mieAtt / 10.0;// TODO
-
-    vec4 extinction = vec4(exp(-(_betaR * sR + _betaM * sM)), 1.0);
-
-    vec3 clipSpace = (projection * view * vec4(sunPosition, 1.0)).xyw;
-    vec2 screenSpace = clipSpace.xy / clipSpace.z;
+    vec4 clipSpace = projection * view * vec4(sunPosition, 1.0);
+    vec2 screenSpace = clipSpace.xy / clipSpace.z * 0.5 + 0.5;
     vec2 fragmentPos = vec2(gl_FragCoord.x / 1280, gl_FragCoord.y / 720);
 
-    if (length(screenSpace - fragmentPos) < 0.1)
-        outColor = vec4(1.0, 1.0, 0.0, 1.0);
-    else
-        discard;
+    float sR = rayleighAtt / screenSpace.y;
+    float sM = mieAtt / screenSpace.y;
+
+    float cosine = 1.0 - length(screenSpace - fragmentPos);
+    vec4 extinction = vec4(exp(-(_betaR * sR + _betaM * sM)), 1.0);
+
+    // Sun
+    outColor = 0.47 * vec4(1.6, 1.4, 1.0, 1.0) * pow(cosine, 350.0) * extinction;
+    // Sun haze
+    outColor += 0.4 * vec4(0.8, 0.9, 1.0, 1.0) * pow(cosine, 2.0) * extinction;
+
+    // Adjust gamma
+    outColor = pow(ACESFilm(outColor), vec4(gamma));
 }
