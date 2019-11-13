@@ -42,5 +42,8 @@ namespace Vixen {
             advance.y -= speed;
 
         camera->position += advance;
+
+        std::cout << "x: " << camera->rotation.x << " y: " << camera->rotation.y << " z: " << camera->rotation.z
+                  << std::endl;
     }
 }
