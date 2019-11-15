@@ -45,7 +45,7 @@ void main() {
     // Sun
     color += 0.47 * vec3(1.6, 1.4, 1.0) * pow(cosine, 350.0) * extinction;
     // Sun haze
-    //color += 0.4 * vec3(0.8, 0.9, 1.0) * pow(cosine, 2.0) * extinction;
+    color += 0.4 * vec3(0.8, 0.9, 1.0) * pow(cosine, 2.0) * extinction;
 
     // Adjust gamma
     color = pow(ACESFilm(color), vec3(gamma));
