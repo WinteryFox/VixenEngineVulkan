@@ -33,7 +33,7 @@ void main() {
     float sR = rayleighAtt / uv.y;
     float sM = mieAtt / uv.y;
 
-    float cosine = 1.0 - distance(screenSpace, uv);
+    float cosine = clamp(1.0 - distance(screenSpace, uv), 0.0, 1.0);
     float fcos2 = cosine * cosine;
     vec3 extinction = exp(-(_betaR * sR + _betaM * sM));
     float miePhase = mie * pow(1.0 + g2 + 2.0 * g * cosine, -1.5) * (1.0 - g2) / (2.0 + g2);
