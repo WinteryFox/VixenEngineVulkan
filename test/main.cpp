@@ -40,7 +40,7 @@ int main() {
     std::unique_ptr<Vixen::FragmentShader> fragment(new Vixen::FragmentShader(logicalDevice, "frag.spv"));
 
     std::unique_ptr<Vixen::Camera> camera(new Vixen::Camera(
-            {0.0f, 0.9f, 1.0f},
+            {0.0f, 0.4f, 2.0f},
             {-0.06f, -0.05f, 0.9f} // TODO: Fix initial rotation not being taken into account
     ));
 
@@ -50,8 +50,7 @@ int main() {
     meshStore->loadMesh("Fox.FBX");
 
     Vixen::Scene scene = {};
-    scene.entities.emplace_back(meshStore->meshes[0]);
-    scene.entities.emplace_back(meshStore->meshes[1]);
+    scene.entities.push_back(Vixen::Entity(meshStore->meshes[0], {}, {}, 0.0001f));
 
     std::unique_ptr<Vixen::Render> render(new Vixen::Render(logicalDevice, physicalDevice, scene, vertex, fragment));
 
