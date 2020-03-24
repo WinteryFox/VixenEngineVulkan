@@ -22,9 +22,16 @@ namespace Vixen {
         camera->vertical -= 0.01f * offsetY;
         camera->vertical = glm::clamp(camera->vertical, -1.5, 1.5);
 
-        camera->rotation = {cos(camera->vertical) * sin(camera->horizontal), sin(camera->vertical),
-                            cos(camera->vertical) * cos(camera->horizontal)};
-        camera->right = {sin(camera->horizontal - 3.14f / 2.0f), 0, cos(camera->horizontal - 3.14f / 2.0f)};
+        camera->rotation = {
+                cos(camera->vertical) * sin(camera->horizontal),
+                sin(camera->vertical),
+                cos(camera->vertical) * cos(camera->horizontal)
+        };
+        camera->right = {
+                sin(camera->horizontal - 3.14f / 2.0f),
+                0,
+                cos(camera->horizontal - 3.14f / 2.0f)
+        };
 
         /// Keyboard input
         glm::vec3 advance = {0.0f, 0.0f, 0.0f};

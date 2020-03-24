@@ -41,7 +41,7 @@ int main() {
 
     std::unique_ptr<Vixen::Camera> camera(new Vixen::Camera(
             {0.0f, 0.9f, 1.0f},
-            {0.0f, 0.0f, -1.0f}
+            {-0.06f, -0.05f, 0.9f} // TODO: Fix initial rotation not being taken into account
     ));
 
     std::unique_ptr<Vixen::Input> input(new Vixen::Input(window));

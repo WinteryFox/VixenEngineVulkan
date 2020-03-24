@@ -12,7 +12,7 @@ namespace Vixen {
         explicit MeshStore(const std::unique_ptr<LogicalDevice> &logicalDevice) : logicalDevice(logicalDevice) {}
 
         void loadMesh(const std::string &path) {
-            const auto &fbxScene = FBX::importFile("Fox.FBX", FBX::Process::TRIANGULATE);
+            const auto &fbxScene = FBX::importFile(path, FBX::Process::TRIANGULATE | FBX::Process::MAKE_Y_UP);
 
             for (const auto &fbxMesh : fbxScene.meshes) {
                 std::vector<glm::vec3> vertices;

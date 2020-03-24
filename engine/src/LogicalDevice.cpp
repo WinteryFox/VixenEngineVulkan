@@ -77,6 +77,7 @@ namespace Vixen {
         VmaAllocatorCreateInfo allocatorCreateInfo = {};
         allocatorCreateInfo.device = device;
         allocatorCreateInfo.physicalDevice = physicalDevice->device;
+        allocatorCreateInfo.instance = instance->instance;
 
         if (vmaCreateAllocator(&allocatorCreateInfo, &allocator) != VK_SUCCESS)
             fatal("Failed to create VMA allocator");
