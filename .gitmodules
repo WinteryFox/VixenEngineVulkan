@@ -10,3 +10,6 @@
 [submodule "engine/contrib/glfw"]
 	path = engine/contrib/glfw
 	url = https://github.com/glfw/glfw
+[submodule "engine/contrib/FBXImport"]
+	path = engine/contrib/FBXImport
+	url = https://github.com/WinteryFox/FBXImport.git
