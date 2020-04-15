@@ -64,16 +64,6 @@ namespace Vixen {
                                 const std::vector<const char *> &extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME});
 
         SwapChainSupportDetails querySwapChainSupportDetails();
-
-        /**
-         * Find the specified memory type
-         *
-         * @param[in] typeFilter The type filter to apply
-         * @param[in] properties The properties the memory needs to have
-         * @param[out] type The type of memory found to be best suited
-         * @return Returns false if no suitable memory type was found
-         */
-        bool findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, uint32_t &type);
     private:
         /**
          * Automatically pick the best suited Vulkan capable physical device and Vulkan queue family

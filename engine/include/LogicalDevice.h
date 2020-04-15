@@ -17,6 +17,11 @@ namespace Vixen {
         VmaAllocator allocator = VK_NULL_HANDLE;
 
         /**
+         * The command pool used by this renderer
+         */
+        VkCommandPool commandPool = VK_NULL_HANDLE;
+
+        /**
          * The command pool used for memory transfer operations
          */
         VkCommandPool transferCommandPool = VK_NULL_HANDLE;

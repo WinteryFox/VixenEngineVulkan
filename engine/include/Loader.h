@@ -6,6 +6,36 @@
 #include "LogicalDevice.h"
 
 namespace Vixen {
+    static void
+    createImage(const std::unique_ptr<LogicalDevice> &logicalDevice,
+                const std::unique_ptr<PhysicalDevice> &physicalDevice,
+                const uint32_t width, const uint32_t height, const VkFormat format,
+                const VkImageTiling tiling, const VkImageUsageFlags usage, VkImage &image, VmaAllocation &allocation) {
+        VkImageCreateInfo imageCreateInfo{};
+        imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageCreateInfo.extent.width = width;
+        imageCreateInfo.extent.height = height;
+        imageCreateInfo.extent.depth = 1;
+        imageCreateInfo.mipLevels = 1;
+        imageCreateInfo.arrayLayers = 1;
+        imageCreateInfo.format = format;
+        imageCreateInfo.tiling = tiling;
+        imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageCreateInfo.usage = usage;
+        imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        VmaAllocationCreateInfo allocationCreateInfo = {};
+        allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+        const auto result = vmaCreateImage(logicalDevice->allocator, &imageCreateInfo, &allocationCreateInfo, &image,
+                                           &allocation, nullptr);
+        if (result != VK_SUCCESS) {
+            error("Failed to create VkImage: " + std::to_string(result));
+        }
+    }
+
     /**
      * Create and allocate a new buffer, it is up to the user to delete the buffer and free the device memory
      *
@@ -38,20 +68,11 @@ namespace Vixen {
         return true;
     }
 
-    /**
-     * Copy the data from one buffer to another
-     *
-     * @param[in] logicalDevice The device to use for the copy
-     * @param[in] src The source buffer
-     * @param[out] dst The destination buffer
-     * @param[in] size The size of the source buffer
-     */
-    static void copyBuffer(const std::unique_ptr<LogicalDevice> &logicalDevice, const VkBuffer &src, VkBuffer &dst,
-                           VkDeviceSize size) {
+    static VkCommandBuffer beginSingleUseCommandBuffer(const std::unique_ptr<LogicalDevice> &logicalDevice) {
         VkCommandBufferAllocateInfo allocateInfo = {};
         allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocateInfo.commandPool = logicalDevice->transferCommandPool;
+        allocateInfo.commandPool = logicalDevice->commandPool;
         allocateInfo.commandBufferCount = 1;
 
         VkCommandBuffer commandBuffer;
@@ -63,12 +84,11 @@ namespace Vixen {
 
         vkBeginCommandBuffer(commandBuffer, &beginInfo);
 
-        VkBufferCopy copyRegion = {};
-        copyRegion.srcOffset = 0;
-        copyRegion.dstOffset = 0;
-        copyRegion.size = size;
-        vkCmdCopyBuffer(commandBuffer, src, dst, 1, &copyRegion);
+        return commandBuffer;
+    }
 
+    static void
+    endSingleUseCommandBuffer(const std::unique_ptr<LogicalDevice> &logicalDevice, VkCommandBuffer commandBuffer) {
         vkEndCommandBuffer(commandBuffer);
 
         VkSubmitInfo submitInfo = {};
@@ -76,55 +96,119 @@ namespace Vixen {
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffer;
 
-        vkResetFences(logicalDevice->device, 1, &logicalDevice->transferFence);
+        vkQueueSubmit(logicalDevice->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(logicalDevice->graphicsQueue);
 
-        vkQueueSubmit(logicalDevice->transferQueue, 1, &submitInfo, logicalDevice->transferFence);
-        vkWaitForFences(logicalDevice->device, 1, &logicalDevice->transferFence, true,
-                        std::numeric_limits<std::uint64_t>::max());
-
-        vkFreeCommandBuffers(logicalDevice->device, logicalDevice->transferCommandPool, 1, &commandBuffer);
+        vkFreeCommandBuffers(logicalDevice->device, logicalDevice->commandPool, 1, &commandBuffer);
     }
 
     /**
-     * Creates and allocates an index buffer for a mesh
+     * Copy the data from one buffer to another
      *
-     * @param logicalDevice The device to create the mesh for
-     * @param vertices The vertices of the mesh
-     * @param indices The indices of the mesh
-     * @param buffer The index buffer to write to
-     * @param allocation The VMA allocation
-     * @return Returns the buffer and allocation for the mesh
+     * @param[in] logicalDevice The device to use for the copy
+     * @param[in] src The source buffer
+     * @param[out] dst The destination buffer
+     * @param[in] size The size of the source buffer
      */
-    static bool
-    createMeshBuffer(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::vector<glm::vec3> &vertices,
-                     const std::vector<uint32_t> &indices, VkBuffer &buffer, VmaAllocation &allocation) {
-        VkDeviceSize vertexBufferSize = sizeof(glm::vec3) * vertices.size();
-        VkDeviceSize indexBufferSize = sizeof(uint32_t) * indices.size();
+    static void copyBuffer(const std::unique_ptr<LogicalDevice> &logicalDevice, const VkBuffer &src, VkBuffer &dst,
+                           VkDeviceSize size) {
+        VkCommandBuffer commandBuffer = beginSingleUseCommandBuffer(logicalDevice);
 
-        VkBuffer stagingBuffer = VK_NULL_HANDLE;
-        VmaAllocation stagingAllocation = VK_NULL_HANDLE;
-        createBuffer(logicalDevice, vertexBufferSize + indexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                     VMA_MEMORY_USAGE_CPU_TO_GPU,
-                     stagingBuffer, stagingAllocation);
+        VkBufferCopy copyRegion = {};
+        copyRegion.size = size;
+        vkCmdCopyBuffer(commandBuffer, src, dst, 1, &copyRegion);
 
-        void *data;
-        vmaMapMemory(logicalDevice->allocator, stagingAllocation, &data);
-        memcpy(data, vertices.data(), (size_t) vertexBufferSize);
-        memcpy(static_cast<char *>(data) + static_cast<size_t>(vertexBufferSize), indices.data(),
-               (size_t) indexBufferSize);
-        vmaUnmapMemory(logicalDevice->allocator, stagingAllocation);
+        endSingleUseCommandBuffer(logicalDevice, commandBuffer);
+    }
 
-        if (!createBuffer(logicalDevice, vertexBufferSize + indexBufferSize,
-                          VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
-                          VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY, buffer, allocation)) {
-            error("Failed to create buffer for vertices");
-            return false;
+    static void transitionImageLayout(const std::unique_ptr<LogicalDevice> &logicalDevice, const VkImage &image,
+                                      const VkFormat format, const VkImageLayout oldLayout,
+                                      const VkImageLayout newLayout) {
+        VkCommandBuffer commandBuffer = beginSingleUseCommandBuffer(logicalDevice);
+
+        VkImageMemoryBarrier barrier{};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.oldLayout = oldLayout;
+        barrier.newLayout = newLayout;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = image;
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = 0;
+
+        VkPipelineStageFlags source;
+        VkPipelineStageFlags destination;
+
+        if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+            barrier.srcAccessMask = 0;
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+            source = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            destination = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        } else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+                   newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+            source = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            destination = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        } else {
+            error("Unsupported layout transition from " + std::to_string(oldLayout) + " to " +
+                  std::to_string(newLayout));
         }
 
-        copyBuffer(logicalDevice, stagingBuffer, buffer, vertexBufferSize + indexBufferSize);
+        vkCmdPipelineBarrier(
+                commandBuffer,
+                source,
+                destination,
+                0,
+                0,
+                nullptr,
+                0,
+                nullptr,
+                1,
+                &barrier
+        );
 
-        vmaDestroyBuffer(logicalDevice->allocator, stagingBuffer, stagingAllocation);
+        endSingleUseCommandBuffer(logicalDevice, commandBuffer);
+    }
 
-        return true;
+    static void
+    copyBufferToImage(const std::unique_ptr<LogicalDevice> &logicalDevice, const VkBuffer &buffer, const VkImage &image,
+                      const uint32_t width, const uint32_t height) {
+        VkCommandBuffer commandBuffer = beginSingleUseCommandBuffer(logicalDevice);
+
+        VkBufferImageCopy region{};
+        region.bufferOffset = 0;
+        region.bufferRowLength = 0;
+        region.bufferImageHeight = 0;
+
+        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.imageSubresource.mipLevel = 0;
+        region.imageSubresource.baseArrayLayer = 0;
+        region.imageSubresource.layerCount = 1;
+
+        region.imageOffset = {0, 0, 0};
+        region.imageExtent = {
+                width,
+                height,
+                1
+        };
+
+        vkCmdCopyBufferToImage(
+                commandBuffer,
+                buffer,
+                image,
+                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                1,
+                &region
+        );
+
+        endSingleUseCommandBuffer(logicalDevice, commandBuffer);
     }
 }

@@ -81,9 +81,11 @@ namespace Vixen {
 
         std::vector<VkDescriptorSet> descriptorSets;
 
-        VkVertexInputBindingDescription bindingDescription = {};
+        std::array<VkVertexInputBindingDescription, 2> bindingDescriptions = {};
 
-        VkVertexInputAttributeDescription attributeDescription = {};
+        std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {};
+
+        VkSampler textureSampler;
 
         /**
          * The maximum number of frames in flight, also known as concurrently rendered frames
@@ -139,11 +141,11 @@ namespace Vixen {
 
         void createUniformBuffers();
 
+        void createSampler();
+
+        void destroySampler();
+
         void destroyUniformBuffers();
-
-        void createCommandPool();
-
-        void destroyCommandPool();
 
         VkDescriptorPool createDescriptorPool();
 

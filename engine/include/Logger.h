@@ -101,6 +101,7 @@ namespace Vixen {
 
     static void error(const std::string &message) {
         log(LogSeverity::LOG_SEVERITY_ERR, message);
+        throw std::runtime_error(message);
     }
 
     static void fatal(const std::string &message) {

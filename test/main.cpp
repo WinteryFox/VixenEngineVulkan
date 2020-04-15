@@ -13,6 +13,7 @@
 #include <memory>
 #include <vector>
 #include <VixenEngine.h>
+#include <Texture.h>
 
 int main() {
     std::vector<const char *> extensions = {
@@ -46,8 +47,8 @@ int main() {
 
     std::unique_ptr<Vixen::Input> input(new Vixen::Input(window));
 
-    std::unique_ptr<Vixen::MeshStore> meshStore(new Vixen::MeshStore(logicalDevice));
-    meshStore->loadMesh("Fox.FBX");
+    std::unique_ptr<Vixen::MeshStore> meshStore(new Vixen::MeshStore(logicalDevice, physicalDevice));
+    meshStore->loadMesh("Fox_Triangles.fbx");
 
     Vixen::Scene scene = {};
     scene.entities.push_back(Vixen::Entity(meshStore->meshes[0], {}, {}, 0.0001f));

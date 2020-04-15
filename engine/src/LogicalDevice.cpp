@@ -56,6 +56,15 @@ namespace Vixen {
 
         createImageViews();
 
+        VkCommandPoolCreateInfo poolCreateInfo = {};
+        poolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        poolCreateInfo.queueFamilyIndex = physicalDevice->graphicsFamilyIndex;
+        poolCreateInfo.flags = 0;
+
+        if (vkCreateCommandPool(device, &poolCreateInfo, nullptr, &commandPool) != VK_SUCCESS)
+            fatal("Failed to create command pool");
+        trace("Successfully created command pool");
+
         VkCommandPoolCreateInfo transferCommandPoolCreateInfo = {};
         transferCommandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         transferCommandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
@@ -88,6 +97,7 @@ namespace Vixen {
 
         vkDestroyFence(device, transferFence, nullptr);
 
+        vkDestroyCommandPool(device, commandPool, nullptr);
         vkDestroyCommandPool(device, transferCommandPool, nullptr);
         vmaDestroyAllocator(allocator);
 

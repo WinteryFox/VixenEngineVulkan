@@ -173,18 +173,4 @@ namespace Vixen {
     SwapChainSupportDetails PhysicalDevice::querySwapChainSupportDetails() {
         return querySwapChainSupportDetails(device);
     }
-
-    bool PhysicalDevice::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, uint32_t &type) {
-        VkPhysicalDeviceMemoryProperties memoryProperties;
-        vkGetPhysicalDeviceMemoryProperties(device, &memoryProperties);
-        for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {
-            if ((typeFilter & (i << i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-                type = i;
-                return true;
-            }
-        }
-
-        error("Failed to find suitable memory type");
-        return false;
-    }
 }

@@ -21,18 +21,18 @@ namespace Vixen {
                                                 std::numeric_limits<uint64_t>::max(),
                                                 imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
-        vertex->mvp.view = camera->getView();
-        vertex->mvp.projection = camera->getProjection(
-                (float) logicalDevice->extent.width / (float) logicalDevice->extent.height);
-        vertex->mvp.projection[1][1] *= -1.0f;
-        updateUniformBuffer(scene.entities[0], imageIndex);
-
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
             invalidate();
             return;
         } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
             fatal("Failed to acquire image " + std::to_string(result));
         }
+
+        vertex->mvp.view = camera->getView();
+        vertex->mvp.projection = camera->getProjection(
+                (float) logicalDevice->extent.width / (float) logicalDevice->extent.height);
+        vertex->mvp.projection[1][1] *= -1.0f;
+        updateUniformBuffer(scene.entities[0], imageIndex);
 
         VkSubmitInfo submitInfo = {};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -142,7 +142,7 @@ namespace Vixen {
         commandBuffers.resize(framebuffers.size());
         VkCommandBufferAllocateInfo allocateInfo = {};
         allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocateInfo.commandPool = commandPool;
+        allocateInfo.commandPool = logicalDevice->commandPool;
         allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocateInfo.commandBufferCount = (uint32_t) commandBuffers.size();
 
@@ -180,10 +180,11 @@ namespace Vixen {
             for (const auto &entity : scene.entities) {
                 const auto &mesh = entity.mesh;
                 /// Bind the mesh's buffers
-                std::vector<VkBuffer> buffers{mesh->buffer};
-                std::vector<VkDeviceSize> offsets{0};
+                std::vector<VkBuffer> buffers{mesh->getBuffer(), mesh->getBuffer()};
+                std::vector<VkDeviceSize> offsets{0, mesh->vertexCount * sizeof(glm::vec3) +
+                                                     mesh->indexCount * sizeof(uint32_t)};
                 vkCmdBindVertexBuffers(commandBuffers[i], 0, buffers.size(), buffers.data(), offsets.data());
-                vkCmdBindIndexBuffer(commandBuffers[i], mesh->buffer, sizeof(glm::vec3) * mesh->vertexCount,
+                vkCmdBindIndexBuffer(commandBuffers[i], mesh->getBuffer(), mesh->vertexCount * sizeof(glm::vec3),
                                      VK_INDEX_TYPE_UINT32);
 
                 /// Draw the mesh
@@ -199,7 +200,8 @@ namespace Vixen {
     }
 
     void Render::destroyCommandBuffers() {
-        vkFreeCommandBuffers(logicalDevice->device, commandPool, commandBuffers.size(), commandBuffers.data());
+        vkFreeCommandBuffers(logicalDevice->device, logicalDevice->commandPool, commandBuffers.size(),
+                             commandBuffers.data());
         trace("Freed command buffers");
     }
 
@@ -265,14 +267,14 @@ namespace Vixen {
         fragCreateInfo.module = fragment->shader;
         fragCreateInfo.pName = "main";
 
-        VkPipelineShaderStageCreateInfo shaders[] = {vertCreateInfo, fragCreateInfo};
+        std::array<VkPipelineShaderStageCreateInfo, 2> shaders = {vertCreateInfo, fragCreateInfo};
 
         VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};
         vertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputCreateInfo.vertexBindingDescriptionCount = 1;
-        vertexInputCreateInfo.pVertexBindingDescriptions = &bindingDescription;
-        vertexInputCreateInfo.vertexAttributeDescriptionCount = 1;
-        vertexInputCreateInfo.pVertexAttributeDescriptions = &attributeDescription;
+        vertexInputCreateInfo.vertexBindingDescriptionCount = bindingDescriptions.size();
+        vertexInputCreateInfo.pVertexBindingDescriptions = bindingDescriptions.data();
+        vertexInputCreateInfo.vertexAttributeDescriptionCount = attributeDescriptions.size();
+        vertexInputCreateInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
         VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo = {};
         inputAssemblyCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -343,8 +345,8 @@ namespace Vixen {
 
         VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
         pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        pipelineCreateInfo.stageCount = 2;
-        pipelineCreateInfo.pStages = shaders;
+        pipelineCreateInfo.stageCount = shaders.size();
+        pipelineCreateInfo.pStages = shaders.data();
         pipelineCreateInfo.pVertexInputState = &vertexInputCreateInfo;
         pipelineCreateInfo.pInputAssemblyState = &inputAssemblyCreateInfo;
         pipelineCreateInfo.pViewportState = &viewportStateCreateInfo;
@@ -390,39 +392,34 @@ namespace Vixen {
         trace("Destroyed pipeline layout");
     }
 
-    void Render::createCommandPool() {
-        /// Create command pool
-        VkCommandPoolCreateInfo poolCreateInfo = {};
-        poolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        poolCreateInfo.queueFamilyIndex = physicalDevice->graphicsFamilyIndex;
-        poolCreateInfo.flags = 0;
-
-        if (vkCreateCommandPool(logicalDevice->device, &poolCreateInfo, nullptr, &commandPool) != VK_SUCCESS)
-            fatal("Failed to create command pool");
-        trace("Successfully created command pool");
-    }
-
-    void Render::destroyCommandPool() {
-        vkDestroyCommandPool(logicalDevice->device, commandPool, nullptr);
-        trace("Destroyed command pool");
-    }
-
     void Render::createDescriptorSetLayout() {
-        VkDescriptorSetLayoutBinding layoutBinding = {};
+        VkDescriptorSetLayoutBinding layoutBinding{};
         layoutBinding.binding = 0;
         layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         layoutBinding.descriptorCount = 1;
         layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
         layoutBinding.pImmutableSamplers = nullptr;
 
-        VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {};
-        descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        descriptorSetLayoutCreateInfo.bindingCount = 1;
-        descriptorSetLayoutCreateInfo.pBindings = &layoutBinding;
+        VkDescriptorSetLayoutBinding fragmentSamplerLayoutBinding{};
+        fragmentSamplerLayoutBinding.binding = 1;
+        fragmentSamplerLayoutBinding.descriptorCount = 1;
+        fragmentSamplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        fragmentSamplerLayoutBinding.pImmutableSamplers = nullptr;
+        fragmentSamplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-        if (vkCreateDescriptorSetLayout(logicalDevice->device, &descriptorSetLayoutCreateInfo, nullptr,
-                                        &descriptorSetLayout) != VK_SUCCESS)
-            fatal("Failed to create descriptor set layout");
+        const std::array<VkDescriptorSetLayoutBinding, 2> bindings{layoutBinding, fragmentSamplerLayoutBinding};
+
+        VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
+        descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        descriptorSetLayoutCreateInfo.bindingCount = bindings.size();
+        descriptorSetLayoutCreateInfo.pBindings = bindings.data();
+
+        const auto createDescriptorSetLayoutResult = vkCreateDescriptorSetLayout(logicalDevice->device,
+                                                                                 &descriptorSetLayoutCreateInfo,
+                                                                                 nullptr, &descriptorSetLayout);
+        if (createDescriptorSetLayoutResult != VK_SUCCESS)
+            fatal("Failed to create descriptor set layout error code " +
+                  std::to_string(createDescriptorSetLayoutResult));
         trace("Successfully created descriptor set layout");
     }
 
@@ -451,14 +448,16 @@ namespace Vixen {
     VkDescriptorPool Render::createDescriptorPool() {
         VkDescriptorPool pool;
 
-        VkDescriptorPoolSize descriptorPoolSize{};
-        descriptorPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptorPoolSize.descriptorCount = static_cast<uint32_t>(logicalDevice->images.size());
+        std::array<VkDescriptorPoolSize, 2> poolSizes{};
+        poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        poolSizes[0].descriptorCount = static_cast<uint32_t>(logicalDevice->images.size());
+        poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSizes[1].descriptorCount = static_cast<uint32_t>(logicalDevice->images.size());
 
         VkDescriptorPoolCreateInfo descriptorPoolCreateInfo{};
         descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        descriptorPoolCreateInfo.poolSizeCount = 1;
-        descriptorPoolCreateInfo.pPoolSizes = &descriptorPoolSize;
+        descriptorPoolCreateInfo.poolSizeCount = poolSizes.size();
+        descriptorPoolCreateInfo.pPoolSizes = poolSizes.data();
         descriptorPoolCreateInfo.maxSets = static_cast<uint32_t>(logicalDevice->images.size());
 
         if (vkCreateDescriptorPool(logicalDevice->device, &descriptorPoolCreateInfo, nullptr, &pool) != VK_SUCCESS)
@@ -474,14 +473,23 @@ namespace Vixen {
     }
 
     std::vector<VkDescriptorSet> Render::createDescriptorSets() {
-        bindingDescription.binding = 0;
-        bindingDescription.stride = sizeof(glm::vec3);
-        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+        bindingDescriptions[0].binding = 0;
+        bindingDescriptions[0].stride = sizeof(glm::vec3);
+        bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-        attributeDescription.binding = 0;
-        attributeDescription.location = 0;
-        attributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescription.offset = 0;
+        bindingDescriptions[1].binding = 1;
+        bindingDescriptions[1].stride = sizeof(glm::vec2);
+        bindingDescriptions[1].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+        attributeDescriptions[0].binding = 0;
+        attributeDescriptions[0].location = 0;
+        attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[0].offset = 0;
+
+        attributeDescriptions[1].binding = 1;
+        attributeDescriptions[1].location = 1;
+        attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[1].offset = 0;
 
         std::vector<VkDescriptorSet> sets;
         std::vector<VkDescriptorSetLayout> layouts(logicalDevice->images.size(), descriptorSetLayout);
@@ -503,18 +511,30 @@ namespace Vixen {
             descriptorBufferInfo.offset = 0;
             descriptorBufferInfo.range = sizeof(VertexShader::ModelViewProjection);
 
-            VkWriteDescriptorSet writeDescriptorSet{};
-            writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            writeDescriptorSet.dstSet = sets[i];
-            writeDescriptorSet.dstBinding = 0;
-            writeDescriptorSet.dstArrayElement = 0;
-            writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            writeDescriptorSet.descriptorCount = 1;
-            writeDescriptorSet.pBufferInfo = &descriptorBufferInfo;
-            writeDescriptorSet.pImageInfo = nullptr;
-            writeDescriptorSet.pTexelBufferView = nullptr;
+            VkDescriptorImageInfo imageInfo{};
+            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            imageInfo.imageView = scene.entities[0].mesh->texture->getView();
+            imageInfo.sampler = textureSampler;
 
-            vkUpdateDescriptorSets(logicalDevice->device, 1, &writeDescriptorSet, 0, nullptr);
+            std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+
+            descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[0].dstSet = sets[i];
+            descriptorWrites[0].dstBinding = 0;
+            descriptorWrites[0].dstArrayElement = 0;
+            descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            descriptorWrites[0].descriptorCount = 1;
+            descriptorWrites[0].pBufferInfo = &descriptorBufferInfo;
+
+            descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[1].dstSet = sets[i];
+            descriptorWrites[1].dstBinding = 1;
+            descriptorWrites[1].dstArrayElement = 0;
+            descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            descriptorWrites[1].descriptorCount = 1;
+            descriptorWrites[1].pImageInfo = &imageInfo;
+
+            vkUpdateDescriptorSets(logicalDevice->device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
         }
         trace("Successfully updated descriptor sets");
 
@@ -525,11 +545,11 @@ namespace Vixen {
         createSyncObjects();
         createDescriptorSetLayout();
         createUniformBuffers();
+        createSampler();
         descriptorPool = createDescriptorPool();
         descriptorSets = createDescriptorSets();
         createRenderPass();
         createFramebuffers();
-        createCommandPool();
         createPipelineLayout();
         createPipeline();
         createCommandBuffers();
@@ -542,7 +562,7 @@ namespace Vixen {
         destroyDescriptorSetLayout();
         destroyFramebuffers();
         destroyCommandBuffers();
-        destroyCommandPool();
+        destroySampler();
         destroyRenderPass();
         destroyPipelineLayout();
         destroyPipeline();
@@ -560,5 +580,42 @@ namespace Vixen {
         logicalDevice->createImageViews();
         create();
         trace("Invalidation took " + std::to_string(glfwGetTime() - oldTime));
+    }
+
+    void Render::createSampler() {
+        /// Create VkSampler object
+        VkSamplerCreateInfo samplerCreateInfo{};
+        samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
+        samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
+        samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+
+        if (physicalDevice->deviceFeatures.samplerAnisotropy == VK_TRUE) {
+            samplerCreateInfo.anisotropyEnable = VK_TRUE; // TODO: Make these two options instead of constants
+            samplerCreateInfo.maxAnisotropy = 16;
+        } else {
+            samplerCreateInfo.anisotropyEnable = VK_FALSE;
+            samplerCreateInfo.maxAnisotropy = 1;
+        }
+
+        samplerCreateInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+        samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
+        samplerCreateInfo.compareEnable = VK_FALSE;
+        samplerCreateInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+        samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        samplerCreateInfo.mipLodBias = 0.0f;
+        samplerCreateInfo.minLod = 0.0f;
+        samplerCreateInfo.maxLod = 0.0f;
+
+        const auto samplerCreateResult = vkCreateSampler(logicalDevice->device, &samplerCreateInfo, nullptr,
+                                                         &textureSampler);
+        if (samplerCreateResult != VK_SUCCESS)
+            error("Failed to create VkSampler error code: " + std::to_string(samplerCreateResult));
+    }
+
+    void Render::destroySampler() {
+        vkDestroySampler(logicalDevice->device, textureSampler, nullptr);
     }
 }

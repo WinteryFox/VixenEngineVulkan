@@ -49,7 +49,8 @@ set(
         include/Input.h
         include/VertexShader.h
         include/FragmentShader.h
-        include/MeshStore.h)
+        include/MeshStore.h
+        include/Texture.h)
 set(
         vixen_SOURCES
         properties.rc
@@ -61,7 +62,7 @@ set(
         src/Render.cpp
         src/Mesh.cpp
         src/Input.cpp
-)
+        src/Texture.cpp)
 
 add_library(
         VixenEngine
