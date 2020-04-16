@@ -9,9 +9,9 @@
 namespace Vixen {
     class Texture {
         const std::unique_ptr<LogicalDevice> &logicalDevice;
-        VkImage texture;
-        VkImageView view;
-        VmaAllocation allocation;
+        VkImage texture = VK_NULL_HANDLE;
+        VkImageView view = VK_NULL_HANDLE;
+        VmaAllocation allocation = VK_NULL_HANDLE;
 
     public:
         [[nodiscard]] VkImage getTexture() const;
