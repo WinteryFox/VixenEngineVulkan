@@ -173,4 +173,20 @@ namespace Vixen {
     SwapChainSupportDetails PhysicalDevice::querySwapChainSupportDetails() {
         return querySwapChainSupportDetails(device);
     }
+
+    VkFormat PhysicalDevice::findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling,
+                                                 VkFormatFeatureFlags features) const {
+        for (const auto &format : candidates) {
+            VkFormatProperties formatProperties;
+            vkGetPhysicalDeviceFormatProperties(device, format, &formatProperties);
+
+            if (tiling == VK_IMAGE_TILING_LINEAR && (formatProperties.linearTilingFeatures & features) == features) {
+                return format;
+            } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (formatProperties.optimalTilingFeatures & features) == features) {
+                return format;
+            }
+        }
+
+        error("Failed to find suitable depth image format");
+    }
 }

@@ -87,6 +87,11 @@ namespace Vixen {
 
         VkSampler textureSampler;
 
+        VkFormat depthImageFormat;
+        VkImage depthImage;
+        VkImageView depthImageView;
+        VmaAllocation depthImageAllocation;
+
         /**
          * The maximum number of frames in flight, also known as concurrently rendered frames
          * ensuring that the GPU is always being utilized
@@ -110,6 +115,10 @@ namespace Vixen {
          * The current frame in relation to the maximum frames in flight
          */
         size_t currentFrame = 0;
+
+        void createDepthImage();
+
+        void destroyDepthImage();
 
         void createCommandBuffers();
 

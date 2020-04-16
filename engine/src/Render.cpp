@@ -82,13 +82,13 @@ namespace Vixen {
     void Render::createFramebuffers() {
         framebuffers.resize(logicalDevice->imageViews.size());
         for (std::vector<VkImageView>::size_type i = 0; i < logicalDevice->imageViews.size(); i++) {
-            VkImageView attachments[] = {logicalDevice->imageViews[i]};
+            std::array<VkImageView, 2> attachments = {logicalDevice->imageViews[i], depthImageView};
 
             VkFramebufferCreateInfo framebufferCreateInfo = {};
             framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebufferCreateInfo.renderPass = renderPass;
-            framebufferCreateInfo.attachmentCount = 1;
-            framebufferCreateInfo.pAttachments = attachments;
+            framebufferCreateInfo.attachmentCount = attachments.size();
+            framebufferCreateInfo.pAttachments = attachments.data();
             framebufferCreateInfo.width = logicalDevice->extent.width;
             framebufferCreateInfo.height = logicalDevice->extent.height;
             framebufferCreateInfo.layers = 1;
@@ -166,9 +166,12 @@ namespace Vixen {
             renderPassBeginInfo.renderArea.offset = {0, 0};
             renderPassBeginInfo.renderArea.extent = logicalDevice->extent;
 
-            VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 0.0f};
-            renderPassBeginInfo.clearValueCount = 1;
-            renderPassBeginInfo.pClearValues = &clearColor;
+            std::array<VkClearValue, 2> clearColors{};
+            clearColors[0].color = {0.0f, 0.0f, 0.0f, 0.0f};
+            clearColors[1].depthStencil = {1.0f, 0};
+
+            renderPassBeginInfo.clearValueCount = clearColors.size();
+            renderPassBeginInfo.pClearValues = clearColors.data();
 
             vkCmdBeginRenderPass(commandBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -207,7 +210,7 @@ namespace Vixen {
 
     void Render::createRenderPass() {
         /// Create render pass
-        VkAttachmentDescription colorAttachment = {};
+        VkAttachmentDescription colorAttachment{};
         colorAttachment.format = logicalDevice->surfaceFormat.format;
         colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
         colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -217,14 +220,29 @@ namespace Vixen {
         colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-        VkAttachmentReference colorAttachmentReference = {};
+        VkAttachmentReference colorAttachmentReference{};
         colorAttachmentReference.attachment = 0;
         colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        VkSubpassDescription subpass = {};
-        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpass.colorAttachmentCount = 1;
-        subpass.pColorAttachments = &colorAttachmentReference;
+        VkAttachmentDescription depthAttachment{};
+        depthAttachment.format = depthImageFormat;
+        depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        VkAttachmentReference depthAttachmentReference = {};
+        depthAttachmentReference.attachment = 1;
+        depthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        VkSubpassDescription subpassDescription = {};
+        subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpassDescription.colorAttachmentCount = 1;
+        subpassDescription.pColorAttachments = &colorAttachmentReference;
+        subpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
 
         VkSubpassDependency dependency = {};
         dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -234,12 +252,13 @@ namespace Vixen {
         dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
+        std::array<VkAttachmentDescription, 2> attachments = {colorAttachment, depthAttachment};
         VkRenderPassCreateInfo renderPassCreateInfo = {};
         renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassCreateInfo.attachmentCount = 1;
-        renderPassCreateInfo.pAttachments = &colorAttachment;
+        renderPassCreateInfo.attachmentCount = attachments.size();
+        renderPassCreateInfo.pAttachments = attachments.data();
         renderPassCreateInfo.subpassCount = 1;
-        renderPassCreateInfo.pSubpasses = &subpass;
+        renderPassCreateInfo.pSubpasses = &subpassDescription;
         renderPassCreateInfo.dependencyCount = 1;
         renderPassCreateInfo.pDependencies = &dependency;
 
@@ -343,6 +362,18 @@ namespace Vixen {
         colorBlending.blendConstants[2] = 0.0f;
         colorBlending.blendConstants[3] = 0.0f;
 
+        VkPipelineDepthStencilStateCreateInfo depthStencil{};
+        depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+        depthStencil.depthTestEnable = VK_TRUE;
+        depthStencil.depthWriteEnable = VK_TRUE;
+        depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+        depthStencil.depthBoundsTestEnable = VK_FALSE;
+        depthStencil.minDepthBounds = 0.0f;
+        depthStencil.maxDepthBounds = 1.0f;
+        depthStencil.stencilTestEnable = VK_FALSE;
+        depthStencil.front = {};
+        depthStencil.back = {};
+
         VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
         pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
         pipelineCreateInfo.stageCount = shaders.size();
@@ -352,7 +383,7 @@ namespace Vixen {
         pipelineCreateInfo.pViewportState = &viewportStateCreateInfo;
         pipelineCreateInfo.pRasterizationState = &rasterizationStateCreateInfo;
         pipelineCreateInfo.pMultisampleState = &multisampling;
-        pipelineCreateInfo.pDepthStencilState = nullptr;
+        pipelineCreateInfo.pDepthStencilState = &depthStencil;
         pipelineCreateInfo.pColorBlendState = &colorBlending;
         pipelineCreateInfo.pDynamicState = nullptr;
         pipelineCreateInfo.layout = pipelineLayout;
@@ -542,6 +573,7 @@ namespace Vixen {
     }
 
     void Render::create() {
+        createDepthImage();
         createSyncObjects();
         createDescriptorSetLayout();
         createUniformBuffers();
@@ -560,6 +592,7 @@ namespace Vixen {
 
         destroyUniformBuffers();
         destroyDescriptorSetLayout();
+        destroyDepthImage();
         destroyFramebuffers();
         destroyCommandBuffers();
         destroySampler();
@@ -617,5 +650,20 @@ namespace Vixen {
 
     void Render::destroySampler() {
         vkDestroySampler(logicalDevice->device, textureSampler, nullptr);
+    }
+
+    void Render::createDepthImage() {
+        depthImageFormat = physicalDevice->findSupportedFormat(
+                {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
+                VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+
+        createImage(logicalDevice, physicalDevice, logicalDevice->extent.width, logicalDevice->extent.height, depthImageFormat,
+                    VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depthImage, depthImageAllocation);
+        depthImageView = createImageView(logicalDevice, depthImage, depthImageFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+    }
+
+    void Render::destroyDepthImage() {
+        vkDestroyImageView(logicalDevice->device, depthImageView, nullptr);
+        vmaDestroyImage(logicalDevice->allocator, depthImage, depthImageAllocation);
     }
 }

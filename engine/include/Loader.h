@@ -6,6 +6,27 @@
 #include "LogicalDevice.h"
 
 namespace Vixen {
+    static VkImageView createImageView(const std::unique_ptr<LogicalDevice> &logicalDevice, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags) {
+        VkImageViewCreateInfo imageViewCreateInfo{};
+        imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        imageViewCreateInfo.image = image;
+        imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        imageViewCreateInfo.format = format;
+        imageViewCreateInfo.subresourceRange.aspectMask = aspectFlags;
+        imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+        imageViewCreateInfo.subresourceRange.levelCount = 1;
+        imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+        imageViewCreateInfo.subresourceRange.layerCount = 1;
+
+        VkImageView view;
+        const auto imageViewCreateResult = vkCreateImageView(logicalDevice->device, &imageViewCreateInfo, nullptr,
+                                                             &view);
+        if (imageViewCreateResult != VK_SUCCESS)
+            error("Failed to create VkImageView for image: " +
+                  std::to_string(imageViewCreateResult));
+        return view;
+    }
+
     static void
     createImage(const std::unique_ptr<LogicalDevice> &logicalDevice,
                 const std::unique_ptr<PhysicalDevice> &physicalDevice,

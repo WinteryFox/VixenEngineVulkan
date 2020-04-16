@@ -53,6 +53,8 @@ namespace Vixen {
 
         const std::unique_ptr<Instance> &instance;
 
+        [[nodiscard]] VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
+
         /**
          * Allocates a physical device for Vulkan use
          *

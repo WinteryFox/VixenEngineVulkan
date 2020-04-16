@@ -27,7 +27,7 @@ namespace Vixen {
 
                 for (const auto &face : fbxModel->mesh->faces) {
                     if (face.indices.size() != 3)
-                        throw std::runtime_error("Face does not have 3 indices, model is not triangulated.");
+                        error("Face does not have 3 indices, model is not triangulated.");
 
                     indices.push_back(face[0]);
                     indices.push_back(face[1]);
