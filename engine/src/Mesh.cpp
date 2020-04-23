@@ -1,7 +1,9 @@
 #include "Mesh.h"
 
+#include <utility>
+
 namespace Vixen {
-    Mesh::Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, std::shared_ptr<Texture> texture,
+    Mesh::Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, std::shared_ptr<const Texture> texture,
                const std::vector<glm::vec3> &vertices, const std::vector<uint32_t> &indices,
                const std::vector<glm::vec2> &uvs)
             : logicalDevice(logicalDevice), vertexCount(vertices.size()), indexCount(indices.size()),
@@ -10,8 +12,8 @@ namespace Vixen {
         VkDeviceSize indexBufferSize = sizeof(uint32_t) * indices.size();
         VkDeviceSize uvBufferSize = sizeof(glm::vec2) * uvs.size();
 
-        VkBuffer stagingBuffer = VK_NULL_HANDLE;
-        VmaAllocation stagingAllocation = VK_NULL_HANDLE;
+        VkBuffer stagingBuffer;
+        VmaAllocation stagingAllocation;
         createBuffer(logicalDevice, vertexBufferSize + indexBufferSize + uvBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                      VMA_MEMORY_USAGE_CPU_TO_GPU,
                      stagingBuffer, stagingAllocation);

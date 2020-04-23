@@ -27,7 +27,7 @@ namespace Vixen {
 
         [[nodiscard]] VmaAllocation getAllocation() const;
 
-        const std::shared_ptr<Texture> texture;
+        const std::shared_ptr<const Texture> texture;
 
         /**
          * Create a new mesh
@@ -36,7 +36,7 @@ namespace Vixen {
          * @param vertexCount The amount of vertices this mesh has
          * @param indexCount The amount of indices this mesh has
          */
-        Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, std::shared_ptr<Texture> texture,
+        Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, std::shared_ptr<const Texture> texture,
              const std::vector<glm::vec3> &vertices, const std::vector<uint32_t> &indices, const std::vector<glm::vec2> &uvs);
 
         Mesh(const Mesh &) = delete;

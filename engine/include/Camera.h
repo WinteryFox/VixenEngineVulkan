@@ -17,11 +17,11 @@ namespace Vixen {
                 position(position), rotation(rotation), fieldOfView(fieldOfView), nearPlane(nearPlane),
                 farPlane(farPlane) {}
 
-        glm::mat4 getView() {
+        [[nodiscard]] glm::mat4 getView() const {
             return glm::lookAt(position, position + rotation, {0.0f, 1.0f, 0.0f});
         }
 
-        glm::mat4 getProjection(const float aspectRatio) {
+        [[nodiscard]] glm::mat4 getProjection(const float aspectRatio) const {
             return glm::perspective(glm::radians(fieldOfView), aspectRatio, nearPlane, farPlane);
         }
     };

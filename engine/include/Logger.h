@@ -18,6 +18,7 @@
 #include <fstream>
 #include <iostream>
 
+// TODO: Redo this in a way that doesn't suck
 namespace Vixen {
     static const std::string LOG_DIR = "logs/";
 

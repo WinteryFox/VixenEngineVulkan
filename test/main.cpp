@@ -48,7 +48,7 @@ int main() {
     std::unique_ptr<Vixen::Input> input(new Vixen::Input(window));
 
     std::unique_ptr<Vixen::MeshStore> meshStore(new Vixen::MeshStore(logicalDevice, physicalDevice));
-    meshStore->loadMesh("Fox_Triangles.fbx");
+    meshStore->loadMesh("Fox.FBX");
 
     Vixen::Scene scene = {};
     scene.entities.push_back(Vixen::Entity(meshStore->meshes[0], {}, {}, 0.0001f));
