@@ -3,10 +3,13 @@
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
 #include <memory>
+#include <exceptions/ImageException.h>
 #include "LogicalDevice.h"
 
 namespace Vixen {
-    static VkImageView createImageView(const std::unique_ptr<LogicalDevice> &logicalDevice, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags) {
+    static VkImageView
+    createImageView(const std::unique_ptr<LogicalDevice> &logicalDevice, VkImage image, VkFormat format,
+                    VkImageAspectFlags aspectFlags) {
         VkImageViewCreateInfo imageViewCreateInfo{};
         imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         imageViewCreateInfo.image = image;
@@ -22,8 +25,7 @@ namespace Vixen {
         const auto imageViewCreateResult = vkCreateImageView(logicalDevice->device, &imageViewCreateInfo, nullptr,
                                                              &view);
         if (imageViewCreateResult != VK_SUCCESS)
-            error("Failed to create VkImageView for image: " +
-                  std::to_string(imageViewCreateResult));
+            throw VulkanException(imageViewCreateResult, "Failed to create VkImageView");
         return view;
     }
 
@@ -52,9 +54,8 @@ namespace Vixen {
 
         const auto result = vmaCreateImage(logicalDevice->allocator, &imageCreateInfo, &allocationCreateInfo, &image,
                                            &allocation, nullptr);
-        if (result != VK_SUCCESS) {
-            error("Failed to create VkImage: " + std::to_string(result));
-        }
+        if (result != VK_SUCCESS)
+            throw VulkanException(result, "Failed to create VkImage object");
     }
 
     /**
@@ -80,11 +81,10 @@ namespace Vixen {
         VmaAllocationCreateInfo allocationCreateInfo = {};
         allocationCreateInfo.usage = vmaUsage;
 
-        if (vmaCreateBuffer(logicalDevice->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation,
-                            nullptr) != VK_SUCCESS) {
-            error("Failed to allocate buffer memory");
-            return false;
-        }
+        const auto result = vmaCreateBuffer(logicalDevice->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer,
+                                            &allocation, nullptr);
+        if (result != VK_SUCCESS)
+            throw VulkanException(result, "Failed to create VmaAllocation");
 
         return true;
     }

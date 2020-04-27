@@ -109,7 +109,7 @@ namespace Vixen {
         SwapChainSupportDetails details = physicalDevice->querySwapChainSupportDetails();
 
         for (const auto &form : details.formats)
-            if (form.format == VK_FORMAT_B8G8R8A8_UNORM && form.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+            if (form.format == VK_FORMAT_B8G8R8A8_SRGB && form.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
                 surfaceFormat = form;
             else
                 surfaceFormat = details.formats[0];

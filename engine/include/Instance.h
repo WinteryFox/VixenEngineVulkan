@@ -2,10 +2,10 @@
 
 #include <vulkan/vulkan.h>
 
-#define VIXEN_ENGINE_VERSION_MAJOR 0
-#define VIXEN_ENGINE_VERSION_MINOR 0
-#define VIXEN_ENGINE_VERSION_PATCH 1
-#define VIXEN_ENGINE_VULKAN_VERSION VK_API_VERSION_1_2;
+inline constexpr int VIXEN_ENGINE_VERSION_MAJOR = 0;
+inline constexpr int VIXEN_ENGINE_VERSION_MINOR = 0;
+inline constexpr int VIXEN_ENGINE_VERSION_PATCH = 1;
+inline constexpr int VIXEN_ENGINE_VULKAN_VERSION = VK_API_VERSION_1_2;
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>

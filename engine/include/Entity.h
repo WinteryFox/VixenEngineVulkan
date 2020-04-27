@@ -7,6 +7,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include <memory>
 #include "Mesh.h"
+#include "SimpleMath.h"
 
 namespace Vixen {
     struct Entity {
@@ -21,7 +22,7 @@ namespace Vixen {
 
         [[nodiscard]] glm::mat4 getModelMatrix() const {
             return glm::scale(glm::mat4(1.0f), glm::vec3(scale)) *
-                   glm::toMat4(glm::quat(rotation * (3.1415926535897f / 180.0f))) *
+                   glm::toMat4(glm::quat(rotation * static_cast<float>(PI / 180.0))) *
                    glm::translate(glm::mat4(1.0f), position);
         }
     };

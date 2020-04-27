@@ -28,9 +28,9 @@ namespace Vixen {
                 cos(camera->vertical) * cos(camera->horizontal)
         };
         camera->right = {
-                sin(camera->horizontal - 3.14f / 2.0f),
+                sin(camera->horizontal - PI / 2.0f),
                 0,
-                cos(camera->horizontal - 3.14f / 2.0f)
+                cos(camera->horizontal - PI / 2.0f)
         };
 
         /// Keyboard input

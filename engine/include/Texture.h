@@ -4,7 +4,8 @@
 #include <stb_image.h>
 #include <string>
 #include <stdexcept>
-#include "Loader.h"
+#include "exceptions/IOException.h"
+#include "Util.h"
 
 namespace Vixen {
     class Texture {
@@ -20,7 +21,7 @@ namespace Vixen {
 
         [[nodiscard]] VmaAllocation getAllocation() const;
 
-        Texture(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::unique_ptr<PhysicalDevice> &physicalDevice, const std::string &absolutePath);
+        Texture(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::unique_ptr<PhysicalDevice> &physicalDevice, const std::string &path);
         Texture &operator=(const Texture &texture) = delete;
         ~Texture();
     };

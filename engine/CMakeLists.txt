@@ -2,6 +2,8 @@
 
 find_package(Vulkan REQUIRED)
 find_package(Threads REQUIRED)
+
+set(FBX_IMPORT_BUILD_TEST OFF)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/contrib/FBXImport)
 
 set(
@@ -41,7 +43,7 @@ set(
         include/Shader.h
         include/Render.h
         include/Mesh.h
-        include/Loader.h
+        include/Util.h
         include/VixenEngine.h
         include/Entity.h
         include/Scene.h
@@ -50,7 +52,11 @@ set(
         include/VertexShader.h
         include/FragmentShader.h
         include/MeshStore.h
-        include/Texture.h)
+        include/Texture.h
+        include/exceptions/VulkanException.h
+        include/exceptions/ImageException.h
+        include/exceptions/IOException.h
+        include/SimpleMath.h)
 set(
         vixen_SOURCES
         properties.rc

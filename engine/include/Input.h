@@ -5,6 +5,7 @@
 #include <map>
 #include "Window.h"
 #include "Camera.h"
+#include "SimpleMath.h"
 
 namespace Vixen {
     struct Input {

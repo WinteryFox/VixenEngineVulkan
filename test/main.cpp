@@ -6,14 +6,13 @@
  * @date 7/7/2019
  */
 
-#define VIXEN_TEST_VERSION_MAJOR 0
-#define VIXEN_TEST_VERSION_MINOR 0
-#define VIXEN_TEST_VERSION_PATCH 1
+inline constexpr int VIXEN_TEST_VERSION_MAJOR = 0;
+inline constexpr int VIXEN_TEST_VERSION_MINOR = 0;
+inline constexpr int VIXEN_TEST_VERSION_PATCH = 1;
 
 #include <memory>
 #include <vector>
 #include <VixenEngine.h>
-#include <Texture.h>
 
 int main() {
     std::vector<const char *> extensions = {
@@ -41,17 +40,17 @@ int main() {
     std::unique_ptr<Vixen::FragmentShader> fragment(new Vixen::FragmentShader(logicalDevice, "frag.spv"));
 
     std::unique_ptr<Vixen::Camera> camera(new Vixen::Camera(
-            {0.0f, 0.4f, 2.0f},
-            {-0.06f, -0.05f, 0.9f} // TODO: Fix initial rotation not being taken into account
+            {0, 0, -3},
+            {}
     ));
 
     std::unique_ptr<Vixen::Input> input(new Vixen::Input(window));
 
     std::unique_ptr<Vixen::MeshStore> meshStore(new Vixen::MeshStore(logicalDevice, physicalDevice));
-    meshStore->loadMesh("Fox.FBX");
+    meshStore->loadMesh("Fox_3DS.FBX");
 
     Vixen::Scene scene = {};
-    scene.entities.push_back(Vixen::Entity(meshStore->meshes[0], {}, {}, 0.0001f));
+    scene.entities.push_back(Vixen::Entity(meshStore->meshes[1], {}, {}, 0.01f));
 
     std::unique_ptr<Vixen::Render> render(new Vixen::Render(logicalDevice, physicalDevice, scene, vertex, fragment));
 

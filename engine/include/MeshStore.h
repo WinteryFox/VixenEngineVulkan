@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <memory>
+#include <FBX/FBXImport.h>
 #include "Mesh.h"
 
 namespace Vixen {
@@ -21,9 +22,11 @@ namespace Vixen {
                 std::vector<uint32_t> indices;
                 std::vector<glm::vec2> uvs;
 
+                vertices.reserve(fbxModel->mesh->vertices.size());
                 for (const auto &v : fbxModel->mesh->vertices)
                     vertices.emplace_back(v.x, v.y, v.z);
 
+                indices.reserve(fbxModel->mesh->indexCount);
                 for (const auto &face : fbxModel->mesh->faces) {
                     if (face.indices.size() != 3) {
                         warning("Skipping non-triangulated face (" + std::to_string(face.indices.size()) +
@@ -36,16 +39,18 @@ namespace Vixen {
                     indices.push_back(face[2]);
                 }
 
+                uvs.reserve(fbxModel->mesh->uvs.size());
                 for (const auto &uv : fbxModel->mesh->uvs)
                     uvs.emplace_back(uv.x, 1.0f - uv.y);
 
                 const auto mesh = std::make_shared<Mesh>(
                         logicalDevice,
+                        fbxModel->material != nullptr && fbxModel->material->texture != nullptr ?
                         std::make_shared<Texture>(
                                 logicalDevice,
                                 physicalDevice,
                                 fbxModel->material->texture->relativePath
-                        ),
+                        ) : nullptr,
                         vertices,
                         indices,
                         uvs

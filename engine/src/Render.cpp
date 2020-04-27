@@ -30,7 +30,7 @@ namespace Vixen {
 
         vertex->mvp.view = camera->getView();
         vertex->mvp.projection = camera->getProjection(
-                (float) logicalDevice->extent.width / (float) logicalDevice->extent.height);
+                static_cast<float>(logicalDevice->extent.width) / static_cast<float>(logicalDevice->extent.height));
         vertex->mvp.projection[1][1] *= -1.0f;
         updateUniformBuffer(scene.entities[0], imageIndex);
 

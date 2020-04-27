@@ -85,12 +85,12 @@ namespace Vixen {
 
         std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {};
 
-        VkSampler textureSampler;
+        VkSampler textureSampler{};
 
         VkFormat depthImageFormat;
-        VkImage depthImage;
-        VkImageView depthImageView;
-        VmaAllocation depthImageAllocation;
+        VkImage depthImage{};
+        VkImageView depthImageView{};
+        VmaAllocation depthImageAllocation{};
 
         /**
          * The maximum number of frames in flight, also known as concurrently rendered frames
