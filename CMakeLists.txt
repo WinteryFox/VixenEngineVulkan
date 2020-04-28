@@ -22,7 +22,7 @@ option(vixen_BUILD_FBXImport "Build FBXImport" ON)
 option(vixen_BUILD_GLFW "Build GLFW" ON)
 
 if (CMAKE_BUILD_TYPE MATCHES "Debug")
-    add_compile_definitions(VIXEN_DEBUG=1)
+    add_compile_definitions(VIXEN_DEBUG)
 endif (CMAKE_BUILD_TYPE MATCHES "Debug")
 
 set(VIXEN_LOGGER_MODE "VIXEN_TRACE" CACHE STRING "The desired logger mode")

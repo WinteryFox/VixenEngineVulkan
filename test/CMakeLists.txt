@@ -30,9 +30,6 @@ add_custom_target(
 )
 add_dependencies(VixenEngineTest vert frag)
 
-# Copy resources
-file(COPY models/ DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/)
-
 target_link_libraries(
         VixenEngineTest
         VixenEngine

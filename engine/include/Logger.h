@@ -5,9 +5,7 @@
 #include <windows.h>
 #include <direct.h>
 
-#endif
-
-#ifdef __linux__
+#elif __linux__
 
 #include <sys/stat.h>
 

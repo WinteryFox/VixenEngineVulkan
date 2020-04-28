@@ -49,7 +49,7 @@ namespace Vixen {
         glfwTerminate();
     }
 
-    bool Window::shouldClose() {
+    bool Window::shouldClose() const {
         return glfwWindowShouldClose(window) == GLFW_TRUE;
     }
 
@@ -57,17 +57,16 @@ namespace Vixen {
         glfwPollEvents();
     }
 
-    void Window::swap() {
+    void Window::swap() const {
         glfwSwapBuffers(window);
     }
 
-    bool Window::setIcon(const std::string &path) {
+    void Window::setIcon(const std::string &path) const {
         int width, height, channels;
         stbi_uc *pixels = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
         if (!pixels) {
             glfwTerminate();
-            error("Failed to load the window icon");
-            return false;
+            throw IOException("Failed to load the window icon", path);
         }
 
         GLFWimage image;
@@ -77,6 +76,5 @@ namespace Vixen {
         glfwSetWindowIcon(window, 1, &image);
 
         stbi_image_free(pixels);
-        return true;
     }
 }

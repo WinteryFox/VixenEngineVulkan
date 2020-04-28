@@ -28,7 +28,7 @@ int main() {
 #endif
     };
 
-    std::unique_ptr<Vixen::Window> window(new Vixen::Window("Vixen Engine Test Application"));
+    std::unique_ptr<Vixen::Window> window(new Vixen::Window("Vixen Engine Test Application", "../../icon.png"));
     std::unique_ptr<Vixen::Instance> instance(
             new Vixen::Instance(*window, "Vixen Engine Test Application",
                                 glm::ivec3(VIXEN_TEST_VERSION_MAJOR, VIXEN_TEST_VERSION_MINOR,
@@ -47,7 +47,7 @@ int main() {
     std::unique_ptr<Vixen::Input> input(new Vixen::Input(window));
 
     std::unique_ptr<Vixen::MeshStore> meshStore(new Vixen::MeshStore(logicalDevice, physicalDevice));
-    meshStore->loadMesh("Fox_3DS.FBX");
+    meshStore->loadMesh("../../test/models/Fox.FBX");
 
     Vixen::Scene scene = {};
     scene.entities.push_back(Vixen::Entity(meshStore->meshes[1], {}, {}, 0.01f));

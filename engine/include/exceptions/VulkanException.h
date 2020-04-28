@@ -7,6 +7,6 @@ namespace Vixen {
     struct VulkanException : public std::runtime_error {
         const VkResult result;
 
-        VulkanException(VkResult result, const std::string &message) : std::runtime_error(message), result(result) {}
+        VulkanException(const std::string &message, VkResult result) : std::runtime_error(message), result(result) {}
     };
 }

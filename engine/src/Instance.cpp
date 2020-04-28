@@ -18,7 +18,7 @@ namespace Vixen {
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
 #ifdef VIXEN_DEBUG
                 fatal("[VULKAN] " + std::string(pCallbackData->pMessage));
-#elif
+#else
                 warning("[VULKAN] " + std::string(pCallbackData->pMessage));
 #endif
                 break;

@@ -8,16 +8,15 @@ namespace Vixen {
         int32_t width, height, channels;
         stbi_uc *pixels = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
         if (!pixels)
-            throw IOException("Failed to open file", path);
+            throw IOException("Failed to open image for Texture creation", path);
 
         VkDeviceSize size = width * height * channels;
         VkFormat format;
         if (channels == STBI_rgb_alpha)
             format = VK_FORMAT_R8G8B8A8_SRGB;
         else
-            throw ImageException(VulkanException(VK_ERROR_FORMAT_NOT_SUPPORTED,
-                                                 "Unsupported image format, has " + std::to_string(channels) +
-                                                 " channels"), path);
+            throw ImageException(VulkanException("Unsupported image format, has " + std::to_string(channels) +
+                                                 " channels", VK_ERROR_FORMAT_NOT_SUPPORTED), path);
 
         /// Create VkImage and VmaAllocation for texture
         VkBuffer stagingBuffer;

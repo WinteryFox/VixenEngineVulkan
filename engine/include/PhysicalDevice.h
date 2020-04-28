@@ -5,6 +5,7 @@
 #include <set>
 #include <memory>
 #include "Instance.h"
+#include "exceptions/VulkanException.h"
 
 namespace Vixen {
     struct SwapChainSupportDetails {

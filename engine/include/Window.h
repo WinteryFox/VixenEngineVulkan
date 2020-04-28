@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <stb_image.h>
 #include "Logger.h"
+#include "exceptions/IOException.h"
 
 namespace Vixen {
     class Window {
@@ -23,23 +24,23 @@ namespace Vixen {
          * @param[in] width The width of the window
          * @param[in] height The height of the window
          */
-        explicit Window(const std::string &name, const std::string &icon = "../../icon.png",
+        explicit Window(const std::string &name, const std::string &icon,
                         GLFWmonitor *monitor = nullptr, int width = 1280, int height = 720);
 
         ~Window();
 
-        bool shouldClose();
+        [[nodiscard]] bool shouldClose() const;
 
         /**
          * Update the GLFW3 window, this polls GLFW3 events
          */
-        void update();
+        static void update();
 
         /**
          * Swaps the GLFW3 window display buffers, draws the current frame to the window
          */
-        void swap();
+        void swap() const;
 
-        bool setIcon(const std::string &path);
+        void setIcon(const std::string &path) const;
     };
 }

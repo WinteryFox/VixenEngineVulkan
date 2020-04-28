@@ -25,7 +25,7 @@ namespace Vixen {
         const auto imageViewCreateResult = vkCreateImageView(logicalDevice->device, &imageViewCreateInfo, nullptr,
                                                              &view);
         if (imageViewCreateResult != VK_SUCCESS)
-            throw VulkanException(imageViewCreateResult, "Failed to create VkImageView");
+            throw VulkanException("Failed to create VkImageView", imageViewCreateResult);
         return view;
     }
 
@@ -55,7 +55,7 @@ namespace Vixen {
         const auto result = vmaCreateImage(logicalDevice->allocator, &imageCreateInfo, &allocationCreateInfo, &image,
                                            &allocation, nullptr);
         if (result != VK_SUCCESS)
-            throw VulkanException(result, "Failed to create VkImage object");
+            throw VulkanException("Failed to create VkImage object", result);
     }
 
     /**
@@ -84,7 +84,7 @@ namespace Vixen {
         const auto result = vmaCreateBuffer(logicalDevice->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer,
                                             &allocation, nullptr);
         if (result != VK_SUCCESS)
-            throw VulkanException(result, "Failed to create VmaAllocation");
+            throw VulkanException("Failed to create VmaAllocation", result);
 
         return true;
     }
