@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <FBX/FBXImport.h>
+#include <FBX/TriangulateProcess.h>
 #include <filesystem>
 #include "Mesh.h"
 
@@ -17,7 +18,7 @@ namespace Vixen {
 
         void loadMesh(const std::string &path) {
             try {
-                const auto &fbxScene = FBX::importFile(path, FBX::Process::TRIANGULATE);
+                const auto &fbxScene = FBX::importFile(path, std::set<FBX::Process*>{new FBX::TriangulateProcess()});
 
                 for (const auto &fbxModel : fbxScene->models) {
                     std::vector<glm::vec3> vertices;

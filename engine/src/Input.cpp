@@ -19,8 +19,7 @@ namespace Vixen {
         lastY = currentY;
 
         camera->horizontal -= 0.01f * offsetX;
-        camera->vertical -= 0.01f * offsetY;
-        camera->vertical = glm::clamp(camera->vertical, -1.5, 1.5);
+        camera->vertical = glm::clamp(camera->vertical - 0.01f * offsetY, -1.5, 1.5);
 
         camera->rotation = {
                 cos(camera->vertical) * sin(camera->horizontal),
