@@ -21,11 +21,11 @@ endif (WIN32 AND CMAKE_BUILD_TYPE MATCHES "Release")
 
 # Compile shaders
 add_custom_target(
-        vert glsLangValidator -V test.vert -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/vert.spv
+        vert glslangValidator -V test.vert -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/vert.spv
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/shaders
 )
 add_custom_target(
-        frag glsLangValidator -V test.frag -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/frag.spv
+        frag glslangValidator -V test.frag -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/frag.spv
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/shaders
 )
 add_dependencies(VixenEngineTest vert frag)
