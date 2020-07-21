@@ -18,7 +18,7 @@ namespace Vixen {
 
         void loadMesh(const std::string &path) {
             try {
-                const auto &fbxScene = FBX::importFile(path, std::set<FBX::Process*>{new FBX::TriangulateProcess()});
+                const auto &fbxScene = FBX::importFile(path, std::set<FBX::Process *>{new FBX::TriangulateProcess()});
 
                 for (const auto &fbxModel : fbxScene->models) {
                     std::vector<glm::vec3> vertices;
@@ -46,15 +46,28 @@ namespace Vixen {
                     for (const auto &uv : fbxModel->mesh->uvs)
                         uvs.emplace_back(uv.x, 1.0f - uv.y);
 
-                    const auto mesh = std::make_shared<Mesh>(
-                            logicalDevice,
-                            fbxModel->material != nullptr && fbxModel->material->texture != nullptr ?
-                            std::make_shared<Texture>(
+                    std::shared_ptr<Texture> texture = nullptr;
+
+                    if (fbxModel->material != nullptr && fbxModel->material->texture != nullptr) {
+                        try {
+                            texture = std::make_shared<Texture>(
                                     logicalDevice,
                                     physicalDevice,
                                     std::filesystem::path(path).parent_path().append(
                                             fbxModel->material->texture->relativePath).string()
-                            ) : nullptr,
+                            );
+                        } catch (std::runtime_error &ignored) {
+                            texture = std::make_shared<Texture>(
+                                    logicalDevice,
+                                    physicalDevice,
+                                    fbxModel->material->texture->absolutePath
+                            );
+                        }
+                    }
+
+                    const auto mesh = std::make_shared<Mesh>(
+                            logicalDevice,
+                            texture,
                             vertices,
                             indices,
                             uvs
