@@ -12,11 +12,10 @@ namespace Vixen {
         vkDestroyShaderModule(logicalDevice->device, shader, nullptr);
     }
 
-    VkShaderModule
-    Shader::createShader(const std::string &filePath) {
+    VkShaderModule Shader::createShader(const std::string &filePath) {
         std::ifstream file(filePath, std::ios::ate | std::ios::binary);
         if (!file.is_open()) {
-            fatal("Failed to open shader " + filePath);
+            error(IOException("Failed to open shader", filePath));
             return VK_NULL_HANDLE;
         }
 
@@ -29,16 +28,16 @@ namespace Vixen {
         return createShader(buffer);
     }
 
-    VkShaderModule
-    Shader::createShader(const std::vector<char> &bytecode) {
+    VkShaderModule Shader::createShader(const std::vector<char> &bytecode) {
         VkShaderModuleCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         createInfo.codeSize = bytecode.size();
         createInfo.pCode = reinterpret_cast<const uint32_t *>(bytecode.data());
 
         VkShaderModule shaderModule;
-        if (vkCreateShaderModule(logicalDevice->device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-            fatal("Failed to create shader module");
+        VkResult result = vkCreateShaderModule(logicalDevice->device, &createInfo, nullptr, &shaderModule);
+        if (result != VK_SUCCESS) {
+            error(VulkanException("Failed to create shader module", result));
             return VK_NULL_HANDLE;
         }
         trace("Successfully created shader module");

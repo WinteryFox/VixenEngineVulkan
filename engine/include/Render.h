@@ -7,6 +7,7 @@
 #include "Mesh.h"
 #include "Scene.h"
 #include "Camera.h"
+#include "Framebuffer.h"
 
 namespace Vixen {
     enum class BufferType {
@@ -44,7 +45,7 @@ namespace Vixen {
         /**
          * A list of frame buffers used by this graphics pipeline
          */
-        std::vector<VkFramebuffer> framebuffers = {};
+        std::vector<Framebuffer> framebuffers = {};
 
         /**
          * The command pool used by this renderer
@@ -168,7 +169,7 @@ namespace Vixen {
 
         void destroy();
 
-        void updateUniformBuffer(Entity entity, uint32_t imageIndex);
+        void updateUniformBuffer(const Entity &entity, uint32_t imageIndex);
 
     public:
         /**

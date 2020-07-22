@@ -70,7 +70,7 @@ namespace Vixen {
         currentFrame = (currentFrame + 1) % framesInFlight;
     }
 
-    void Render::updateUniformBuffer(Entity entity, uint32_t imageIndex) {
+    void Render::updateUniformBuffer(const Entity &entity, uint32_t imageIndex) {
         vertex->mvp.model = entity.getModelMatrix();
 
         void *data;
@@ -80,30 +80,17 @@ namespace Vixen {
     }
 
     void Render::createFramebuffers() {
-        framebuffers.resize(logicalDevice->imageViews.size());
-        for (std::vector<VkImageView>::size_type i = 0; i < logicalDevice->imageViews.size(); i++) {
-            std::array<VkImageView, 2> attachments = {logicalDevice->imageViews[i], depthImageView};
+        framebuffers.reserve(logicalDevice->imageViews.size());
 
-            VkFramebufferCreateInfo framebufferCreateInfo = {};
-            framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebufferCreateInfo.renderPass = renderPass;
-            framebufferCreateInfo.attachmentCount = attachments.size();
-            framebufferCreateInfo.pAttachments = attachments.data();
-            framebufferCreateInfo.width = logicalDevice->extent.width;
-            framebufferCreateInfo.height = logicalDevice->extent.height;
-            framebufferCreateInfo.layers = 1;
-
-            if (vkCreateFramebuffer(logicalDevice->device, &framebufferCreateInfo, nullptr, &framebuffers[i]) !=
-                VK_SUCCESS)
-                fatal("Failed to create a frame buffer");
+        for (auto &imageView : logicalDevice->imageViews) {
+            framebuffers.emplace_back(logicalDevice, renderPass, std::vector<VkImageView>{imageView, depthImageView},
+                                      logicalDevice->extent.width, logicalDevice->extent.height);
         }
         trace("Successfully created frame buffers");
     }
 
     void Render::destroyFramebuffers() {
-        for (auto &framebuffer : framebuffers)
-            vkDestroyFramebuffer(logicalDevice->device, framebuffer, nullptr);
-        trace("Destroyed framebuffers");
+        framebuffers.clear();
     }
 
     void Render::createSyncObjects() {
@@ -162,7 +149,7 @@ namespace Vixen {
             VkRenderPassBeginInfo renderPassBeginInfo = {};
             renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassBeginInfo.renderPass = renderPass;
-            renderPassBeginInfo.framebuffer = framebuffers[i];
+            renderPassBeginInfo.framebuffer = framebuffers[i].getFramebuffer();
             renderPassBeginInfo.renderArea.offset = {0, 0};
             renderPassBeginInfo.renderArea.extent = logicalDevice->extent;
 

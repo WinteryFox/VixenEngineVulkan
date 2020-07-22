@@ -3,7 +3,7 @@
 #include "Shader.h"
 
 namespace Vixen {
-    struct VertexShader : Shader {
+    struct VertexShader : public Shader {
         struct ModelViewProjection {
             alignas(16) glm::mat4 model{};
             alignas(16) glm::mat4 view{};

@@ -56,7 +56,8 @@ set(
         include/exceptions/VulkanException.h
         include/exceptions/ImageException.h
         include/exceptions/IOException.h
-        include/SimpleMath.h)
+        include/SimpleMath.h
+        include/Framebuffer.h)
 set(
         vixen_SOURCES
         properties.rc
@@ -68,7 +69,8 @@ set(
         src/Render.cpp
         src/Mesh.cpp
         src/Input.cpp
-        src/Texture.cpp)
+        src/Texture.cpp
+        src/Framebuffer.cpp)
 
 add_library(
         VixenEngine

@@ -103,6 +103,11 @@ namespace Vixen {
         throw std::runtime_error(message);
     }
 
+    static void error(const std::runtime_error &error) {
+        log(LogSeverity::LOG_SEVERITY_ERR, error.what());
+        throw error;
+    }
+
     static void fatal(const std::string &message) {
         log(LogSeverity::LOG_SEVERITY_FATAL, message);
 #ifdef __WIN32__

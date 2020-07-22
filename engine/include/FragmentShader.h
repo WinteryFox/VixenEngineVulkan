@@ -3,7 +3,7 @@
 #include "Shader.h"
 
 namespace Vixen {
-    struct FragmentShader : Shader {
+    struct FragmentShader : public Shader {
         FragmentShader(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::string &filePath) : Shader(
                 logicalDevice, filePath) {}
 

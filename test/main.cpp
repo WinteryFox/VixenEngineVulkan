@@ -52,7 +52,7 @@ int main() {
 
     Vixen::Scene scene{};
     scene.entities.push_back(Vixen::Entity(meshStore->meshes[1], {}, {}, 0.01f));
-    scene.entities.push_back(Vixen::Entity(meshStore->meshes[2], {}, {}, 0.01f));
+    scene.entities.push_back(Vixen::Entity(meshStore->meshes[2], {0.0, 0.0, 10.0}, {}, 0.001f));
 
     std::unique_ptr<Vixen::Render> render(new Vixen::Render(logicalDevice, physicalDevice, scene, vertex, fragment));
 
