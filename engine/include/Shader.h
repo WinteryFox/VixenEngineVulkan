@@ -39,8 +39,6 @@ namespace Vixen {
         ~Shader();
 
     private:
-        VkShaderModule createShader(const std::string &filePath);
-
-        VkShaderModule createShader(const std::vector<char> &bytecode);
+        static std::vector<char> readBytecode(const std::string &filePath);
     };
 }
