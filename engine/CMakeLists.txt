@@ -40,7 +40,7 @@ set(
         include/Logger.h
         include/PhysicalDevice.h
         include/LogicalDevice.h
-        include/Shader.h
+        include/ShaderModule.h
         include/Render.h
         include/Mesh.h
         include/Util.h
@@ -49,15 +49,14 @@ set(
         include/Scene.h
         include/Camera.h
         include/Input.h
-        include/VertexShader.h
-        include/FragmentShader.h
         include/MeshStore.h
         include/Texture.h
         include/exceptions/VulkanException.h
         include/exceptions/ImageException.h
         include/exceptions/IOException.h
         include/SimpleMath.h
-        include/Framebuffer.h)
+        include/Framebuffer.h
+        include/Shader.h)
 set(
         vixen_SOURCES
         properties.rc
@@ -65,12 +64,13 @@ set(
         src/Instance.cpp
         src/PhysicalDevice.cpp
         src/LogicalDevice.cpp
-        src/Shader.cpp
+        src/ShaderModule.cpp
         src/Render.cpp
         src/Mesh.cpp
         src/Input.cpp
         src/Texture.cpp
-        src/Framebuffer.cpp)
+        src/Framebuffer.cpp
+        src/Shader.cpp)
 
 add_library(
         VixenEngine

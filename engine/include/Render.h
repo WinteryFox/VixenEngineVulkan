@@ -2,8 +2,7 @@
 
 #include <vulkan/vulkan.h>
 #include <memory>
-#include "VertexShader.h"
-#include "FragmentShader.h"
+#include "Shader.h"
 #include "Mesh.h"
 #include "Scene.h"
 #include "Camera.h"
@@ -82,10 +81,6 @@ namespace Vixen {
 
         std::vector<VkDescriptorSet> descriptorSets;
 
-        std::array<VkVertexInputBindingDescription, 2> bindingDescriptions = {};
-
-        std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {};
-
         VkSampler textureSampler{};
 
         VkFormat depthImageFormat;
@@ -93,15 +88,19 @@ namespace Vixen {
         VkImageView depthImageView{};
         VmaAllocation depthImageAllocation{};
 
+        struct ModelViewProjection {
+            alignas(16) glm::mat4 model{};
+            alignas(16) glm::mat4 view{};
+            alignas(16) glm::mat4 projection{};
+        } mvp;
+
         /**
          * The maximum number of frames in flight, also known as concurrently rendered frames
          * ensuring that the GPU is always being utilized
          */
         const int framesInFlight;
 
-        const std::unique_ptr<VertexShader> &vertex;
-
-        const std::unique_ptr<FragmentShader> &fragment;
+        const Shader &shader;
 
         const Scene &scene;
 
@@ -169,7 +168,7 @@ namespace Vixen {
 
         void destroy();
 
-        void updateUniformBuffer(const Entity &entity, uint32_t imageIndex);
+        void updateUniformBuffer(const std::unique_ptr<Camera> &camera, const Entity &entity, uint32_t imageIndex);
 
     public:
         /**
@@ -181,8 +180,7 @@ namespace Vixen {
          * @param[in] framesInFlight The maximum frames in flight to be used by this renderer
          */
         Render(const std::unique_ptr<LogicalDevice> &device, const std::unique_ptr<PhysicalDevice> &physicalDevice,
-               const Scene &scene, const std::unique_ptr<VertexShader> &vertex,
-               const std::unique_ptr<FragmentShader> &fragment, BufferType bufferType = BufferType::DOUBLE_BUFFER);
+               const Scene &scene, const Shader &shader, BufferType bufferType = BufferType::DOUBLE_BUFFER);
 
         ~Render();
 

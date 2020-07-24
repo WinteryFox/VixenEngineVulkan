@@ -2,10 +2,9 @@
 
 namespace Vixen {
     Render::Render(const std::unique_ptr<LogicalDevice> &device, const std::unique_ptr<PhysicalDevice> &physicalDevice,
-                   const Scene &scene, const std::unique_ptr<VertexShader> &vertex,
-                   const std::unique_ptr<FragmentShader> &fragment, BufferType bufferType)
-            : logicalDevice(device), physicalDevice(physicalDevice), scene(scene), vertex(vertex),
-              fragment(fragment), framesInFlight(static_cast<const int>(bufferType)) {
+                   const Scene &scene, const Shader &shader, BufferType bufferType)
+            : logicalDevice(device), physicalDevice(physicalDevice), scene(scene), shader(shader),
+              framesInFlight(static_cast<const int>(bufferType)) {
         create();
     }
 
@@ -28,11 +27,7 @@ namespace Vixen {
             fatal("Failed to acquire image " + std::to_string(result));
         }
 
-        vertex->mvp.view = camera->getView();
-        vertex->mvp.projection = camera->getProjection(
-                static_cast<float>(logicalDevice->extent.width) / static_cast<float>(logicalDevice->extent.height));
-        vertex->mvp.projection[1][1] *= -1.0f;
-        updateUniformBuffer(scene.entities[0], imageIndex);
+        updateUniformBuffer(camera, scene.entities[0], imageIndex);
 
         VkSubmitInfo submitInfo = {};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -70,12 +65,18 @@ namespace Vixen {
         currentFrame = (currentFrame + 1) % framesInFlight;
     }
 
-    void Render::updateUniformBuffer(const Entity &entity, uint32_t imageIndex) {
-        vertex->mvp.model = entity.getModelMatrix();
-
+    void Render::updateUniformBuffer(const std::unique_ptr<Camera> &camera, const Entity &entity, uint32_t imageIndex) {
         void *data;
         vmaMapMemory(logicalDevice->allocator, uniformBuffersMemory[imageIndex], &data);
-        memcpy(data, &vertex->mvp, sizeof(vertex->mvp));
+
+        glm::mat4 model = entity.getModelMatrix();
+        glm::mat4 view = camera->getView();
+        glm::mat4 projection = camera->getProjection(16.0 / 9.0);
+
+        memcpy(data, &model, sizeof(glm::mat4));
+        memcpy((glm::mat4 *) data + 1, &view, sizeof(glm::mat4));
+        memcpy((glm::mat4 *) data + 2, &projection, sizeof(glm::mat4));
+
         vmaUnmapMemory(logicalDevice->allocator, uniformBuffersMemory[imageIndex]);
     }
 
@@ -261,26 +262,24 @@ namespace Vixen {
 
     void Render::createPipeline() {
         /// Create graphics pipeline
-        VkPipelineShaderStageCreateInfo vertCreateInfo = {};
-        vertCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        vertCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-        vertCreateInfo.module = vertex->shader;
-        vertCreateInfo.pName = "main";
+        std::vector<VkPipelineShaderStageCreateInfo> s{};
 
-        VkPipelineShaderStageCreateInfo fragCreateInfo = {};
-        fragCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        fragCreateInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-        fragCreateInfo.module = fragment->shader;
-        fragCreateInfo.pName = "main";
+        for (const auto &sh : shader.getModules()) {
+            VkPipelineShaderStageCreateInfo createInfo{};
+            createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+            createInfo.stage = sh->getStage();
+            createInfo.module = sh->getModule();
+            createInfo.pName = sh->getEntryPoint().c_str();
 
-        std::array<VkPipelineShaderStageCreateInfo, 2> shaders = {vertCreateInfo, fragCreateInfo};
+            s.push_back(createInfo);
+        }
 
         VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};
         vertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputCreateInfo.vertexBindingDescriptionCount = bindingDescriptions.size();
-        vertexInputCreateInfo.pVertexBindingDescriptions = bindingDescriptions.data();
-        vertexInputCreateInfo.vertexAttributeDescriptionCount = attributeDescriptions.size();
-        vertexInputCreateInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+        vertexInputCreateInfo.vertexBindingDescriptionCount = shader.getAllBindings().size();
+        vertexInputCreateInfo.pVertexBindingDescriptions = shader.getAllBindings().data();
+        vertexInputCreateInfo.vertexAttributeDescriptionCount = shader.getAllAttributes().size();
+        vertexInputCreateInfo.pVertexAttributeDescriptions = shader.getAllAttributes().data();
 
         VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo = {};
         inputAssemblyCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -363,8 +362,8 @@ namespace Vixen {
 
         VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
         pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        pipelineCreateInfo.stageCount = shaders.size();
-        pipelineCreateInfo.pStages = shaders.data();
+        pipelineCreateInfo.stageCount = s.size();
+        pipelineCreateInfo.pStages = s.data();
         pipelineCreateInfo.pVertexInputState = &vertexInputCreateInfo;
         pipelineCreateInfo.pInputAssemblyState = &inputAssemblyCreateInfo;
         pipelineCreateInfo.pViewportState = &viewportStateCreateInfo;
@@ -447,7 +446,7 @@ namespace Vixen {
     }
 
     void Render::createUniformBuffers() {
-        VkDeviceSize bufferSize = sizeof(VertexShader::ModelViewProjection);
+        VkDeviceSize bufferSize = 3 * sizeof(glm::mat4);
         uniformBuffers.resize(logicalDevice->images.size());
         uniformBuffersMemory.resize(logicalDevice->images.size());
 
@@ -491,24 +490,6 @@ namespace Vixen {
     }
 
     std::vector<VkDescriptorSet> Render::createDescriptorSets() {
-        bindingDescriptions[0].binding = 0;
-        bindingDescriptions[0].stride = sizeof(glm::vec3);
-        bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-        bindingDescriptions[1].binding = 1;
-        bindingDescriptions[1].stride = sizeof(glm::vec2);
-        bindingDescriptions[1].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-        attributeDescriptions[0].binding = 0;
-        attributeDescriptions[0].location = 0;
-        attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[0].offset = 0;
-
-        attributeDescriptions[1].binding = 1;
-        attributeDescriptions[1].location = 1;
-        attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
-        attributeDescriptions[1].offset = 0;
-
         std::vector<VkDescriptorSet> sets;
         std::vector<VkDescriptorSetLayout> layouts(logicalDevice->images.size(), descriptorSetLayout);
 
@@ -527,7 +508,7 @@ namespace Vixen {
             VkDescriptorBufferInfo descriptorBufferInfo{};
             descriptorBufferInfo.buffer = uniformBuffers[i];
             descriptorBufferInfo.offset = 0;
-            descriptorBufferInfo.range = sizeof(VertexShader::ModelViewProjection);
+            descriptorBufferInfo.range = 3 * sizeof(glm::mat4);
 
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;

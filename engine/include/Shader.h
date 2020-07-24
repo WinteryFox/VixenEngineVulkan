@@ -1,44 +1,36 @@
-#pragma once
+#ifndef VIXENENGINE_SHADER_H
+#define VIXENENGINE_SHADER_H
 
-#include <vulkan/vulkan.h>
-#include <fstream>
-#include <vector>
-#include <memory>
-#include "Logger.h"
-#include "LogicalDevice.h"
+#include <ranges>
+#include "ShaderModule.h"
 
 namespace Vixen {
     class Shader {
+        const std::vector<const ShaderModule*> modules;
+
     public:
-        /**
-         * The logical device this shader is made by, required to be stored to destroy the shader
-         */
-        const std::unique_ptr<LogicalDevice> &logicalDevice;
+        explicit Shader(std::vector<const ShaderModule*> modules);
 
-        /**
-         * The vertex shader module
-         */
-        VkShaderModule shader;
+        [[nodiscard]] const std::vector<const ShaderModule*> &getModules() const;
+        
+        [[nodiscard]] std::vector<VkVertexInputBindingDescription> getAllBindings() const;
 
-        /**
-         * Create a new shader module
-         *
-         * @param[in] logicalDevice The device to make the shader for
-         * @param[in] filePath The path to the file containing the shader bytecode
-         */
-        Shader(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::string &filePath);
+        [[nodiscard]] std::vector<VkVertexInputAttributeDescription> getAllAttributes() const;
 
-        /**
-         * Create a new shader module
-         *
-         * @param[in] logicalDevice The device to make the shader for
-         * @param[in] bytecode The source bytecode of the shader
-         */
-        Shader(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::vector<char> &bytecode);
+        class Builder {
+            std::vector<const ShaderModule*> modules{};
 
-        ~Shader();
+        public:
+            Builder &addModule(const ShaderModule &module) {
+                modules.push_back(&module);
+                return *this;
+            }
 
-    private:
-        static std::vector<char> readBytecode(const std::string &filePath);
+            [[nodiscard]] Shader build() const {
+                return Shader(modules);
+            }
+        };
     };
 }
+
+#endif
