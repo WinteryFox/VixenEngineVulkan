@@ -21,6 +21,7 @@ set(
         ${CMAKE_CURRENT_SOURCE_DIR}/contrib/stb
         ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glm
         ${CMAKE_CURRENT_SOURCE_DIR}/contrib/VMA/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/range-v3/include
 )
 
 if (vixen_BUILD_GLFW)
@@ -70,7 +71,7 @@ set(
         src/Input.cpp
         src/Texture.cpp
         src/Framebuffer.cpp
-        src/Shader.cpp)
+        src/Shader.cpp include/ShaderBinding.h src/ShaderBinding.cpp)
 
 add_library(
         VixenEngine

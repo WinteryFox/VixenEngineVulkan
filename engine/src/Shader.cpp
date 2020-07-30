@@ -1,30 +1,27 @@
 #include "Shader.h"
 
 namespace Vixen {
-    Shader::Shader(std::vector<const ShaderModule*> modules) : modules(std::move(modules)) {}
+    Shader::Shader(std::vector<std::shared_ptr<const ShaderModule>> modules) : modules(std::move(modules)) {}
 
-    const std::vector<const ShaderModule *> &Shader::getModules() const {
+    const std::vector<std::shared_ptr<const ShaderModule>> &Shader::getModules() const {
         return modules;
     }
 
-    std::vector<VkVertexInputBindingDescription> Shader::getAllBindings() const {
-        std::vector<VkVertexInputBindingDescription> b{};
-
-        for (const auto &module : modules) {
-            b.insert(std::end(b), std::begin(module->getBindings()), std::end(module->getBindings()));
-        }
-
-        return b;
+    std::vector<ShaderBinding> Shader::getAllBindings() const {
+        return modules |
+               ranges::views::transform(
+                       [](const std::shared_ptr<const ShaderModule> &module) { return module->getBindings(); }) |
+               ranges::views::cache1 |
+               ranges::views::join |
+               ranges::to_vector;
     }
 
     std::vector<VkVertexInputAttributeDescription> Shader::getAllAttributes() const {
-        /*std::vector<VkVertexInputAttributeDescription> a{};
-
-        for (const auto &module : modules) {
-            a.insert(std::end(a), std::begin(module->getAttributes()), std::end(module->getAttributes()));
-        }
-
-        return a;*/
-        return modules | std::ranges::views::transform([](const ShaderModule *module) { return module->getAttributes(); });
+        return modules |
+               ranges::views::transform(
+                       [](const std::shared_ptr<const ShaderModule> &module) { return module->getAttributes(); }) |
+               ranges::views::cache1 |
+               ranges::views::join |
+               ranges::to_vector;
     }
 }

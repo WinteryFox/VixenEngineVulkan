@@ -24,7 +24,7 @@ int main() {
 
     std::vector<const char *> layers = {
 #ifdef VIXEN_DEBUG
-            "VK_LAYER_LUNARG_standard_validation"
+            "VK_LAYER_KHRONOS_validation"
 #endif
     };
 
@@ -51,27 +51,29 @@ int main() {
     scene.entities.push_back(Vixen::Entity(meshStore->meshes[1], {}, {}, 0.01f));
     scene.entities.push_back(Vixen::Entity(meshStore->meshes[2], {0.0, 0.0, 10.0}, {}, 0.001f));
 
+    const auto vertex = Vixen::ShaderModule::Builder(logicalDevice)
+            .setShaderStage(VK_SHADER_STAGE_VERTEX_BIT)
+            .setBytecode("vert.spv")
+            .addAttribute(0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0)
+            .addAttribute(1, 1, VK_FORMAT_R32G32_SFLOAT, 0)
+            .addBinding(0, VK_VERTEX_INPUT_RATE_VERTEX, 0)
+            .addBinding(1, VK_VERTEX_INPUT_RATE_VERTEX, 0)
+            .addBinding(2, VK_VERTEX_INPUT_RATE_VERTEX, 0)
+            .build();
+
+    const auto fragment = Vixen::ShaderModule::Builder(logicalDevice)
+            .setShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT)
+            .setBytecode("frag.spv")
+            .addBinding(1, VK_VERTEX_INPUT_RATE_INSTANCE, 0)
+            .build();
+
     std::unique_ptr<Vixen::Render> render(new Vixen::Render(
             logicalDevice,
             physicalDevice,
             scene,
             Vixen::Shader::Builder()
-                    .addModule(
-                            Vixen::ShaderModule::Builder(logicalDevice)
-                                    .setShaderStage(VK_SHADER_STAGE_VERTEX_BIT)
-                                    .setBytecode("vert.spv")
-                                    .addAttribute(0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0)
-                                    .addAttribute(1, 1, VK_FORMAT_R32G32_SFLOAT, 0)
-                                    .addBinding(0, VK_VERTEX_INPUT_RATE_VERTEX, 0)
-                                    .addBinding(1, VK_VERTEX_INPUT_RATE_VERTEX, 0)
-                                    .addBinding(2, VK_VERTEX_INPUT_RATE_VERTEX, 0)
-                                    .build())
-                    .addModule(
-                            Vixen::ShaderModule::Builder(logicalDevice)
-                                    .setShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT)
-                                    .setBytecode("frag.spv")
-                                    .addBinding(1, VK_VERTEX_INPUT_RATE_INSTANCE, 0)
-                                    .build())
+                    .addModule(std::shared_ptr<const Vixen::ShaderModule>(&vertex))
+                    .addModule(std::shared_ptr<const Vixen::ShaderModule>(&fragment))
                     .build()
     ));
 

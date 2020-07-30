@@ -264,6 +264,7 @@ namespace Vixen {
         /// Create graphics pipeline
         std::vector<VkPipelineShaderStageCreateInfo> s{};
 
+        s.reserve(shader.getModules().size());
         for (const auto &sh : shader.getModules()) {
             VkPipelineShaderStageCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -274,10 +275,14 @@ namespace Vixen {
             s.push_back(createInfo);
         }
 
+        const auto bindings = shader.getAllBindings();
+
         VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};
         vertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertexInputCreateInfo.vertexBindingDescriptionCount = shader.getAllBindings().size();
-        vertexInputCreateInfo.pVertexBindingDescriptions = shader.getAllBindings().data();
+        vertexInputCreateInfo.pVertexBindingDescriptions = (bindings |
+                ranges::views::transform([](ShaderBinding binding) { return binding.getBinding(); }) |
+                ranges::to_vector).data();
         vertexInputCreateInfo.vertexAttributeDescriptionCount = shader.getAllAttributes().size();
         vertexInputCreateInfo.pVertexAttributeDescriptions = shader.getAllAttributes().data();
 

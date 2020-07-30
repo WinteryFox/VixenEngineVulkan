@@ -3,7 +3,7 @@
 namespace Vixen {
     ShaderModule::ShaderModule(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::vector<char> &bytecode,
                                VkShaderStageFlagBits stage, std::string entryPoint,
-                               std::vector<VkVertexInputBindingDescription> bindings,
+                               std::vector<ShaderBinding> bindings,
                                std::vector<VkVertexInputAttributeDescription> attributes)
             : logicalDevice(logicalDevice), module(createModule(logicalDevice, bytecode)), stage(stage),
               entryPoint(std::move(entryPoint)), bindings(std::move(bindings)), attributes(std::move(attributes)) {}
@@ -40,11 +40,11 @@ namespace Vixen {
         return stage;
     }
 
-    const std::vector<VkVertexInputBindingDescription> &ShaderModule::getBindings() const {
+    const std::vector<ShaderBinding> &ShaderModule::getBindings() const {
         return bindings;
     }
 
-    const std::vector<ShaderBinding> &ShaderModule::getAttributes() const {
+    const std::vector<VkVertexInputAttributeDescription> &ShaderModule::getAttributes() const {
         return attributes;
     }
 }

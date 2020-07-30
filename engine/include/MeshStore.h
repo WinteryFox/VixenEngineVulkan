@@ -53,8 +53,7 @@ namespace Vixen {
                             texture = std::make_shared<Texture>(
                                     logicalDevice,
                                     physicalDevice,
-                                    std::filesystem::path(path).parent_path().append(
-                                            fbxModel->material->texture->relativePath).string()
+                                    fbxModel->material->texture->relativePath
                             );
                         } catch (std::runtime_error &ignored) {
                             texture = std::make_shared<Texture>(
@@ -74,6 +73,8 @@ namespace Vixen {
                     );
                     meshes.push_back(mesh);
                 }
+            } catch (const IOException &exception) {
+                throw exception;
             } catch (const std::runtime_error &exception) {
                 throw IOException("Failed to open model", path);
             }

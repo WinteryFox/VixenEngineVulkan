@@ -6,6 +6,7 @@
 #include <memory>
 #include "Logger.h"
 #include "LogicalDevice.h"
+#include "ShaderBinding.h"
 
 namespace Vixen {
     class ShaderModule {
@@ -23,20 +24,12 @@ namespace Vixen {
 
         const std::string entryPoint;
 
-        const std::vector<VkVertexInputBindingDescription> bindings;
+        const std::vector<ShaderBinding> bindings;
 
         const std::vector<VkVertexInputAttributeDescription> attributes;
 
         static VkShaderModule
         createModule(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::vector<char> &bytecode);
-
-        class ShaderBinding {
-            std::type_info type;
-
-        public:
-            template<typename T>
-            ShaderBinding() : type(typeid(T)) {}
-        };
 
     public:
         /**
@@ -47,7 +40,7 @@ namespace Vixen {
          */
         ShaderModule(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::vector<char> &bytecode,
                      VkShaderStageFlagBits stage, std::string entryPoint,
-                     std::vector<VkVertexInputBindingDescription> bindings,
+                     std::vector<ShaderBinding> bindings,
                      std::vector<VkVertexInputAttributeDescription> attributes);
 
         ShaderModule(ShaderModule &&) = delete;
@@ -60,9 +53,9 @@ namespace Vixen {
 
         [[nodiscard]] const VkShaderStageFlagBits &getStage() const;
 
-        [[nodiscard]] const std::vector<VkVertexInputBindingDescription> &getBindings() const;
+        [[nodiscard]] const std::vector<ShaderBinding> &getBindings() const;
 
-        [[nodiscard]] const std::vector<ShaderBinding> &getAttributes() const;
+        [[nodiscard]] const std::vector<VkVertexInputAttributeDescription> &getAttributes() const;
 
         class Builder {
             const std::unique_ptr<LogicalDevice> &logicalDevice;
@@ -73,7 +66,7 @@ namespace Vixen {
 
             std::string entryPoint = "main";
 
-            std::vector<VkVertexInputBindingDescription> bindings{};
+            std::vector<ShaderBinding> bindings{};
 
             std::vector<VkVertexInputAttributeDescription> attributes{};
 
@@ -109,14 +102,13 @@ namespace Vixen {
                 return *this;
             }
 
-            template<typename T>
             Builder &addBinding(uint32_t binding, VkVertexInputRate rate, uint32_t stride) {
                 VkVertexInputBindingDescription input{};
                 input.binding = binding;
                 input.inputRate = rate;
                 input.stride = stride;
 
-                bindings.push_back(input);
+                bindings.emplace_back(0, input); // TODO
 
                 return *this;
             }
