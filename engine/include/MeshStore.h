@@ -49,11 +49,13 @@ namespace Vixen {
                     std::shared_ptr<Texture> texture = nullptr;
 
                     if (fbxModel->material != nullptr && fbxModel->material->texture != nullptr) {
+                        std::string relative = fbxModel->material->texture->relativePath;
+                        std::replace(relative.begin(), relative.end(), '\\', '/');
                         try {
                             texture = std::make_shared<Texture>(
                                     logicalDevice,
                                     physicalDevice,
-                                    fbxModel->material->texture->relativePath
+                                    std::filesystem::path(path).remove_filename().append(relative).string()
                             );
                         } catch (std::runtime_error &ignored) {
                             texture = std::make_shared<Texture>(

@@ -16,6 +16,8 @@ namespace Vixen {
 
         [[nodiscard]] std::vector<ShaderBinding> getAllBindings() const;
 
+        [[nodiscard]] std::vector<VkVertexInputBindingDescription> getAllRawBindings() const;
+
         [[nodiscard]] std::vector<VkVertexInputAttributeDescription> getAllAttributes() const;
 
         class Builder {

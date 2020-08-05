@@ -125,13 +125,13 @@ namespace Vixen {
                 return *this;
             }
 
-            [[nodiscard]] ShaderModule build() const {
+            [[nodiscard]] std::shared_ptr<const ShaderModule> build() const {
                 if (bytecode.empty())
                     error("Bytecode must not be empty");
                 if (stage == 0)
                     error("Shader stage flags must not be 0");
 
-                return ShaderModule(logicalDevice, bytecode, stage, entryPoint, bindings, attributes);
+                return std::make_shared<ShaderModule>(logicalDevice, bytecode, stage, entryPoint, bindings, attributes);
             }
         };
     };

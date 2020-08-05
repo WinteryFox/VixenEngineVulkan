@@ -72,6 +72,7 @@ namespace Vixen {
         glm::mat4 model = entity.getModelMatrix();
         glm::mat4 view = camera->getView();
         glm::mat4 projection = camera->getProjection(16.0 / 9.0);
+        projection[1][1] *= -1.0f;
 
         memcpy(data, &model, sizeof(glm::mat4));
         memcpy((glm::mat4 *) data + 1, &view, sizeof(glm::mat4));
@@ -275,16 +276,15 @@ namespace Vixen {
             s.push_back(createInfo);
         }
 
-        const auto bindings = shader.getAllBindings();
+        const auto bindings = shader.getAllRawBindings();
+        const auto attributes = shader.getAllAttributes();
 
         VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};
         vertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputCreateInfo.vertexBindingDescriptionCount = shader.getAllBindings().size();
-        vertexInputCreateInfo.pVertexBindingDescriptions = (bindings |
-                ranges::views::transform([](ShaderBinding binding) { return binding.getBinding(); }) |
-                ranges::to_vector).data();
-        vertexInputCreateInfo.vertexAttributeDescriptionCount = shader.getAllAttributes().size();
-        vertexInputCreateInfo.pVertexAttributeDescriptions = shader.getAllAttributes().data();
+        vertexInputCreateInfo.vertexBindingDescriptionCount = bindings.size();
+        vertexInputCreateInfo.pVertexBindingDescriptions = bindings.data();
+        vertexInputCreateInfo.vertexAttributeDescriptionCount = attributes.size();
+        vertexInputCreateInfo.pVertexAttributeDescriptions = attributes.data();
 
         VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo = {};
         inputAssemblyCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
