@@ -33,18 +33,23 @@ namespace Vixen {
                 return *this;
             }
 
-            template<typename T>
-            Builder &
-            addBinding(VkDescriptorType type, VkShaderStageFlagBits stage, uint32_t binding, VkVertexInputRate rate,
-                       uint32_t stride) {
+            Builder &addBinding(size_t size, VkDescriptorType type, VkShaderStageFlagBits stage, uint32_t binding,
+                                VkVertexInputRate rate, uint32_t stride) {
                 VkVertexInputBindingDescription input{};
                 input.binding = binding;
                 input.inputRate = rate;
                 input.stride = stride;
 
-                bindings.emplace_back(sizeof(T), type, stage, input);
+                bindings.emplace_back(size, type, stage, input);
 
                 return *this;
+            }
+
+            template<typename T>
+            Builder &
+            addBinding(VkDescriptorType type, VkShaderStageFlagBits stage, uint32_t binding, VkVertexInputRate rate,
+                       uint32_t stride) {
+                return addBinding(sizeof(T), type, stage, binding, rate, stride);
             }
 
             Builder &addAttribute(uint32_t binding, uint32_t location, VkFormat format, uint32_t offset) {
