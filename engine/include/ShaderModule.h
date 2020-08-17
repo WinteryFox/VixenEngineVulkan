@@ -53,10 +53,6 @@ namespace Vixen {
 
         [[nodiscard]] const VkShaderStageFlagBits &getStage() const;
 
-        [[nodiscard]] const std::vector<ShaderBinding> &getBindings() const;
-
-        [[nodiscard]] const std::vector<VkVertexInputAttributeDescription> &getAttributes() const;
-
         class Builder {
             const std::unique_ptr<LogicalDevice> &logicalDevice;
 
@@ -99,29 +95,6 @@ namespace Vixen {
 
             Builder &setEntryPoint(const std::string &e) {
                 entryPoint = e;
-                return *this;
-            }
-
-            Builder &addBinding(uint32_t binding, VkVertexInputRate rate, uint32_t stride) {
-                VkVertexInputBindingDescription input{};
-                input.binding = binding;
-                input.inputRate = rate;
-                input.stride = stride;
-
-                bindings.emplace_back(0, input); // TODO
-
-                return *this;
-            }
-
-            Builder &addAttribute(uint32_t binding, uint32_t location, VkFormat format, uint32_t offset) {
-                VkVertexInputAttributeDescription input{};
-                input.binding = binding;
-                input.location = location;
-                input.format = format;
-                input.offset = offset;
-
-                attributes.push_back(input);
-
                 return *this;
             }
 

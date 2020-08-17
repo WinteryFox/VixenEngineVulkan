@@ -1,38 +1,12 @@
 # ---- BUILD ENGINE ----
 
-find_package(Vulkan REQUIRED)
 find_package(Threads REQUIRED)
 
 set(FBX_IMPORT_BUILD_TEST OFF)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/contrib/FBXImport)
 
-set(
-        vixen_LIBRARY
-        Vulkan::Vulkan
-        Threads::Threads
-        FBXImport
-)
-set(
-        vixen_INCLUDE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${Vulkan_INCLUDE_DIR}
-        ${GLFW_INCLUDE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/FBXImport/importer/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/stb
-        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glm
-        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/VMA/src
-        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/range-v3/include
-)
-
-if (vixen_BUILD_GLFW)
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/contrib/glfw)
-    list(APPEND vixen_LIBRARY glfw)
-    list(APPEND vixen_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/contrib/glfw/include)
-else (vixen_BUILD_GLFW)
-    find_package(GLFW REQUIRED 3.3)
-    list(APPEND vixen_LIBRARY ${GLFW_LIBRARY})
-    list(APPEND vixen_INCLUDE ${GLFW_INCLUDE})
-endif (vixen_BUILD_GLFW)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(VIXEN_LIBS REQUIRED IMPORTED_TARGET glfw3>=3.3 vulkan>=1.2 glm)
 
 set(
         vixen_HEADERS
@@ -57,7 +31,8 @@ set(
         include/exceptions/IOException.h
         include/SimpleMath.h
         include/Framebuffer.h
-        include/Shader.h)
+        include/Shader.h
+        include/ShaderBinding.h)
 set(
         vixen_SOURCES
         properties.rc
@@ -71,7 +46,8 @@ set(
         src/Input.cpp
         src/Texture.cpp
         src/Framebuffer.cpp
-        src/Shader.cpp include/ShaderBinding.h src/ShaderBinding.cpp)
+        src/Shader.cpp
+        src/ShaderBinding.cpp)
 
 add_library(
         VixenEngine
@@ -83,12 +59,20 @@ add_library(
 target_include_directories(
         VixenEngine
         PUBLIC
-        ${vixen_INCLUDE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${Vulkan_INCLUDE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/FBXImport/importer/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/stb
+        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/VMA/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/range-v3/include
+        ${GLM_INCLUDEDIR}
 )
 
 target_link_libraries(
         VixenEngine
-        ${vixen_LIBRARY}
+        Threads::Threads
+        PkgConfig::VIXEN_LIBS
+        FBXImport
 )
 
 set_target_properties(

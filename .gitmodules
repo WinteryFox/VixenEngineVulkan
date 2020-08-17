@@ -1,15 +1,9 @@
-[submodule "engine/contrib/glm"]
-	path = engine/contrib/glm
-	url = https://github.com/g-truc/glm
 [submodule "engine/contrib/stb"]
 	path = engine/contrib/stb
 	url = https://github.com/nothings/stb
 [submodule "engine/contrib/VMA"]
 	path = engine/contrib/VMA
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-[submodule "engine/contrib/glfw"]
-	path = engine/contrib/glfw
-	url = https://github.com/glfw/glfw
 [submodule "engine/contrib/FBXImport"]
 	path = engine/contrib/FBXImport
 	url = https://github.com/WinteryFox/FBXImport.git

@@ -39,12 +39,4 @@ namespace Vixen {
     const VkShaderStageFlagBits &ShaderModule::getStage() const {
         return stage;
     }
-
-    const std::vector<ShaderBinding> &ShaderModule::getBindings() const {
-        return bindings;
-    }
-
-    const std::vector<VkVertexInputAttributeDescription> &ShaderModule::getAttributes() const {
-        return attributes;
-    }
 }

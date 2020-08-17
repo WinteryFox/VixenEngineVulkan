@@ -1,5 +1,5 @@
 /**
- * This is a simple test executionable to test new or experimental functionality.
+ * This is a simple test executable to test new or experimental functionality.
  * Do not use this in your project.
  *
  * @author Foxie
@@ -37,19 +37,18 @@ int main() {
     std::unique_ptr<Vixen::LogicalDevice> logicalDevice(new Vixen::LogicalDevice(instance, window, physicalDevice));
 
     std::unique_ptr<Vixen::Camera> camera(new Vixen::Camera(
-            {0, 0, -3},
-            {}
+            {0, 0, 3}
     ));
 
     std::unique_ptr<Vixen::Input> input(new Vixen::Input(window));
 
     std::unique_ptr<Vixen::MeshStore> meshStore(new Vixen::MeshStore(logicalDevice, physicalDevice));
     meshStore->loadMesh("../../test/models/Fox.FBX");
-    //meshStore->loadMesh("../../test/models/Tree.FBX");
+    meshStore->loadMesh("../../test/models/Crystal.FBX");
 
     Vixen::Scene scene{};
     scene.entities.push_back(Vixen::Entity(meshStore->meshes[1], {}, {}, 0.01f));
-    //scene.entities.push_back(Vixen::Entity(meshStore->meshes[2], {0.0, 0.0, 10.0}, {}, 0.001f));
+    scene.entities.push_back(Vixen::Entity(meshStore->meshes[2], {0.0, 0.0, 10.0}, {}, 1.0f));
 
     std::unique_ptr<Vixen::Render> render(new Vixen::Render(
             logicalDevice,
@@ -59,15 +58,15 @@ int main() {
                     .addModule(Vixen::ShaderModule::Builder(logicalDevice)
                                        .setShaderStage(VK_SHADER_STAGE_VERTEX_BIT)
                                        .setBytecode("vert.spv")
-                                       .addAttribute(0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0)
-                                       .addAttribute(1, 1, VK_FORMAT_R32G32_SFLOAT, 0)
-                                       .addBinding(0, VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec3))
-                                       .addBinding(1, VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec2))
                                        .build())
                     .addModule(Vixen::ShaderModule::Builder(logicalDevice)
                                        .setShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT)
                                        .setBytecode("frag.spv")
                                        .build())
+                    .addAttribute(0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0)
+                    .addAttribute(1, 1, VK_FORMAT_R32G32_SFLOAT, 0)
+                    .addBinding(0, VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec3))
+                    .addBinding(1, VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec2))
                     .build()
     ));
 

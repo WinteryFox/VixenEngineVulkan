@@ -172,8 +172,8 @@ namespace Vixen {
             for (const auto &entity : scene.entities) {
                 const auto &mesh = entity.mesh;
                 /// Bind the mesh's buffers
-                std::vector<VkBuffer> buffers{mesh->getBuffer(), mesh->getBuffer()};
-                std::vector<VkDeviceSize> offsets{0, mesh->vertexCount * sizeof(glm::vec3) +
+                std::array<VkBuffer, 2> buffers{mesh->getBuffer(), mesh->getBuffer()};
+                std::array<VkDeviceSize, 2> offsets{0, mesh->vertexCount * sizeof(glm::vec3) +
                                                      mesh->indexCount * sizeof(uint32_t)};
                 vkCmdBindVertexBuffers(commandBuffers[i], 0, buffers.size(), buffers.data(), offsets.data());
                 vkCmdBindIndexBuffer(commandBuffers[i], mesh->getBuffer(), mesh->vertexCount * sizeof(glm::vec3),
@@ -276,15 +276,17 @@ namespace Vixen {
             s.push_back(createInfo);
         }
 
-        const auto bindings = shader.getAllRawBindings();
-        const auto attributes = shader.getAllAttributes();
+        std::vector<VkVertexInputBindingDescription> bindings;
+        bindings.reserve(shader.getBindings().size());
+        for (const auto &binding : shader.getBindings())
+            bindings.push_back(binding.getBinding());
 
         VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};
         vertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertexInputCreateInfo.vertexBindingDescriptionCount = bindings.size();
         vertexInputCreateInfo.pVertexBindingDescriptions = bindings.data();
-        vertexInputCreateInfo.vertexAttributeDescriptionCount = attributes.size();
-        vertexInputCreateInfo.pVertexAttributeDescriptions = attributes.data();
+        vertexInputCreateInfo.vertexAttributeDescriptionCount = shader.getAttributes().size();
+        vertexInputCreateInfo.pVertexAttributeDescriptions = shader.getAttributes().data();
 
         VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo = {};
         inputAssemblyCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
