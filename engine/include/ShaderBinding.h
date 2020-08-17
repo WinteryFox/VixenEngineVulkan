@@ -7,14 +7,22 @@
 namespace Vixen {
     class ShaderBinding {
         const size_t size;
+        const VkDescriptorType type;
+        const VkShaderStageFlagBits stage;
         const VkVertexInputBindingDescription binding;
 
     public:
-        ShaderBinding(size_t size, const VkVertexInputBindingDescription &binding);
+        ShaderBinding(size_t size, VkDescriptorType type, VkShaderStageFlagBits stage, const VkVertexInputBindingDescription &binding);
+
+        [[nodiscard]] VkDescriptorType getType() const;
+
+        [[nodiscard]] VkShaderStageFlagBits getStage() const;
+
+        [[nodiscard]] const VkVertexInputBindingDescription &getBinding() const;
 
         [[nodiscard]] size_t getSize() const;
 
-        [[nodiscard]] const VkVertexInputBindingDescription &getBinding() const;
+        [[nodiscard]] const VkVertexInputBindingDescription &getInputBinding() const;
     };
 }
 

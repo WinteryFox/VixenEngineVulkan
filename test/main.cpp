@@ -54,20 +54,21 @@ int main() {
             logicalDevice,
             physicalDevice,
             scene,
-            Vixen::Shader::Builder()
-                    .addModule(Vixen::ShaderModule::Builder(logicalDevice)
-                                       .setShaderStage(VK_SHADER_STAGE_VERTEX_BIT)
-                                       .setBytecode("vert.spv")
-                                       .build())
-                    .addModule(Vixen::ShaderModule::Builder(logicalDevice)
-                                       .setShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT)
-                                       .setBytecode("frag.spv")
-                                       .build())
-                    .addAttribute(0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0)
-                    .addAttribute(1, 1, VK_FORMAT_R32G32_SFLOAT, 0)
-                    .addBinding(0, VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec3))
-                    .addBinding(1, VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec2))
-                    .build()
+            std::shared_ptr<Vixen::Shader>(
+                    Vixen::Shader::Builder()
+                            .addModule(Vixen::ShaderModule::Builder(logicalDevice)
+                                               .setShaderStage(VK_SHADER_STAGE_VERTEX_BIT)
+                                               .setBytecode("vert.spv")
+                                               .build())
+                            .addModule(Vixen::ShaderModule::Builder(logicalDevice)
+                                               .setShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT)
+                                               .setBytecode("frag.spv")
+                                               .build())
+                            .addAttribute(0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0)
+                            .addAttribute(1, 1, VK_FORMAT_R32G32_SFLOAT, 0)
+                            .addBinding<glm::vec3>(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0, VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec3))
+                            .addBinding<glm::vec2>(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1, VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec2))
+                            .build())
     ));
 
     int fps = 0;

@@ -47,7 +47,7 @@ set(
         src/Texture.cpp
         src/Framebuffer.cpp
         src/Shader.cpp
-        src/ShaderBinding.cpp)
+        src/ShaderBinding.cpp include/DescriptorSetLayout.h src/DescriptorSetLayout.cpp)
 
 add_library(
         VixenEngine

@@ -33,13 +33,16 @@ namespace Vixen {
                 return *this;
             }
 
-            Builder &addBinding(uint32_t binding, VkVertexInputRate rate, uint32_t stride) {
+            template<typename T>
+            Builder &
+            addBinding(VkDescriptorType type, VkShaderStageFlagBits stage, uint32_t binding, VkVertexInputRate rate,
+                       uint32_t stride) {
                 VkVertexInputBindingDescription input{};
                 input.binding = binding;
                 input.inputRate = rate;
                 input.stride = stride;
 
-                bindings.emplace_back(0, input); // TODO
+                bindings.emplace_back(sizeof(T), type, stage, input);
 
                 return *this;
             }
@@ -56,8 +59,8 @@ namespace Vixen {
                 return *this;
             }
 
-            [[nodiscard]] Shader build() const {
-                return Shader(modules, bindings, attributes);
+            [[nodiscard]] Shader *build() const {
+                return new Shader(modules, bindings, attributes);
             }
         };
     };

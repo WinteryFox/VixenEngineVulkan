@@ -7,6 +7,7 @@
 #include "Scene.h"
 #include "Camera.h"
 #include "Framebuffer.h"
+#include "DescriptorSetLayout.h"
 
 namespace Vixen {
     enum class BufferType {
@@ -73,7 +74,7 @@ namespace Vixen {
 
         VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 
-        VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
+        std::unique_ptr<DescriptorSetLayout> descriptorSetLayout = nullptr;
 
         std::vector<VkBuffer> uniformBuffers;
 
@@ -100,7 +101,7 @@ namespace Vixen {
          */
         const int framesInFlight;
 
-        const Shader &shader;
+        const std::shared_ptr<const Shader> shader;
 
         const Scene &scene;
 
@@ -146,8 +147,6 @@ namespace Vixen {
 
         void createDescriptorSetLayout();
 
-        void destroyDescriptorSetLayout();
-
         void createUniformBuffers();
 
         void createSampler();
@@ -180,7 +179,7 @@ namespace Vixen {
          * @param[in] framesInFlight The maximum frames in flight to be used by this renderer
          */
         Render(const std::unique_ptr<LogicalDevice> &device, const std::unique_ptr<PhysicalDevice> &physicalDevice,
-               const Scene &scene, const Shader &shader, BufferType bufferType = BufferType::DOUBLE_BUFFER);
+               const Scene &scene, std::shared_ptr<const Shader>  shader, BufferType bufferType = BufferType::DOUBLE_BUFFER);
 
         ~Render();
 
