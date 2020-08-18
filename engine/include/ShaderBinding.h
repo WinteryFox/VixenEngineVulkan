@@ -18,8 +18,6 @@ namespace Vixen {
 
         [[nodiscard]] VkShaderStageFlagBits getStage() const;
 
-        [[nodiscard]] const VkVertexInputBindingDescription &getBinding() const;
-
         [[nodiscard]] size_t getSize() const;
 
         [[nodiscard]] const VkVertexInputBindingDescription &getInputBinding() const;

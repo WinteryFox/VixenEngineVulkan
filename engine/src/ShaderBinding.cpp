@@ -20,8 +20,4 @@ namespace Vixen {
     VkShaderStageFlagBits ShaderBinding::getStage() const {
         return stage;
     }
-
-    const VkVertexInputBindingDescription &ShaderBinding::getBinding() const {
-        return binding;
-    }
 }

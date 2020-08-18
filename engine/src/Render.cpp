@@ -418,10 +418,6 @@ namespace Vixen {
         trace("Destroyed pipeline layout");
     }
 
-    void Render::createDescriptorSetLayout() {
-        descriptorSetLayout = std::make_unique<DescriptorSetLayout>(logicalDevice, shader.get());
-    }
-
     void Render::createUniformBuffers() {
         VkDeviceSize bufferSize = 3 * sizeof(glm::mat4);
         uniformBuffers.resize(logicalDevice->images.size());
@@ -439,40 +435,13 @@ namespace Vixen {
         trace("Destroyed uniform buffers");
     }
 
-    VkDescriptorPool Render::createDescriptorPool() {
-        VkDescriptorPool pool;
-
-        std::array<VkDescriptorPoolSize, 2> poolSizes{};
-        poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        poolSizes[0].descriptorCount = static_cast<uint32_t>(logicalDevice->images.size());
-        poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        poolSizes[1].descriptorCount = static_cast<uint32_t>(logicalDevice->images.size());
-
-        VkDescriptorPoolCreateInfo descriptorPoolCreateInfo{};
-        descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        descriptorPoolCreateInfo.poolSizeCount = poolSizes.size();
-        descriptorPoolCreateInfo.pPoolSizes = poolSizes.data();
-        descriptorPoolCreateInfo.maxSets = static_cast<uint32_t>(logicalDevice->images.size());
-
-        if (vkCreateDescriptorPool(logicalDevice->device, &descriptorPoolCreateInfo, nullptr, &pool) != VK_SUCCESS)
-            fatal("Failed to create descriptor pool");
-        trace("Successfully created descriptor pool");
-
-        return pool;
-    }
-
-    void Render::destroyDescriptorPool() {
-        vkDestroyDescriptorPool(logicalDevice->device, descriptorPool, nullptr);
-        trace("Destroyed descriptor pool");
-    }
-
     std::vector<VkDescriptorSet> Render::createDescriptorSets() {
         std::vector<VkDescriptorSet> sets;
         std::vector<VkDescriptorSetLayout> layouts(logicalDevice->images.size(), descriptorSetLayout->getDescriptorSetLayout());
 
         VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{};
         descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        descriptorSetAllocateInfo.descriptorPool = descriptorPool;
+        descriptorSetAllocateInfo.descriptorPool = descriptorPool->getPool();
         descriptorSetAllocateInfo.descriptorSetCount = static_cast<uint32_t>(logicalDevice->images.size());
         descriptorSetAllocateInfo.pSetLayouts = layouts.data();
 
@@ -520,10 +489,10 @@ namespace Vixen {
     void Render::create() {
         createDepthImage();
         createSyncObjects();
-        createDescriptorSetLayout();
+        descriptorSetLayout = std::make_unique<DescriptorSetLayout>(logicalDevice, shader.get());
         createUniformBuffers();
         createSampler();
-        descriptorPool = createDescriptorPool();
+        descriptorPool = std::make_unique<DescriptorPool>(logicalDevice, shader.get(), logicalDevice->images.size());
         descriptorSets = createDescriptorSets();
         createRenderPass();
         createFramebuffers();
@@ -544,7 +513,6 @@ namespace Vixen {
         destroyPipelineLayout();
         destroyPipeline();
         destroySyncObjects();
-        destroyDescriptorPool();
     }
 
     /// TODO: Redo this shit, it sucks

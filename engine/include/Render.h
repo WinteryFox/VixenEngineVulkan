@@ -8,6 +8,7 @@
 #include "Camera.h"
 #include "Framebuffer.h"
 #include "DescriptorSetLayout.h"
+#include "DescriptorPool.h"
 
 namespace Vixen {
     enum class BufferType {
@@ -48,11 +49,6 @@ namespace Vixen {
         std::vector<Framebuffer> framebuffers = {};
 
         /**
-         * The command pool used by this renderer
-         */
-        VkCommandPool commandPool = VK_NULL_HANDLE;
-
-        /**
          * A list of command buffers associated with the corresponding framebuffer
          */
         std::vector<VkCommandBuffer> commandBuffers = {};
@@ -72,7 +68,7 @@ namespace Vixen {
          */
         std::vector<VkFence> fences = {};
 
-        VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
+        std::unique_ptr<DescriptorPool> descriptorPool = nullptr;
 
         std::unique_ptr<DescriptorSetLayout> descriptorSetLayout = nullptr;
 
@@ -145,8 +141,6 @@ namespace Vixen {
 
         void destroyPipelineLayout();
 
-        void createDescriptorSetLayout();
-
         void createUniformBuffers();
 
         void createSampler();
@@ -154,10 +148,6 @@ namespace Vixen {
         void destroySampler();
 
         void destroyUniformBuffers();
-
-        VkDescriptorPool createDescriptorPool();
-
-        void destroyDescriptorPool();
 
         std::vector<VkDescriptorSet> createDescriptorSets();
 

@@ -16,8 +16,8 @@ namespace Vixen {
     }
 
     DescriptorSetLayout::DescriptorSetLayout(const std::unique_ptr<LogicalDevice> &logicalDevice,
-                                             const Shader *shader) :
-            DescriptorSetLayout(logicalDevice, createBindings(shader)) {}
+                                             const Shader *shader)
+            : DescriptorSetLayout(logicalDevice, createBindings(shader)) {}
 
     DescriptorSetLayout::~DescriptorSetLayout() {
         vkDestroyDescriptorSetLayout(logicalDevice->device, layout, nullptr);

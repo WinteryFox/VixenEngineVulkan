@@ -32,7 +32,9 @@ set(
         include/SimpleMath.h
         include/Framebuffer.h
         include/Shader.h
-        include/ShaderBinding.h)
+        include/ShaderBinding.h
+        include/DescriptorSetLayout.h
+        include/DescriptorPool.h)
 set(
         vixen_SOURCES
         properties.rc
@@ -47,7 +49,9 @@ set(
         src/Texture.cpp
         src/Framebuffer.cpp
         src/Shader.cpp
-        src/ShaderBinding.cpp include/DescriptorSetLayout.h src/DescriptorSetLayout.cpp)
+        src/ShaderBinding.cpp
+        src/DescriptorSetLayout.cpp
+        src/DescriptorPool.cpp)
 
 add_library(
         VixenEngine
