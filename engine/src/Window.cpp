@@ -4,6 +4,10 @@
 
 namespace Vixen {
     Window::Window(const std::string &name, const std::string &icon, GLFWmonitor *monitor, int width, int height) {
+        glfwSetErrorCallback([](int code, const char* message) {
+            error("[GLFW] " + std::to_string(code) + ": " + std::string(message));
+        });
+
         if (glfwInit() != GLFW_TRUE)
             fatal("Failed to initialize GLFW");
 
