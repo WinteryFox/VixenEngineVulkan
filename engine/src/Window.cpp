@@ -19,9 +19,6 @@ namespace Vixen {
         glfwWindowHint(GLFW_REFRESH_RATE, GLFW_DONT_CARE);
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
-        /// Disable V-Sync
-        glfwSwapInterval(0);
-
         /// Create window
         window = glfwCreateWindow(width, height, name.c_str(), monitor, nullptr);
         if (!window) {
