@@ -36,11 +36,6 @@ namespace Vixen {
          */
         static void update();
 
-        /**
-         * Swaps the GLFW3 window display buffers, draws the current frame to the window
-         */
-        void swap() const;
-
         void setIcon(const std::string &path) const;
     };
 }

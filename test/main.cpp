@@ -81,8 +81,6 @@ int main() {
         input->update(camera);
         render->render(camera);
 
-        window->swap();
-
         double currentTime = glfwGetTime();
         fps++;
         if (currentTime - lastTime >= 1.0) {

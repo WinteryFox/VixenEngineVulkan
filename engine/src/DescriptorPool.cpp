@@ -28,7 +28,7 @@ namespace Vixen {
         for (const auto binding : shader->getBindings()) {
             VkDescriptorPoolSize size{};
             size.type = binding.getType();
-            size.descriptorCount = 1;
+            size.descriptorCount = logicalDevice->images.size();
 
             sizes.push_back(size);
         }

@@ -59,10 +59,6 @@ namespace Vixen {
         glfwPollEvents();
     }
 
-    void Window::swap() const {
-        glfwSwapBuffers(window);
-    }
-
     void Window::setIcon(const std::string &path) const {
         int width, height, channels;
         stbi_uc *pixels = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
