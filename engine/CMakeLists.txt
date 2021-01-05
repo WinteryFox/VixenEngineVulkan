@@ -1,14 +1,17 @@
 # ---- BUILD ENGINE ----
 
-find_package(Vulkan REQUIRED)
-find_package(Threads REQUIRED)
+set(FBX_IMPORT_BUILD_TEST OFF)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/contrib/FBXImport)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(VIXEN_LIBS REQUIRED IMPORTED_TARGET glfw3>=3.3 vulkan>=1.2 glm)
 
 set(
         vixen_LIBRARY
         Vulkan::Vulkan
         Threads::Threads
         FBXImport
+        -static
 )
 set(
         vixen_INCLUDE
@@ -65,7 +68,6 @@ set(
 
 add_library(
         VixenEngine
-        SHARED
         ${vixen_SOURCES}
         ${vixen_HEADERS}
 )
@@ -73,12 +75,19 @@ add_library(
 target_include_directories(
         VixenEngine
         PUBLIC
-        ${vixen_INCLUDE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${Vulkan_INCLUDE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/FBXImport/importer/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/stb
+        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/VMA/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/contrib/range-v3/include
+        ${GLM_INCLUDEDIR}
 )
 
 target_link_libraries(
         VixenEngine
-        ${vixen_LIBRARY}
+        PkgConfig::VIXEN_LIBS
+        FBXImport
 )
 
 set_target_properties(
