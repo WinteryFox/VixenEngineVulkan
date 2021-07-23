@@ -6,7 +6,4 @@
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
 [submodule "engine/contrib/FBXImport"]
 	path = engine/contrib/FBXImport
-	url = https://github.com/WinteryFox/FBXImport.git
-[submodule "engine/contrib/range-v3"]
-	path = engine/contrib/range-v3
-	url = https://github.com/ericniebler/range-v3
+	url = https://github.com/WinteryFox/FBXImport
