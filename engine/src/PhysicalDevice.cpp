@@ -3,7 +3,7 @@
 namespace Vixen {
     PhysicalDevice::PhysicalDevice(const std::unique_ptr<Instance> &instance,
                                    const std::vector<const char *> &extensions)
-            : instance(instance), enabledExtensions(extensions) {
+            : enabledExtensions(extensions), instance(instance) {
         /// Get the physical devices installed in this system
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(instance->instance, &deviceCount, nullptr);

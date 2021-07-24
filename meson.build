@@ -6,4 +6,4 @@ project(
 )
 
 subdir('engine')
-#subdir('test')
+subdir('test')

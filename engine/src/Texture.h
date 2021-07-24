@@ -4,7 +4,7 @@
 #include <stb_image.h>
 #include <string>
 #include <stdexcept>
-#include "exceptions/IOException.h"
+#include "src/exceptions/IOException.h"
 #include "Util.h"
 
 namespace Vixen {

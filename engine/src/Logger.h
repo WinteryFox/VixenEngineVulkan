@@ -18,26 +18,6 @@
 
 // TODO: Redo this in a way that doesn't suck
 namespace Vixen {
-    static const std::string LOG_DIR = "logs/";
-
-    namespace {
-        std::string initLogger() {
-#ifdef __WIN32__
-            mkdir(LOG_DIR.c_str());
-#else
-            mkdir(LOG_DIR.c_str(), 600);
-#endif
-            time_t time = std::time(nullptr);
-            std::tm *localtime = std::localtime(&time);
-            const auto &stamp = std::put_time(localtime, "%Y%m%d%H%M%S");
-            std::stringstream stream;
-            stream << stamp << ".log";
-            return stream.str();
-        }
-    }
-
-    static const std::string LOG_FILE = initLogger();
-
     enum class LogSeverity {
         LOG_SEVERITY_TRACE = 5,
         LOG_SEVERITY_INFO = 4,
@@ -48,14 +28,12 @@ namespace Vixen {
     };
 
     static void log(LogSeverity severity, const std::string &message) {
-        if (VIXEN_DEBUG_LEVEL < (int) severity)
-            return;
+        //if (VIXEN_DEBUG_LEVEL < (int) severity)
+        //    return;
 
         time_t time = std::time(nullptr);
         std::tm *localtime = std::localtime(&time);
         const auto &stamp = std::put_time(localtime, "%Y-%m-%d %H:%M:%S");
-
-        std::ofstream stream(LOG_DIR + LOG_FILE, std::ios::ate | std::ios::out | std::ios::app);
 
         std::stringstream out;
         out << stamp;
@@ -80,10 +58,6 @@ namespace Vixen {
 
         out << message << std::endl;
         std::cout << out.str();
-        stream << out.str();
-
-        stream.flush();
-        stream.close();
     }
 
     static void trace(const std::string &message) {

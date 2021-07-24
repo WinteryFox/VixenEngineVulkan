@@ -16,20 +16,25 @@ engine_sources = [
 ]
 
 vulkan = dependency('vulkan')
-glm = dependency('glm')
-glfw = dependency('glfw3')
+glm = dependency('glm', version : '>=0.9')
+glfw = dependency('glfw3', version : '>=3.1')
 
-engine = shared_library(
+engine_inc = include_directories(
+    'src',
+    'contrib/VMA/src',
+    'contrib/stb'
+)
+engine_lib = library(
     'engine',
     engine_sources,
-    include_directories : [
-        'include',
-        'contrib/VMA/src',
-        'contrib/stb'
-    ],
+    include_directories : engine_inc,
     dependencies : [
         vulkan,
         glm,
         glfw
     ]
+)
+engine_dep = declare_dependency(
+    link_with : engine_lib,
+    include_directories : engine_inc
 )

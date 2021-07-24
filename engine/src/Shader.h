@@ -1,7 +1,6 @@
 #ifndef VIXENENGINE_SHADER_H
 #define VIXENENGINE_SHADER_H
 
-#include <range/v3/view.hpp>
 #include "Util.h"
 #include "ShaderModule.h"
 
