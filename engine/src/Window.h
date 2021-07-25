@@ -5,7 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <stb_image.h>
 #include "Logger.h"
-#include "src/exceptions/IOException.h"
+#include "IOException.h"
 
 namespace Vixen {
     class Window {

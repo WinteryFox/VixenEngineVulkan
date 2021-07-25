@@ -43,8 +43,8 @@ int main() {
     std::unique_ptr<Vixen::Input> input(new Vixen::Input(window));
 
     std::unique_ptr<Vixen::MeshStore> meshStore(new Vixen::MeshStore(logicalDevice, physicalDevice));
-    meshStore->loadMesh("../../test/models/Fox.FBX");
-    meshStore->loadMesh("../../test/models/Crystal.FBX");
+    meshStore->loadMesh("../../test/models/Fox.fbx");
+    meshStore->loadMesh("../../test/models/Crystal.fbx");
 
     Vixen::Scene scene{};
     scene.entities.push_back(Vixen::Entity(meshStore->meshes[1], {}, {}, 0.01f));

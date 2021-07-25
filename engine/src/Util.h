@@ -3,7 +3,7 @@
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
 #include <memory>
-#include <src/exceptions/ImageException.h>
+#include <ImageException.h>
 #include "LogicalDevice.h"
 
 namespace Vixen {

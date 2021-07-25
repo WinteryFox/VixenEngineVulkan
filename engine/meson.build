@@ -18,6 +18,7 @@ engine_sources = [
 vulkan = dependency('vulkan')
 glm = dependency('glm', version : '>=0.9')
 glfw = dependency('glfw3', version : '>=3.1')
+assimp = dependency('assimp', version : '>=5.0')
 
 engine_inc = include_directories(
     'src',
@@ -31,10 +32,17 @@ engine_lib = library(
     dependencies : [
         vulkan,
         glm,
-        glfw
+        glfw,
+        assimp
     ]
 )
 engine_dep = declare_dependency(
     link_with : engine_lib,
-    include_directories : engine_inc
+    include_directories : engine_inc,
+    dependencies : [
+        vulkan,
+        glm,
+        glfw,
+        assimp
+    ]
 )
