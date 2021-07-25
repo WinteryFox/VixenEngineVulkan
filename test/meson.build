@@ -17,3 +17,9 @@ run_command(
     '-V', 'shaders/test.frag',
     '-o', meson.current_build_dir() + '/frag.spv'
 )
+
+test(
+    'engine test',
+    test,
+    workdir : meson.current_build_dir()
+)

@@ -19,6 +19,13 @@ namespace Vixen {
 
     class Render {
         /**
+         * The logical device this renderer was made by and should be destroyed by
+         */
+        const std::unique_ptr<LogicalDevice> &logicalDevice;
+
+        const std::unique_ptr<PhysicalDevice> &physicalDevice;
+
+        /**
          * The view port used by the renderer
          */
         VkViewport viewport = {};
@@ -80,7 +87,7 @@ namespace Vixen {
 
         VkSampler textureSampler{};
 
-        VkFormat depthImageFormat;
+        VkFormat depthImageFormat{};
         VkImage depthImage{};
         VkImageView depthImageView{};
         VmaAllocation depthImageAllocation{};
@@ -100,13 +107,6 @@ namespace Vixen {
         const std::shared_ptr<const Shader> shader;
 
         const Scene &scene;
-
-        /**
-         * The logical device this renderer was made by and should be destroyed by
-         */
-        const std::unique_ptr<LogicalDevice> &logicalDevice;
-
-        const std::unique_ptr<PhysicalDevice> &physicalDevice;
 
         /**
          * The current frame in relation to the maximum frames in flight

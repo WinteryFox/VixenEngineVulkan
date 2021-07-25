@@ -16,16 +16,12 @@ inline constexpr int VIXEN_TEST_VERSION_PATCH = 1;
 
 int main() {
     std::vector<const char *> extensions = {
-#ifdef VIXEN_DEBUG
             "VK_EXT_debug_utils",
-#endif
             "VK_KHR_get_physical_device_properties2"
     };
 
     std::vector<const char *> layers = {
-#ifdef VIXEN_DEBUG
             "VK_LAYER_KHRONOS_validation"
-#endif
     };
 
     std::unique_ptr<Vixen::Window> window(new Vixen::Window("Vixen Engine Test Application", "../../icon.png"));
@@ -48,7 +44,7 @@ int main() {
 
     Vixen::Scene scene{};
     scene.entities.push_back(Vixen::Entity(meshStore->meshes[1], {}, {}, 0.01f));
-    scene.entities.push_back(Vixen::Entity(meshStore->meshes[2], {0.0, 0.0, 10.0}, {}, 1.0f));
+    scene.entities.push_back(Vixen::Entity(meshStore->meshes[2], {}, {}, 1.0f));
 
     std::unique_ptr<Vixen::Render> render(new Vixen::Render(
             logicalDevice,

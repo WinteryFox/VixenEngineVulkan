@@ -3,8 +3,8 @@
 namespace Vixen {
     Render::Render(const std::unique_ptr<LogicalDevice> &device, const std::unique_ptr<PhysicalDevice> &physicalDevice,
                    const Scene &scene, std::shared_ptr<const Shader> shader, BufferType bufferType)
-            : logicalDevice(device), physicalDevice(physicalDevice), scene(scene), shader(std::move(shader)),
-              framesInFlight(static_cast<const int>(bufferType)) {
+            : logicalDevice(device), physicalDevice(physicalDevice), framesInFlight(static_cast<const int>(bufferType)),
+              shader(std::move(shader)), scene(scene) {
         create();
     }
 
@@ -156,7 +156,7 @@ namespace Vixen {
             renderPassBeginInfo.renderArea.extent = logicalDevice->extent;
 
             std::array<VkClearValue, 2> clearColors{};
-            clearColors[0].color = {0.0f, 0.0f, 0.0f, 0.0f};
+            clearColors[0].color = {{0.0f, 0.0f, 0.0f, 0.0f}};
             clearColors[1].depthStencil = {1.0f, 0};
 
             renderPassBeginInfo.clearValueCount = clearColors.size();
@@ -437,7 +437,8 @@ namespace Vixen {
 
     std::vector<VkDescriptorSet> Render::createDescriptorSets() {
         std::vector<VkDescriptorSet> sets;
-        std::vector<VkDescriptorSetLayout> layouts(logicalDevice->images.size(), descriptorSetLayout->getDescriptorSetLayout());
+        std::vector<VkDescriptorSetLayout> layouts(logicalDevice->images.size(),
+                                                   descriptorSetLayout->getDescriptorSetLayout());
 
         VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{};
         descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
