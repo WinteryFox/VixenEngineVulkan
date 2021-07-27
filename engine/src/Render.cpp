@@ -167,7 +167,7 @@ namespace Vixen {
             vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
             vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
-                                    &descriptorSets[i], 0, nullptr);
+                                    &descriptorSet[i], 0, nullptr);
 
             for (const auto &entity : scene.entities) {
                 const auto &mesh = entity.mesh;
@@ -435,20 +435,10 @@ namespace Vixen {
         trace("Destroyed uniform buffers");
     }
 
-    std::vector<VkDescriptorSet> Render::createDescriptorSets() {
-        std::vector<VkDescriptorSet> sets;
+    DescriptorSet Render::createDescriptorSets() {
         std::vector<VkDescriptorSetLayout> layouts(logicalDevice->images.size(),
                                                    descriptorSetLayout->getDescriptorSetLayout());
-
-        VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{};
-        descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        descriptorSetAllocateInfo.descriptorPool = descriptorPool->getPool();
-        descriptorSetAllocateInfo.descriptorSetCount = static_cast<uint32_t>(logicalDevice->images.size());
-        descriptorSetAllocateInfo.pSetLayouts = layouts.data();
-
-        sets.resize(logicalDevice->images.size());
-        if (vkAllocateDescriptorSets(logicalDevice->device, &descriptorSetAllocateInfo, sets.data()) != VK_SUCCESS)
-            fatal("Failed to allocate descriptor sets");
+        auto sets = descriptorPool->createDescriptorSet(layouts);
         trace("Successfully allocated descriptor sets");
 
         for (std::vector<VkImage>::size_type i = 0; i < logicalDevice->images.size(); i++) {
@@ -465,7 +455,7 @@ namespace Vixen {
             std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
             descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[0].dstSet = sets[i];
+            descriptorWrites[0].dstSet = sets.getSet()[i];
             descriptorWrites[0].dstBinding = 0;
             descriptorWrites[0].dstArrayElement = 0;
             descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -473,7 +463,7 @@ namespace Vixen {
             descriptorWrites[0].pBufferInfo = &descriptorBufferInfo;
 
             descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[1].dstSet = sets[i];
+            descriptorWrites[1].dstSet = sets.getSet()[i];
             descriptorWrites[1].dstBinding = 1;
             descriptorWrites[1].dstArrayElement = 0;
             descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -494,7 +484,7 @@ namespace Vixen {
         createUniformBuffers();
         createSampler();
         descriptorPool = std::make_unique<DescriptorPool>(logicalDevice, shader.get(), logicalDevice->images.size());
-        descriptorSets = createDescriptorSets();
+        descriptorSet = createDescriptorSets();
         createRenderPass();
         createFramebuffers();
         createPipelineLayout();

@@ -1,5 +1,4 @@
-#ifndef VIXENENGINE_DESCRIPTORPOOL_H
-#define VIXENENGINE_DESCRIPTORPOOL_H
+#pragma once
 
 #include "LogicalDevice.h"
 #include "DescriptorSetLayout.h"
@@ -19,11 +18,11 @@ namespace Vixen {
 
         ~DescriptorPool();
 
+        [[nodiscard]] VkDescriptorPool getPool() const;
+
+        [[nodiscard]] const std::unique_ptr<LogicalDevice> &getDevice() const;
+
         static std::vector<VkDescriptorPoolSize>
         createSizes(const std::unique_ptr<LogicalDevice> &logicalDevice, const Shader *shader);
-
-        [[nodiscard]] VkDescriptorPool getPool() const;
     };
 }
-
-#endif

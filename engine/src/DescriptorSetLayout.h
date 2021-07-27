@@ -1,5 +1,4 @@
-#ifndef VIXENENGINE_DESCRIPTORSETLAYOUT_H
-#define VIXENENGINE_DESCRIPTORSETLAYOUT_H
+#pragma once
 
 #include <vulkan/vulkan.h>
 #include <memory>
@@ -25,5 +24,3 @@ namespace Vixen {
         [[nodiscard]] VkDescriptorSetLayout getDescriptorSetLayout() const;
     };
 }
-
-#endif

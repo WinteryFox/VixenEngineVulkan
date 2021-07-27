@@ -21,11 +21,19 @@ namespace Vixen {
         vkDestroyDescriptorPool(logicalDevice->device, pool, nullptr);
     }
 
+    VkDescriptorPool DescriptorPool::getPool() const {
+        return pool;
+    }
+
+    const std::unique_ptr<LogicalDevice> &DescriptorPool::getDevice() const {
+        return logicalDevice;
+    }
+
     std::vector<VkDescriptorPoolSize>
     DescriptorPool::createSizes(const std::unique_ptr<LogicalDevice> &logicalDevice, const Shader *shader) {
         std::vector<VkDescriptorPoolSize> sizes{};
 
-        for (const auto binding : shader->getBindings()) {
+        for (const auto &binding : shader->getBindings()) {
             VkDescriptorPoolSize size{};
             size.type = binding.getType();
             size.descriptorCount = logicalDevice->images.size();
@@ -34,9 +42,5 @@ namespace Vixen {
         }
 
         return sizes;
-    }
-
-    VkDescriptorPool DescriptorPool::getPool() const {
-        return pool;
     }
 }
