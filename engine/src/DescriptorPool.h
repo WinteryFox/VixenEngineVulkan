@@ -11,10 +11,9 @@ namespace Vixen {
 
     public:
         DescriptorPool(const std::unique_ptr<LogicalDevice> &logicalDevice,
-                       const std::vector<VkDescriptorPoolSize> &sizes, int32_t maxSets);
+                       const std::vector<VkDescriptorPoolSize> &sizes, uint32_t maxSets);
 
-        DescriptorPool(const std::unique_ptr<LogicalDevice> &logicalDevice, const Shader *shader,
-                       uint32_t maxSets);
+        DescriptorPool(const std::unique_ptr<LogicalDevice> &logicalDevice, const Shader *shader, uint32_t maxSets);
 
         ~DescriptorPool();
 

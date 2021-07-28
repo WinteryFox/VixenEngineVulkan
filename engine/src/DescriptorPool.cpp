@@ -2,13 +2,14 @@
 
 namespace Vixen {
     DescriptorPool::DescriptorPool(const std::unique_ptr<LogicalDevice> &logicalDevice,
-                                   const std::vector<VkDescriptorPoolSize> &sizes, int32_t maxSets)
+                                   const std::vector<VkDescriptorPoolSize> &sizes, uint32_t maxSets)
             : logicalDevice(logicalDevice) {
         VkDescriptorPoolCreateInfo info{};
         info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         info.poolSizeCount = sizes.size();
         info.pPoolSizes = sizes.data();
         info.maxSets = maxSets;
+        info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
         vkCreateDescriptorPool(logicalDevice->device, &info, nullptr, &pool);
     }
