@@ -76,7 +76,7 @@ namespace Vixen {
          */
         std::vector<VkFence> fences = {};
 
-        std::unique_ptr<DescriptorPool> descriptorPool = nullptr;
+        std::shared_ptr<DescriptorPool> descriptorPool = nullptr;
 
         std::unique_ptr<DescriptorSetLayout> descriptorSetLayout = nullptr;
 
@@ -84,7 +84,7 @@ namespace Vixen {
 
         std::vector<VmaAllocation> uniformBuffersMemory;
 
-        DescriptorSet descriptorSet;
+        std::unique_ptr<DescriptorSet> descriptorSet;
 
         VkSampler textureSampler{};
 
@@ -150,7 +150,7 @@ namespace Vixen {
 
         void destroyUniformBuffers();
 
-        DescriptorSet createDescriptorSets();
+        std::unique_ptr<DescriptorSet> createDescriptorSets();
 
         void invalidate();
 

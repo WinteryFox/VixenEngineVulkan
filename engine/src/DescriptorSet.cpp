@@ -3,7 +3,7 @@
 namespace Vixen {
     DescriptorSet::DescriptorSet(const std::shared_ptr<const DescriptorPool> &pool,
                                  const std::vector<VkDescriptorSetLayout> &layouts)
-            : pool(pool) {
+            : pool(pool), set(std::vector<VkDescriptorSet>(layouts.size())) {
         VkDescriptorSetAllocateInfo allocateInfo{};
         allocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         allocateInfo.descriptorPool = pool->getPool();

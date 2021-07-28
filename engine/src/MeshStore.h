@@ -29,7 +29,7 @@ namespace Vixen {
                     return;
                 }
 
-                for (int i = 0; i < aiScene->mNumMeshes; i++) {
+                for (uint32_t i = 0; i < aiScene->mNumMeshes; i++) {
                     const auto aiMesh = aiScene->mMeshes[i];
                     std::vector<glm::vec3> vertices;
                     std::vector<uint32_t> indices;
@@ -75,6 +75,7 @@ namespace Vixen {
                             material->GetTexture(aiTextureType_DIFFUSE, x, &str);
                             std::string relative = str.C_Str();
                             std::replace(relative.begin(), relative.end(), '\\', '/');
+                            trace("Trying texture at path \"" + relative + "\"");
                             texture = std::make_shared<Texture>(
                                     logicalDevice,
                                     physicalDevice,

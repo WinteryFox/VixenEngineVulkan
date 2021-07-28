@@ -167,7 +167,7 @@ namespace Vixen {
             vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
             vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
-                                    &descriptorSet[i], 0, nullptr);
+                                    &descriptorSet->getSet()[i], 0, nullptr);
 
             for (const auto &entity : scene.entities) {
                 const auto &mesh = entity.mesh;
@@ -435,10 +435,10 @@ namespace Vixen {
         trace("Destroyed uniform buffers");
     }
 
-    DescriptorSet Render::createDescriptorSets() {
+    std::unique_ptr<DescriptorSet> Render::createDescriptorSets() {
         std::vector<VkDescriptorSetLayout> layouts(logicalDevice->images.size(),
                                                    descriptorSetLayout->getDescriptorSetLayout());
-        auto sets = descriptorPool->createDescriptorSet(layouts);
+        auto sets = std::make_unique<DescriptorSet>(descriptorPool, layouts);
         trace("Successfully allocated descriptor sets");
 
         for (std::vector<VkImage>::size_type i = 0; i < logicalDevice->images.size(); i++) {
@@ -455,7 +455,7 @@ namespace Vixen {
             std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
             descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[0].dstSet = sets.getSet()[i];
+            descriptorWrites[0].dstSet = sets->getSet()[i];
             descriptorWrites[0].dstBinding = 0;
             descriptorWrites[0].dstArrayElement = 0;
             descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -463,7 +463,7 @@ namespace Vixen {
             descriptorWrites[0].pBufferInfo = &descriptorBufferInfo;
 
             descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[1].dstSet = sets.getSet()[i];
+            descriptorWrites[1].dstSet = sets->getSet()[i];
             descriptorWrites[1].dstBinding = 1;
             descriptorWrites[1].dstArrayElement = 0;
             descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -548,7 +548,7 @@ namespace Vixen {
         const auto samplerCreateResult = vkCreateSampler(logicalDevice->device, &samplerCreateInfo, nullptr,
                                                          &textureSampler);
         if (samplerCreateResult != VK_SUCCESS)
-            error("Failed to create VkSampler error code: " + std::to_string(samplerCreateResult));
+            throw VulkanException("Failed to create sampler", samplerCreateResult);
     }
 
     void Render::destroySampler() {
