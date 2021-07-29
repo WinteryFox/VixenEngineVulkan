@@ -13,6 +13,8 @@ namespace Vixen {
         DescriptorSet(const std::shared_ptr<const DescriptorPool> &pool,
                       const std::vector<VkDescriptorSetLayout> &layouts);
 
+        DescriptorSet(const DescriptorPool &) = delete;
+
         ~DescriptorSet();
 
         const std::vector<VkDescriptorSet> &getSet();
