@@ -3,15 +3,14 @@
 namespace Vixen {
     DescriptorPool::DescriptorPool(const std::unique_ptr<LogicalDevice> &logicalDevice,
                                    const std::vector<VkDescriptorPoolSize> &sizes, uint32_t maxSets)
-            : logicalDevice(logicalDevice) {
+            : device(logicalDevice) {
         VkDescriptorPoolCreateInfo info{};
         info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         info.poolSizeCount = sizes.size();
         info.pPoolSizes = sizes.data();
         info.maxSets = maxSets;
-        info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
-        vkCreateDescriptorPool(logicalDevice->device, &info, nullptr, &pool);
+        VK_CHECK_RESULT(vkCreateDescriptorPool(logicalDevice->device, &info, nullptr, &pool))
     }
 
     DescriptorPool::DescriptorPool(const std::unique_ptr<LogicalDevice> &logicalDevice,
@@ -19,7 +18,7 @@ namespace Vixen {
             : DescriptorPool(logicalDevice, createSizes(logicalDevice, shader), maxSets) {}
 
     DescriptorPool::~DescriptorPool() {
-        vkDestroyDescriptorPool(logicalDevice->device, pool, nullptr);
+        vkDestroyDescriptorPool(device->device, pool, nullptr);
     }
 
     VkDescriptorPool DescriptorPool::getPool() const {
@@ -27,12 +26,13 @@ namespace Vixen {
     }
 
     const std::unique_ptr<LogicalDevice> &DescriptorPool::getDevice() const {
-        return logicalDevice;
+        return device;
     }
 
     std::vector<VkDescriptorPoolSize>
     DescriptorPool::createSizes(const std::unique_ptr<LogicalDevice> &logicalDevice, const Shader *shader) {
         std::vector<VkDescriptorPoolSize> sizes{};
+        sizes.reserve(shader->getBindings().size());
 
         for (const auto &binding : shader->getBindings()) {
             VkDescriptorPoolSize size{};
@@ -43,5 +43,17 @@ namespace Vixen {
         }
 
         return sizes;
+    }
+
+    std::vector<VkDescriptorSet> DescriptorPool::createSets(const std::vector<VkDescriptorSetLayout> &layouts) const {
+        VkDescriptorSetAllocateInfo info{};
+        info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        info.descriptorPool = pool;
+        info.descriptorSetCount = layouts.size();
+        info.pSetLayouts = layouts.data();
+
+        std::vector<VkDescriptorSet> sets(layouts.size());
+        VK_CHECK_RESULT(vkAllocateDescriptorSets(device->device, &info, sets.data()))
+        return sets;
     }
 }

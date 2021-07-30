@@ -1,7 +1,5 @@
 #include "Mesh.h"
 
-#include <utility>
-
 namespace Vixen {
     Mesh::Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, std::shared_ptr<const Texture> texture,
                const std::vector<glm::vec3> &vertices, const std::vector<uint32_t> &indices,

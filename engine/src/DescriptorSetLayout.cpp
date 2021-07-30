@@ -9,10 +9,8 @@ namespace Vixen {
         descriptorSetLayoutCreateInfo.bindingCount = layoutBindings.size();
         descriptorSetLayoutCreateInfo.pBindings = layoutBindings.data();
 
-        auto result = vkCreateDescriptorSetLayout(logicalDevice->device, &descriptorSetLayoutCreateInfo, nullptr,
-                                                  &layout);
-        if (result != VK_SUCCESS)
-            throw VulkanException("Failed to create descriptor set layout", result);
+        VK_CHECK_RESULT(
+                vkCreateDescriptorSetLayout(logicalDevice->device, &descriptorSetLayoutCreateInfo, nullptr, &layout))
     }
 
     DescriptorSetLayout::DescriptorSetLayout(const std::unique_ptr<LogicalDevice> &logicalDevice,

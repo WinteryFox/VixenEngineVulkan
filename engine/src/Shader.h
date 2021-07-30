@@ -1,7 +1,7 @@
 #ifndef VIXENENGINE_SHADER_H
 #define VIXENENGINE_SHADER_H
 
-#include "Util.h"
+#include "Vulkan.h"
 #include "ShaderModule.h"
 
 namespace Vixen {

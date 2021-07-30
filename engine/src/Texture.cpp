@@ -15,8 +15,7 @@ namespace Vixen {
         if (channels == STBI_rgb_alpha)
             format = VK_FORMAT_R8G8B8A8_SRGB;
         else
-            throw ImageException(VulkanException("Unsupported image format, has " + std::to_string(channels) +
-                                                 " channels", VK_ERROR_FORMAT_NOT_SUPPORTED), path);
+            throw ImageException(VulkanException("Unsupported image format"));
 
         /// Create VkImage and VmaAllocation for texture
         VkBuffer stagingBuffer;
@@ -35,7 +34,7 @@ namespace Vixen {
             createImage(logicalDevice, physicalDevice, width, height, format, VK_IMAGE_TILING_OPTIMAL,
                         VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, texture, allocation);
         } catch (const VulkanException &exception) {
-            throw ImageException(exception, path);
+            throw ImageException(exception);
         }
         transitionImageLayout(logicalDevice, texture, format, VK_IMAGE_LAYOUT_UNDEFINED,
                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -49,7 +48,7 @@ namespace Vixen {
         try {
             view = createImageView(logicalDevice, texture, format, VK_IMAGE_ASPECT_COLOR_BIT);
         } catch (const VulkanException &exception) {
-            throw ImageException(exception, path);
+            throw ImageException(exception);
         }
     }
 

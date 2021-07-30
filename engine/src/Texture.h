@@ -4,8 +4,9 @@
 #include <stb_image.h>
 #include <string>
 #include <stdexcept>
+#include "ImageException.h"
 #include "IOException.h"
-#include "Util.h"
+#include "Vulkan.h"
 
 namespace Vixen {
     class Texture {

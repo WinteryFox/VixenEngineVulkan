@@ -20,9 +20,7 @@ namespace Vixen {
         createInfo.pCode = reinterpret_cast<const uint32_t *>(bytecode.data());
 
         VkShaderModule module;
-        VkResult result = vkCreateShaderModule(logicalDevice->device, &createInfo, nullptr, &module);
-        if (result != VK_SUCCESS)
-            error(VulkanException("Failed to create shader module", result));
+        VK_CHECK_RESULT(vkCreateShaderModule(logicalDevice->device, &createInfo, nullptr, &module))
         trace("Successfully created shader module");
 
         return module;

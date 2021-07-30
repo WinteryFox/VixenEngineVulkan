@@ -1,13 +1,40 @@
-#pragma once
-
-#include <vulkan/vulkan.h>
-#include <vk_mem_alloc.h>
-#include <memory>
-#include <ImageException.h>
-#include "LogicalDevice.h"
+#include "Vulkan.h"
 
 namespace Vixen {
-    static VkImageView
+    std::string errorString(VkResult result) {
+        switch (result) {
+#define STR(r) case VK_ ##r: return #r
+            STR(NOT_READY);
+            STR(TIMEOUT);
+            STR(EVENT_SET);
+            STR(EVENT_RESET);
+            STR(INCOMPLETE);
+            STR(ERROR_OUT_OF_HOST_MEMORY);
+            STR(ERROR_OUT_OF_DEVICE_MEMORY);
+            STR(ERROR_INITIALIZATION_FAILED);
+            STR(ERROR_DEVICE_LOST);
+            STR(ERROR_MEMORY_MAP_FAILED);
+            STR(ERROR_LAYER_NOT_PRESENT);
+            STR(ERROR_EXTENSION_NOT_PRESENT);
+            STR(ERROR_FEATURE_NOT_PRESENT);
+            STR(ERROR_INCOMPATIBLE_DRIVER);
+            STR(ERROR_TOO_MANY_OBJECTS);
+            STR(ERROR_FORMAT_NOT_SUPPORTED);
+            STR(ERROR_SURFACE_LOST_KHR);
+            STR(ERROR_NATIVE_WINDOW_IN_USE_KHR);
+            STR(SUBOPTIMAL_KHR);
+            STR(ERROR_OUT_OF_DATE_KHR);
+            STR(ERROR_INCOMPATIBLE_DISPLAY_KHR);
+            STR(ERROR_VALIDATION_FAILED_EXT);
+            STR(ERROR_INVALID_SHADER_NV);
+            STR(ERROR_OUT_OF_POOL_MEMORY);
+#undef STR
+            default:
+                return "UNKNOWN_ERROR";
+        }
+    }
+
+    VkImageView
     createImageView(const std::unique_ptr<LogicalDevice> &logicalDevice, VkImage image, VkFormat format,
                     VkImageAspectFlags aspectFlags) {
         VkImageViewCreateInfo imageViewCreateInfo{};
@@ -22,14 +49,11 @@ namespace Vixen {
         imageViewCreateInfo.subresourceRange.layerCount = 1;
 
         VkImageView view;
-        const auto imageViewCreateResult = vkCreateImageView(logicalDevice->device, &imageViewCreateInfo, nullptr,
-                                                             &view);
-        if (imageViewCreateResult != VK_SUCCESS)
-            throw VulkanException("Failed to create VkImageView", imageViewCreateResult);
+        VK_CHECK_RESULT(vkCreateImageView(logicalDevice->device, &imageViewCreateInfo, nullptr, &view))
         return view;
     }
 
-    static void
+    void
     createImage(const std::unique_ptr<LogicalDevice> &logicalDevice,
                 const std::unique_ptr<PhysicalDevice> &physicalDevice,
                 const uint32_t width, const uint32_t height, const VkFormat format,
@@ -52,10 +76,9 @@ namespace Vixen {
         VmaAllocationCreateInfo allocationCreateInfo = {};
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-        const auto result = vmaCreateImage(logicalDevice->allocator, &imageCreateInfo, &allocationCreateInfo, &image,
-                                           &allocation, nullptr);
-        if (result != VK_SUCCESS)
-            throw VulkanException("Failed to create VkImage object", result);
+        VK_CHECK_RESULT(
+                vmaCreateImage(logicalDevice->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation,
+                               nullptr))
     }
 
     /**
@@ -69,7 +92,7 @@ namespace Vixen {
      * @return Returns true on successful creation and allocation of the buffer
      * @see https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkBufferUsageFlagBits.html
      */
-    static bool
+    bool
     createBuffer(const std::unique_ptr<LogicalDevice> &logicalDevice, VkDeviceSize size, VkBufferUsageFlags usage,
                  VmaMemoryUsage vmaUsage, VkBuffer &buffer, VmaAllocation &allocation) {
         VkBufferCreateInfo bufferCreateInfo = {};
@@ -81,15 +104,12 @@ namespace Vixen {
         VmaAllocationCreateInfo allocationCreateInfo = {};
         allocationCreateInfo.usage = vmaUsage;
 
-        const auto result = vmaCreateBuffer(logicalDevice->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer,
-                                            &allocation, nullptr);
-        if (result != VK_SUCCESS)
-            throw VulkanException("Failed to create VmaAllocation", result);
-
+        VK_CHECK_RESULT(vmaCreateBuffer(logicalDevice->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer,
+                                        &allocation, nullptr))
         return true;
     }
 
-    static VkCommandBuffer beginSingleUseCommandBuffer(const std::unique_ptr<LogicalDevice> &logicalDevice) {
+    VkCommandBuffer beginSingleUseCommandBuffer(const std::unique_ptr<LogicalDevice> &logicalDevice) {
         VkCommandBufferAllocateInfo allocateInfo = {};
         allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -108,7 +128,7 @@ namespace Vixen {
         return commandBuffer;
     }
 
-    static void
+    void
     endSingleUseCommandBuffer(const std::unique_ptr<LogicalDevice> &logicalDevice, VkCommandBuffer commandBuffer) {
         vkEndCommandBuffer(commandBuffer);
 
@@ -131,8 +151,8 @@ namespace Vixen {
      * @param[out] dst The destination buffer
      * @param[in] size The size of the source buffer
      */
-    static void copyBuffer(const std::unique_ptr<LogicalDevice> &logicalDevice, const VkBuffer &src, VkBuffer &dst,
-                           VkDeviceSize size) {
+    void copyBuffer(const std::unique_ptr<LogicalDevice> &logicalDevice, const VkBuffer &src, VkBuffer &dst,
+                    VkDeviceSize size) {
         VkCommandBuffer commandBuffer = beginSingleUseCommandBuffer(logicalDevice);
 
         VkBufferCopy copyRegion = {};
@@ -142,9 +162,9 @@ namespace Vixen {
         endSingleUseCommandBuffer(logicalDevice, commandBuffer);
     }
 
-    static void transitionImageLayout(const std::unique_ptr<LogicalDevice> &logicalDevice, const VkImage &image,
-                                      const VkFormat format, const VkImageLayout oldLayout,
-                                      const VkImageLayout newLayout) {
+    void transitionImageLayout(const std::unique_ptr<LogicalDevice> &logicalDevice, const VkImage &image,
+                               const VkFormat format, const VkImageLayout oldLayout,
+                               const VkImageLayout newLayout) {
         VkCommandBuffer commandBuffer = beginSingleUseCommandBuffer(logicalDevice);
 
         VkImageMemoryBarrier barrier{};
@@ -199,7 +219,7 @@ namespace Vixen {
         endSingleUseCommandBuffer(logicalDevice, commandBuffer);
     }
 
-    static void
+    void
     copyBufferToImage(const std::unique_ptr<LogicalDevice> &logicalDevice, const VkBuffer &buffer, const VkImage &image,
                       const uint32_t width, const uint32_t height) {
         VkCommandBuffer commandBuffer = beginSingleUseCommandBuffer(logicalDevice);

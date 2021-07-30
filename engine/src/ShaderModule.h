@@ -7,6 +7,7 @@
 #include "Logger.h"
 #include "LogicalDevice.h"
 #include "ShaderBinding.h"
+#include "Vulkan.h"
 
 namespace Vixen {
     class ShaderModule {

@@ -9,7 +9,6 @@
 #include "Framebuffer.h"
 #include "DescriptorSetLayout.h"
 #include "DescriptorPool.h"
-#include "DescriptorSet.h"
 
 namespace Vixen {
     enum class BufferType {
@@ -84,7 +83,7 @@ namespace Vixen {
 
         std::vector<VmaAllocation> uniformBuffersMemory;
 
-        std::unique_ptr<DescriptorSet> descriptorSet;
+        std::vector<VkDescriptorSet> descriptorSet;
 
         VkSampler textureSampler{};
 
@@ -103,7 +102,7 @@ namespace Vixen {
          * The maximum number of frames in flight, also known as concurrently rendered frames
          * ensuring that the GPU is always being utilized
          */
-        const int framesInFlight;
+        const uint8_t framesInFlight;
 
         const std::shared_ptr<const Shader> shader;
 
@@ -150,7 +149,7 @@ namespace Vixen {
 
         void destroyUniformBuffers();
 
-        std::unique_ptr<DescriptorSet> createDescriptorSets();
+        std::vector<VkDescriptorSet> createDescriptorSets();
 
         void invalidate();
 

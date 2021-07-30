@@ -13,9 +13,7 @@ namespace Vixen {
         framebufferCreateInfo.height = height;
         framebufferCreateInfo.layers = 1;
 
-        VkResult result = vkCreateFramebuffer(logicalDevice->device, &framebufferCreateInfo, nullptr, &framebuffer);
-        if (result != VK_SUCCESS)
-            error(VulkanException("Failed to create a frame buffer", result));
+        VK_CHECK_RESULT(vkCreateFramebuffer(logicalDevice->device, &framebufferCreateInfo, nullptr, &framebuffer))
     }
 
     Framebuffer::~Framebuffer() {

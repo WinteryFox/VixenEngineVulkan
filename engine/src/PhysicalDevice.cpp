@@ -187,6 +187,6 @@ namespace Vixen {
             }
         }
 
-        throw VulkanException("Failed to find suitable depth image format", VK_ERROR_UNKNOWN);
+        throw VulkanException("Failed to find suitable depth image format");
     }
 }

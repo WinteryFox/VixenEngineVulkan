@@ -13,7 +13,7 @@ engine_sources = [
     'src/ShaderModule.cpp',
     'src/Texture.cpp',
     'src/Window.cpp',
-    'src/DescriptorSet.cpp'
+    'src/Vulkan.cpp'
 ]
 
 vulkan = dependency('vulkan')
