@@ -15,7 +15,7 @@ namespace Vixen {
         if (channels == STBI_rgb_alpha)
             format = VK_FORMAT_R8G8B8A8_SRGB;
         else
-            throw ImageException(VulkanException("Unsupported image format"));
+            throw VulkanException("Unsupported image format");
 
         /// Create VkImage and VmaAllocation for texture
         VkBuffer stagingBuffer;
@@ -30,12 +30,8 @@ namespace Vixen {
         vmaUnmapMemory(logicalDevice->allocator, stagingAllocation);
         stbi_image_free(pixels);
 
-        try {
-            createImage(logicalDevice, physicalDevice, width, height, format, VK_IMAGE_TILING_OPTIMAL,
-                        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, texture, allocation);
-        } catch (const VulkanException &exception) {
-            throw ImageException(exception);
-        }
+        createImage(logicalDevice, physicalDevice, width, height, format, VK_IMAGE_TILING_OPTIMAL,
+                    VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, texture, allocation);
         transitionImageLayout(logicalDevice, texture, format, VK_IMAGE_LAYOUT_UNDEFINED,
                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         copyBufferToImage(logicalDevice, stagingBuffer, texture, static_cast<uint32_t>(width),
@@ -45,11 +41,7 @@ namespace Vixen {
 
         vmaDestroyBuffer(logicalDevice->allocator, stagingBuffer, stagingAllocation);
 
-        try {
-            view = createImageView(logicalDevice, texture, format, VK_IMAGE_ASPECT_COLOR_BIT);
-        } catch (const VulkanException &exception) {
-            throw ImageException(exception);
-        }
+        view = createImageView(logicalDevice, texture, format, VK_IMAGE_ASPECT_COLOR_BIT);
     }
 
     Texture::~Texture() {
@@ -57,15 +49,7 @@ namespace Vixen {
         vmaDestroyImage(logicalDevice->allocator, texture, allocation);
     }
 
-    VkImage Texture::getTexture() const {
-        return texture;
-    }
-
     VkImageView Texture::getView() const {
         return view;
-    }
-
-    VmaAllocation Texture::getAllocation() const {
-        return allocation;
     }
 }
