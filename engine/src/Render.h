@@ -88,15 +88,12 @@ namespace Vixen {
         VkSampler textureSampler{};
 
         VkFormat depthImageFormat{};
-        VkImage depthImage{};
-        VkImageView depthImageView{};
-        VmaAllocation depthImageAllocation{};
 
-        struct ModelViewProjection {
-            alignas(16) glm::mat4 model{};
-            alignas(16) glm::mat4 view{};
-            alignas(16) glm::mat4 projection{};
-        } mvp;
+        VkImage depthImage{};
+
+        VkImageView depthImageView{};
+
+        VmaAllocation depthImageAllocation{};
 
         /**
          * The maximum number of frames in flight, also known as concurrently rendered frames
