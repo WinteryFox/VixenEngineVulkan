@@ -9,18 +9,20 @@ engine_sources = [
     'src/PhysicalDevice.cpp',
     'src/Render.cpp',
     'src/Shader.cpp',
-    'src/ShaderBinding.cpp',
+    'src/ShaderDescriptor.cpp',
     'src/ShaderModule.cpp',
     'src/Texture.cpp',
     'src/Window.cpp',
-    'src/Vulkan.cpp'
+    'src/Vulkan.cpp',
+    'src/Buffer.cpp'
 ]
 
-vulkan = dependency('vulkan')
-glm = dependency('glm', version : '>=0.9')
-glfw = dependency('glfw3', version : '>=3.1')
-assimp = dependency('assimp', version : '>=5.0')
-
+engine_deps = [
+    dependency('vulkan'),
+    dependency('glm', version : '>=0.9'),
+    dependency('glfw3', version : '>=3.1'),
+    dependency('assimp', version : '>=5.0')
+]
 engine_inc = include_directories(
     'src',
     'contrib/VMA/src',
@@ -30,20 +32,10 @@ engine_lib = library(
     'engine',
     engine_sources,
     include_directories : engine_inc,
-    dependencies : [
-        vulkan,
-        glm,
-        glfw,
-        assimp
-    ]
+    dependencies : engine_deps
 )
 engine_dep = declare_dependency(
     link_with : engine_lib,
     include_directories : engine_inc,
-    dependencies : [
-        vulkan,
-        glm,
-        glfw,
-        assimp
-    ]
+    dependencies : engine_deps
 )

@@ -7,9 +7,15 @@
 #include "Vulkan.h"
 #include "LogicalDevice.h"
 #include "Texture.h"
+#include "Buffer.h"
 
 namespace Vixen {
-    struct Mesh {
+    class Mesh {
+        const std::unique_ptr<LogicalDevice> &logicalDevice;
+
+        std::unique_ptr<Buffer> buffer;
+
+    public:
         /**
          * The amount of vertices this mesh consists of
          */
@@ -20,11 +26,7 @@ namespace Vixen {
          */
         const uint32_t indexCount;
 
-        const uint32_t uvCount;
-
-        [[nodiscard]] VkBuffer getBuffer() const;
-
-        [[nodiscard]] VmaAllocation getAllocation() const;
+        [[nodiscard]] const std::unique_ptr<Buffer> &getBuffer() const;
 
         const std::shared_ptr<const Texture> texture;
 
@@ -36,25 +38,11 @@ namespace Vixen {
          * @param indexCount The amount of indices this mesh has
          */
         Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, std::shared_ptr<const Texture> texture,
-             const std::vector<glm::vec3> &vertices, const std::vector<uint32_t> &indices, const std::vector<glm::vec2> &uvs);
+             const std::vector<glm::vec3> &vertices, const std::vector<uint32_t> &indices,
+             const std::vector<glm::vec2> &uvs, const std::vector<glm::vec4> &colors);
 
         Mesh(const Mesh &) = delete;
 
-        ~Mesh();
-
         Mesh &operator=(const Mesh &mesh) = delete;
-
-    private:
-        /**
-         * The vertex buffer for this mesh
-         */
-        VkBuffer buffer = VK_NULL_HANDLE;
-
-        /**
-         * The memory allocation for this mesh
-         */
-        VmaAllocation allocation = VK_NULL_HANDLE;
-
-        const std::unique_ptr<LogicalDevice> &logicalDevice;
     };
 }

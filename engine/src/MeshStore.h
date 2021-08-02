@@ -30,25 +30,29 @@ namespace Vixen {
                 }
 
                 for (uint32_t i = 0; i < aiScene->mNumMeshes; i++) {
-                    const auto aiMesh = aiScene->mMeshes[i];
+                    const auto &aiMesh = aiScene->mMeshes[i];
                     std::vector<glm::vec3> vertices;
                     std::vector<uint32_t> indices;
                     std::vector<glm::vec2> uvs;
+                    std::vector<glm::vec4> colors;
 
                     vertices.reserve(aiMesh->mNumVertices);
-                    for (unsigned int x = 0; x < aiMesh->mNumVertices; x++) {
-                        const auto &vertex = aiMesh->mVertices[x];
-                        vertices.emplace_back(
-                                vertex.x,
-                                vertex.y,
-                                vertex.z
-                        );
+                    for (unsigned int j = 0; j < aiMesh->mNumVertices; j++) {
+                        const auto &vertex = aiMesh->mVertices[j];
+                        vertices.emplace_back(vertex.x, vertex.y, vertex.z);
 
-                        if (aiMesh->mTextureCoords[0]) {
-                            const auto uv = aiMesh->mTextureCoords[0][x];
+                        if (aiMesh->HasTextureCoords(0)) {
+                            const auto &uv = aiMesh->mTextureCoords[0][j];
                             uvs.emplace_back(uv.x, uv.y);
                         } else {
                             uvs.emplace_back(0.0f, 0.0f);
+                        }
+
+                        if (aiMesh->HasVertexColors(0)) {
+                            const auto &color = aiMesh->mColors[0][j];
+                            colors.emplace_back(color.r, color.g, color.b, color.a);
+                        } else {
+                            colors.emplace_back(1.0f, 1.0f, 1.0f, 1.0f);
                         }
                     }
 
@@ -76,11 +80,13 @@ namespace Vixen {
                             std::string relative = str.C_Str();
                             std::replace(relative.begin(), relative.end(), '\\', '/');
                             trace("Trying texture at path \"" + relative + "\"");
-                            texture = std::make_shared<Texture>(
-                                    logicalDevice,
-                                    physicalDevice,
-                                    std::filesystem::path(path).remove_filename().append(relative).string()
-                            );
+                            try {
+                                texture = std::make_shared<Texture>(
+                                        logicalDevice,
+                                        physicalDevice,
+                                        std::filesystem::path(path).remove_filename().append(relative).string()
+                                );
+                            } catch (IOException &) {}
                         }
                     }
 
@@ -89,7 +95,8 @@ namespace Vixen {
                             texture,
                             vertices,
                             indices,
-                            uvs
+                            uvs,
+                            colors
                     );
                     meshes.push_back(mesh);
                 }

@@ -1,30 +1,35 @@
-#ifndef VIXENENGINE_SHADER_H
-#define VIXENENGINE_SHADER_H
+#pragma once
 
 #include "Vulkan.h"
 #include "ShaderModule.h"
+#include "ShaderDescriptor.h"
 
 namespace Vixen {
     class Shader {
         const std::vector<std::shared_ptr<const ShaderModule>> modules;
-        const std::vector<ShaderBinding> bindings;
+        const std::vector<VkVertexInputBindingDescription> bindings;
         const std::vector<VkVertexInputAttributeDescription> attributes;
+        const std::vector<ShaderDescriptor> descriptors;
 
     public:
         explicit Shader(std::vector<std::shared_ptr<const ShaderModule>> modules,
-                        std::vector<ShaderBinding> bindings,
-                        std::vector<VkVertexInputAttributeDescription> attributes);
+                        std::vector<VkVertexInputBindingDescription> bindings,
+                        std::vector<VkVertexInputAttributeDescription> attributes,
+                        std::vector<ShaderDescriptor> descriptors);
 
         [[nodiscard]] const std::vector<std::shared_ptr<const ShaderModule>> &getModules() const;
 
-        [[nodiscard]] const std::vector<ShaderBinding> &getBindings() const;
+        [[nodiscard]] const std::vector<VkVertexInputBindingDescription> &getBindings() const;
 
         [[nodiscard]] const std::vector<VkVertexInputAttributeDescription> &getAttributes() const;
 
+        [[nodiscard]] const std::vector<ShaderDescriptor> &getDescriptors() const;
+
         class Builder {
             std::vector<std::shared_ptr<const ShaderModule>> modules{};
-            std::vector<ShaderBinding> bindings{};
+            std::vector<VkVertexInputBindingDescription> bindings{};
             std::vector<VkVertexInputAttributeDescription> attributes{};
+            std::vector<ShaderDescriptor> descriptors;
 
         public:
             Builder &addModule(const std::shared_ptr<const ShaderModule> &module) {
@@ -32,23 +37,14 @@ namespace Vixen {
                 return *this;
             }
 
-            Builder &addBinding(size_t size, VkDescriptorType type, VkShaderStageFlagBits stage, uint32_t binding,
-                                VkVertexInputRate rate, uint32_t stride) {
+            Builder &addBinding(uint32_t binding, VkVertexInputRate rate, uint32_t stride) {
                 VkVertexInputBindingDescription input{};
                 input.binding = binding;
-                input.inputRate = rate;
                 input.stride = stride;
+                input.inputRate = rate;
 
-                bindings.emplace_back(size, type, stage, input);
-
+                bindings.push_back(input);
                 return *this;
-            }
-
-            template<typename T>
-            Builder &
-            addBinding(VkDescriptorType type, VkShaderStageFlagBits stage, uint32_t binding, VkVertexInputRate rate,
-                       uint32_t stride) {
-                return addBinding(sizeof(T), type, stage, binding, rate, stride);
             }
 
             Builder &addAttribute(uint32_t binding, uint32_t location, VkFormat format, uint32_t offset) {
@@ -63,11 +59,14 @@ namespace Vixen {
                 return *this;
             }
 
+            Builder &addDescriptor(uint32_t binding, size_t size, VkDescriptorType type, VkShaderStageFlags flags) {
+                descriptors.emplace_back(binding, size, type, flags);
+                return *this;
+            }
+
             [[nodiscard]] Shader *build() const {
-                return new Shader(modules, bindings, attributes);
+                return new Shader(modules, bindings, attributes, descriptors);
             }
         };
     };
 }
-
-#endif

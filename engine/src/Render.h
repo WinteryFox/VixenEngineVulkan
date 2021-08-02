@@ -9,6 +9,7 @@
 #include "Framebuffer.h"
 #include "DescriptorSetLayout.h"
 #include "DescriptorPool.h"
+#include "Buffer.h"
 
 namespace Vixen {
     enum class BufferType {
@@ -83,7 +84,7 @@ namespace Vixen {
 
         std::vector<VmaAllocation> uniformBuffersMemory;
 
-        std::vector<VkDescriptorSet> descriptorSet;
+        std::vector<std::vector<VkDescriptorSet>> descriptorSet;
 
         VkSampler textureSampler{};
 
@@ -146,7 +147,7 @@ namespace Vixen {
 
         void destroyUniformBuffers();
 
-        std::vector<VkDescriptorSet> createDescriptorSets();
+        std::vector<std::vector<VkDescriptorSet>> createDescriptorSets();
 
         void invalidate();
 

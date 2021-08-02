@@ -13,6 +13,7 @@ inline constexpr int VIXEN_TEST_VERSION_PATCH = 1;
 #include <memory>
 #include <vector>
 #include <VixenEngine.h>
+#include "ModelViewProjection.h"
 
 int main() {
     std::vector<const char *> extensions = {
@@ -39,10 +40,11 @@ int main() {
     std::unique_ptr<Vixen::Input> input(new Vixen::Input(window));
 
     std::unique_ptr<Vixen::MeshStore> meshStore(new Vixen::MeshStore(logicalDevice, physicalDevice));
-    meshStore->loadMesh("../../test/models/Fox.fbx");
-    meshStore->loadMesh("../../test/models/Crystal.fbx");
+    meshStore->loadMesh("../../test/models/fox/Fox.fbx");
+    meshStore->loadMesh("../../test/models/crystal/Crystal.fbx");
 
     Vixen::Scene scene{};
+    scene.entities.push_back(Vixen::Entity(meshStore->meshes[0], {}, {}, 0.01f));
     scene.entities.push_back(Vixen::Entity(meshStore->meshes[1], {}, {}, 0.01f));
     scene.entities.push_back(Vixen::Entity(meshStore->meshes[2], {}, {}, 1.0f));
 
@@ -62,10 +64,12 @@ int main() {
                                                .build())
                             .addAttribute(0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0)
                             .addAttribute(1, 1, VK_FORMAT_R32G32_SFLOAT, 0)
-                            .addBinding(3 * sizeof(glm::mat4), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0,
-                                                   VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec3))
-                            .addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                                   VK_SHADER_STAGE_FRAGMENT_BIT, 1, VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec2))
+                            .addAttribute(2, 2, VK_FORMAT_R32G32B32A32_SFLOAT, 0)
+                            .addBinding(0, VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec3))
+                            .addBinding(1, VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec2))
+                            .addBinding(2, VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec4))
+                            .addDescriptor(0, 3 * sizeof(glm::mat4), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+                            .addDescriptor(1, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
                             .build())));
 
     int fps = 0;

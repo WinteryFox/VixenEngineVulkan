@@ -32,12 +32,12 @@ namespace Vixen {
     std::vector<VkDescriptorPoolSize>
     DescriptorPool::createSizes(const std::unique_ptr<LogicalDevice> &logicalDevice, const Shader *shader) {
         std::vector<VkDescriptorPoolSize> sizes{};
-        sizes.reserve(shader->getBindings().size());
+        sizes.reserve(shader->getDescriptors().size());
 
-        for (const auto &binding : shader->getBindings()) {
+        for (const auto &descriptor : shader->getDescriptors()) {
             VkDescriptorPoolSize size{};
-            size.type = binding.getType();
-            size.descriptorCount = logicalDevice->images.size();
+            size.type = descriptor.getType();
+            size.descriptorCount = 1;
 
             sizes.push_back(size);
         }

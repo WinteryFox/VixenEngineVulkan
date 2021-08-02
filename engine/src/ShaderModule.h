@@ -6,7 +6,7 @@
 #include <memory>
 #include "Logger.h"
 #include "LogicalDevice.h"
-#include "ShaderBinding.h"
+#include "ShaderDescriptor.h"
 #include "Vulkan.h"
 
 namespace Vixen {
@@ -25,10 +25,6 @@ namespace Vixen {
 
         const std::string entryPoint;
 
-        const std::vector<ShaderBinding> bindings;
-
-        const std::vector<VkVertexInputAttributeDescription> attributes;
-
         static VkShaderModule
         createModule(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::vector<char> &bytecode);
 
@@ -40,9 +36,7 @@ namespace Vixen {
          * @param[in] bytecode The source bytecode of the shader
          */
         ShaderModule(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::vector<char> &bytecode,
-                     VkShaderStageFlagBits stage, std::string entryPoint,
-                     std::vector<ShaderBinding> bindings,
-                     std::vector<VkVertexInputAttributeDescription> attributes);
+                     VkShaderStageFlagBits stage, std::string entryPoint);
 
         ShaderModule(ShaderModule &&) = delete;
 
@@ -62,10 +56,6 @@ namespace Vixen {
             VkShaderStageFlagBits stage{};
 
             std::string entryPoint = "main";
-
-            std::vector<ShaderBinding> bindings{};
-
-            std::vector<VkVertexInputAttributeDescription> attributes{};
 
         public:
             explicit Builder(const std::unique_ptr<LogicalDevice> &logicalDevice) : logicalDevice(logicalDevice) {}
@@ -105,7 +95,7 @@ namespace Vixen {
                 if (stage == 0)
                     error("Shader stage flags must not be 0");
 
-                return std::make_shared<ShaderModule>(logicalDevice, bytecode, stage, entryPoint, bindings, attributes);
+                return std::make_shared<ShaderModule>(logicalDevice, bytecode, stage, entryPoint);
             }
         };
     };

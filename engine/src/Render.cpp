@@ -134,10 +134,9 @@ namespace Vixen {
         allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocateInfo.commandPool = logicalDevice->commandPool;
         allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocateInfo.commandBufferCount = (uint32_t) commandBuffers.size();
+        allocateInfo.commandBufferCount = commandBuffers.size();
 
-        if (vkAllocateCommandBuffers(logicalDevice->device, &allocateInfo, commandBuffers.data()) != VK_SUCCESS)
-            fatal("Failed to allocate command buffers");
+        VK_CHECK_RESULT(vkAllocateCommandBuffers(logicalDevice->device, &allocateInfo, commandBuffers.data()))
         trace("Successfully allocated command buffers");
 
         for (std::vector<VkCommandBuffer>::size_type i = 0; i < commandBuffers.size(); i++) {
@@ -146,8 +145,7 @@ namespace Vixen {
             beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
             beginInfo.pInheritanceInfo = nullptr;
 
-            if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS)
-                fatal("Failed to begin command buffer");
+            VK_CHECK_RESULT(vkBeginCommandBuffer(commandBuffers[i], &beginInfo))
 
             VkRenderPassBeginInfo renderPassBeginInfo = {};
             renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -167,27 +165,32 @@ namespace Vixen {
 
             vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-            vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
-                                    &descriptorSet[i], 0, nullptr);
-
-            for (const auto &entity : scene.entities) {
+            for (size_t j = 0; j < scene.entities.size(); j++) {
+                const auto &entity = scene.entities[j];
                 const auto &mesh = entity.mesh;
+
+                vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
+                                        &descriptorSet[i][j], 0, nullptr);
+
                 /// Bind the mesh's buffers
-                std::array<VkBuffer, 2> buffers{mesh->getBuffer(), mesh->getBuffer()};
-                std::array<VkDeviceSize, 2> offsets{0, mesh->vertexCount * sizeof(glm::vec3) +
-                                                       mesh->indexCount * sizeof(uint32_t)};
+                const std::vector<VkBuffer> buffers(3, mesh->getBuffer()->getBuffer());
+                std::array<VkDeviceSize, 3> offsets{0, mesh->vertexCount * sizeof(glm::vec3),
+                                                    mesh->vertexCount * sizeof(glm::vec3) +
+                                                    mesh->vertexCount * sizeof(glm::vec2)};
                 vkCmdBindVertexBuffers(commandBuffers[i], 0, buffers.size(), buffers.data(), offsets.data());
-                vkCmdBindIndexBuffer(commandBuffers[i], mesh->getBuffer(), mesh->vertexCount * sizeof(glm::vec3),
+                vkCmdBindIndexBuffer(commandBuffers[i], mesh->getBuffer()->getBuffer(),
+                                     mesh->vertexCount * sizeof(glm::vec3) +
+                                     mesh->vertexCount * sizeof(glm::vec2) +
+                                     mesh->vertexCount * sizeof(glm::vec4),
                                      VK_INDEX_TYPE_UINT32);
 
                 /// Draw the mesh
-                vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(mesh->indexCount), 1, 0, 0, 0);
+                vkCmdDrawIndexed(commandBuffers[i], mesh->indexCount, 1, 0, 0, 0);
             }
 
             vkCmdEndRenderPass(commandBuffers[i]);
 
-            if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS)
-                fatal("Failed to reset command buffer");
+            VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffers[i]))
         }
         trace("Successfully created command buffers");
     }
@@ -277,15 +280,10 @@ namespace Vixen {
             s.push_back(createInfo);
         }
 
-        std::vector<VkVertexInputBindingDescription> bindings;
-        bindings.reserve(shader->getBindings().size());
-        for (const auto &binding : shader->getBindings())
-            bindings.push_back(binding.getInputBinding());
-
         VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};
         vertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputCreateInfo.vertexBindingDescriptionCount = bindings.size();
-        vertexInputCreateInfo.pVertexBindingDescriptions = bindings.data();
+        vertexInputCreateInfo.vertexBindingDescriptionCount = shader->getBindings().size();
+        vertexInputCreateInfo.pVertexBindingDescriptions = shader->getBindings().data();
         vertexInputCreateInfo.vertexAttributeDescriptionCount = shader->getAttributes().size();
         vertexInputCreateInfo.pVertexAttributeDescriptions = shader->getAttributes().data();
 
@@ -386,9 +384,9 @@ namespace Vixen {
         pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
         pipelineCreateInfo.basePipelineIndex = -1;
 
-        if (vkCreateGraphicsPipelines(logicalDevice->device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr,
-                                      &pipeline) != VK_SUCCESS)
-            fatal("Failed to create graphics pipeline");
+        VK_CHECK_RESULT(
+                vkCreateGraphicsPipelines(logicalDevice->device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr,
+                                          &pipeline))
         trace("Successfully created a graphics pipeline");
     }
 
@@ -436,42 +434,50 @@ namespace Vixen {
         trace("Destroyed uniform buffers");
     }
 
-    std::vector<VkDescriptorSet> Render::createDescriptorSets() {
-        std::vector<VkDescriptorSetLayout> layouts(logicalDevice->images.size(),
+    std::vector<std::vector<VkDescriptorSet>> Render::createDescriptorSets() {
+        std::vector<VkDescriptorSetLayout> layouts(scene.entities.size(),
                                                    descriptorSetLayout->getDescriptorSetLayout());
-        auto sets = descriptorPool->createSets(layouts);
-        trace("Successfully allocated descriptor sets");
 
-        for (std::vector<VkImage>::size_type i = 0; i < logicalDevice->images.size(); i++) {
-            VkDescriptorBufferInfo descriptorBufferInfo{};
-            descriptorBufferInfo.buffer = uniformBuffers[i];
-            descriptorBufferInfo.offset = 0;
-            descriptorBufferInfo.range = 3 * sizeof(glm::mat4);
+        auto sets = std::vector<std::vector<VkDescriptorSet>>(logicalDevice->images.size());
+        for (std::size_t i = 0; i < sets.size(); i++) {
+            sets[i] = descriptorPool->createSets(layouts);
+            for (std::size_t j = 0; j < sets[i].size(); j++) {
+                std::vector<VkWriteDescriptorSet> writes{};
 
-            VkDescriptorImageInfo imageInfo{};
-            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = scene.entities[0].mesh->texture->getView();
-            imageInfo.sampler = textureSampler;
+                VkDescriptorBufferInfo uniformBuffer{};
+                uniformBuffer.buffer = uniformBuffers[i];
+                uniformBuffer.offset = 0;
+                uniformBuffer.range = 3 * sizeof(glm::mat4);
 
-            std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+                VkWriteDescriptorSet uniformWrite{};
+                uniformWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                uniformWrite.dstSet = sets[i][j];
+                uniformWrite.dstBinding = 0;
+                uniformWrite.dstArrayElement = 0;
+                uniformWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                uniformWrite.descriptorCount = 1;
+                uniformWrite.pBufferInfo = &uniformBuffer;
+                writes.push_back(uniformWrite);
 
-            descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[0].dstSet = sets[i];
-            descriptorWrites[0].dstBinding = 0;
-            descriptorWrites[0].dstArrayElement = 0;
-            descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            descriptorWrites[0].descriptorCount = 1;
-            descriptorWrites[0].pBufferInfo = &descriptorBufferInfo;
+                if (scene.entities[j].mesh->texture != nullptr) {
+                    VkDescriptorImageInfo imageInfo{};
+                    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    imageInfo.imageView = scene.entities[j].mesh->texture->getView();
+                    imageInfo.sampler = textureSampler;
 
-            descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[1].dstSet = sets[i];
-            descriptorWrites[1].dstBinding = 1;
-            descriptorWrites[1].dstArrayElement = 0;
-            descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            descriptorWrites[1].descriptorCount = 1;
-            descriptorWrites[1].pImageInfo = &imageInfo;
+                    VkWriteDescriptorSet imageWrite{};
+                    imageWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    imageWrite.dstSet = sets[i][j];
+                    imageWrite.dstBinding = 1;
+                    imageWrite.dstArrayElement = 0;
+                    imageWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    imageWrite.descriptorCount = 1;
+                    imageWrite.pImageInfo = &imageInfo;
+                    writes.push_back(imageWrite);
+                }
 
-            vkUpdateDescriptorSets(logicalDevice->device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+                vkUpdateDescriptorSets(logicalDevice->device, writes.size(), writes.data(), 0, nullptr);
+            }
         }
         trace("Successfully updated descriptor sets");
 
@@ -484,7 +490,8 @@ namespace Vixen {
         descriptorSetLayout = std::make_unique<DescriptorSetLayout>(logicalDevice, shader.get());
         createUniformBuffers();
         createSampler();
-        descriptorPool = std::make_unique<DescriptorPool>(logicalDevice, shader.get(), logicalDevice->images.size());
+        descriptorPool = std::make_unique<DescriptorPool>(logicalDevice, shader.get(),
+                                                          logicalDevice->images.size() * scene.entities.size());
         descriptorSet = createDescriptorSets();
         createRenderPass();
         createFramebuffers();

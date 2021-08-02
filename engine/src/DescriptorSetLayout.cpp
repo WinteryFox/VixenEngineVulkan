@@ -24,12 +24,12 @@ namespace Vixen {
     std::vector<VkDescriptorSetLayoutBinding> DescriptorSetLayout::createBindings(const Shader *shader) {
         std::vector<VkDescriptorSetLayoutBinding> layoutBindings{};
 
-        for (const auto &shaderBinding : shader->getBindings()) {
+        for (const auto &descriptor : shader->getDescriptors()) {
             VkDescriptorSetLayoutBinding layoutBinding{};
-            layoutBinding.binding = shaderBinding.getInputBinding().binding;
-            layoutBinding.descriptorType = shaderBinding.getType();
+            layoutBinding.binding = descriptor.getBinding();
+            layoutBinding.descriptorType = descriptor.getType();
             layoutBinding.descriptorCount = 1;
-            layoutBinding.stageFlags = shaderBinding.getStage();
+            layoutBinding.stageFlags = descriptor.getStage();
             layoutBinding.pImmutableSamplers = nullptr;
 
             layoutBindings.push_back(layoutBinding);

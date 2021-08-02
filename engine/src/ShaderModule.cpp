@@ -2,11 +2,9 @@
 
 namespace Vixen {
     ShaderModule::ShaderModule(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::vector<char> &bytecode,
-                               VkShaderStageFlagBits stage, std::string entryPoint,
-                               std::vector<ShaderBinding> bindings,
-                               std::vector<VkVertexInputAttributeDescription> attributes)
+                               VkShaderStageFlagBits stage, std::string entryPoint)
             : logicalDevice(logicalDevice), module(createModule(logicalDevice, bytecode)), stage(stage),
-              entryPoint(std::move(entryPoint)), bindings(std::move(bindings)), attributes(std::move(attributes)) {}
+              entryPoint(std::move(entryPoint)) {}
 
     ShaderModule::~ShaderModule() {
         vkDestroyShaderModule(logicalDevice->device, module, nullptr);
