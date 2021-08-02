@@ -14,17 +14,17 @@ namespace Vixen {
     }
 
     DescriptorSetLayout::DescriptorSetLayout(const std::unique_ptr<LogicalDevice> &logicalDevice,
-                                             const Shader *shader)
+                                             const Shader &shader)
             : DescriptorSetLayout(logicalDevice, createBindings(shader)) {}
 
     DescriptorSetLayout::~DescriptorSetLayout() {
         vkDestroyDescriptorSetLayout(logicalDevice->device, layout, nullptr);
     }
 
-    std::vector<VkDescriptorSetLayoutBinding> DescriptorSetLayout::createBindings(const Shader *shader) {
+    std::vector<VkDescriptorSetLayoutBinding> DescriptorSetLayout::createBindings(const Shader &shader) {
         std::vector<VkDescriptorSetLayoutBinding> layoutBindings{};
 
-        for (const auto &descriptor : shader->getDescriptors()) {
+        for (const auto &descriptor : shader.getDescriptors()) {
             VkDescriptorSetLayoutBinding layoutBinding{};
             layoutBinding.binding = descriptor.getBinding();
             layoutBinding.descriptorType = descriptor.getType();

@@ -439,43 +439,43 @@ namespace Vixen {
                                                    descriptorSetLayout->getDescriptorSetLayout());
 
         auto sets = std::vector<std::vector<VkDescriptorSet>>(logicalDevice->images.size());
-        for (std::size_t i = 0; i < sets.size(); i++) {
+        for (size_t i = 0; i < sets.size(); i++) {
             sets[i] = descriptorPool->createSets(layouts);
-            for (std::size_t j = 0; j < sets[i].size(); j++) {
+            for (size_t j = 0; j < sets[i].size(); j++) {
                 std::vector<VkWriteDescriptorSet> writes{};
+                for (const auto &descriptor : shader->getDescriptors()) {
+                    VkWriteDescriptorSet write{};
+                    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    write.dstSet = sets[i][j];
+                    write.dstBinding = descriptor.getBinding();
+                    write.dstArrayElement = 0;
+                    write.descriptorType = descriptor.getType();
+                    write.descriptorCount = 1;
 
-                VkDescriptorBufferInfo uniformBuffer{};
-                uniformBuffer.buffer = uniformBuffers[i];
-                uniformBuffer.offset = 0;
-                uniformBuffer.range = 3 * sizeof(glm::mat4);
+                    switch (descriptor.getType()) {
+                        case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER: {
+                            VkDescriptorBufferInfo buffer{};
+                            buffer.buffer = uniformBuffers[i];
+                            buffer.offset = 0;
+                            buffer.range = descriptor.getSize();
 
-                VkWriteDescriptorSet uniformWrite{};
-                uniformWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                uniformWrite.dstSet = sets[i][j];
-                uniformWrite.dstBinding = 0;
-                uniformWrite.dstArrayElement = 0;
-                uniformWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                uniformWrite.descriptorCount = 1;
-                uniformWrite.pBufferInfo = &uniformBuffer;
-                writes.push_back(uniformWrite);
+                            write.pBufferInfo = &buffer;
+                        }
+                        case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER: {
+                            const auto &texture = scene.entities[j].mesh->texture;
+                            VkDescriptorImageInfo image{};
+                            image.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                            image.imageView = texture != nullptr ? texture->getView() : nullptr;
+                            image.sampler = textureSampler;
 
-                if (scene.entities[j].mesh->texture != nullptr) {
-                    VkDescriptorImageInfo imageInfo{};
-                    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    imageInfo.imageView = scene.entities[j].mesh->texture->getView();
-                    imageInfo.sampler = textureSampler;
+                            write.pImageInfo = &image;
+                        }
+                        default:
+                            break;
+                    }
 
-                    VkWriteDescriptorSet imageWrite{};
-                    imageWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    imageWrite.dstSet = sets[i][j];
-                    imageWrite.dstBinding = 1;
-                    imageWrite.dstArrayElement = 0;
-                    imageWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    imageWrite.descriptorCount = 1;
-                    imageWrite.pImageInfo = &imageInfo;
-                    writes.push_back(imageWrite);
+                    writes.insert(writes.begin(), write);
                 }
-
                 vkUpdateDescriptorSets(logicalDevice->device, writes.size(), writes.data(), 0, nullptr);
             }
         }
@@ -487,7 +487,7 @@ namespace Vixen {
     void Render::create() {
         createDepthImage();
         createSyncObjects();
-        descriptorSetLayout = std::make_unique<DescriptorSetLayout>(logicalDevice, shader.get());
+        descriptorSetLayout = std::make_unique<DescriptorSetLayout>(logicalDevice, *shader);
         createUniformBuffers();
         createSampler();
         descriptorPool = std::make_unique<DescriptorPool>(logicalDevice, shader.get(),

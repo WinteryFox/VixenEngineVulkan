@@ -11,13 +11,13 @@ namespace Vixen {
 
         VkDescriptorSetLayout layout = VK_NULL_HANDLE;
 
-        static std::vector<VkDescriptorSetLayoutBinding> createBindings(const Shader *shader);
+        static std::vector<VkDescriptorSetLayoutBinding> createBindings(const Shader &shader);
 
     public:
         DescriptorSetLayout(const std::unique_ptr<LogicalDevice> &logicalDevice,
                             const std::vector<VkDescriptorSetLayoutBinding> &layoutBindings);
 
-        DescriptorSetLayout(const std::unique_ptr<LogicalDevice> &logicalDevice, const Shader *shader);
+        DescriptorSetLayout(const std::unique_ptr<LogicalDevice> &logicalDevice, const Shader &shader);
 
         ~DescriptorSetLayout();
 
