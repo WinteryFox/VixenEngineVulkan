@@ -14,14 +14,20 @@ engine_sources = [
     'src/Texture.cpp',
     'src/Window.cpp',
     'src/Vulkan.cpp',
-    'src/Buffer.cpp'
+    'src/Buffer.cpp',
+    'src/Logger.cpp',
+    'src/Image.cpp',
+    'src/ImageView.cpp',
+    'src/CommandBuffer.cpp',
 ]
 
 engine_deps = [
     dependency('vulkan'),
     dependency('glm', version : '>=0.9'),
     dependency('glfw3', version : '>=3.1'),
-    dependency('assimp', version : '>=5.0')
+    dependency('assimp', version : '>=5.0'),
+    dependency('spdlog', version : '>=1.9.0'),
+    dependency('threads')
 ]
 engine_inc = include_directories(
     'src',

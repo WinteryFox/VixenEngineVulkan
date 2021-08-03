@@ -4,27 +4,22 @@
 #include <stb_image.h>
 #include <string>
 #include <stdexcept>
-#include "IOException.h"
-#include "Vulkan.h"
+#include <memory>
+#include "ImageView.h"
+#include "Buffer.h"
 
 namespace Vixen {
     class Texture {
-        const std::unique_ptr<LogicalDevice> &logicalDevice;
+        std::shared_ptr<Image> image;
 
-        VkImage texture;
-
-        VkImageView view;
-
-        VmaAllocation allocation;
+        std::unique_ptr<ImageView> view;
 
     public:
         Texture(const std::unique_ptr<LogicalDevice> &logicalDevice,
                 const std::unique_ptr<PhysicalDevice> &physicalDevice, const std::string &path);
 
-        Texture &operator=(const Texture &texture) = delete;
+        [[nodiscard]] const std::shared_ptr<Image> &getImage() const;
 
-        ~Texture();
-
-        [[nodiscard]] VkImageView getView() const;
+        [[nodiscard]] const std::unique_ptr<ImageView> &getView() const;
     };
 }

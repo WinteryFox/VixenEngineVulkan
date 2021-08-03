@@ -4,10 +4,8 @@
 #include <fstream>
 #include <vector>
 #include <memory>
-#include "Logger.h"
 #include "LogicalDevice.h"
 #include "ShaderDescriptor.h"
-#include "Vulkan.h"
 
 namespace Vixen {
     class ShaderModule {
@@ -68,7 +66,7 @@ namespace Vixen {
             Builder &setBytecode(const std::string &path) {
                 std::ifstream file(path, std::ios::ate | std::ios::binary);
                 if (!file.is_open())
-                    error(IOException("Failed to open shader", path));
+                    throw std::runtime_error("Failed to open shader");
 
                 size_t fileSize = (size_t) file.tellg();
                 bytecode.resize(fileSize);
@@ -91,9 +89,9 @@ namespace Vixen {
 
             [[nodiscard]] std::shared_ptr<const ShaderModule> build() const {
                 if (bytecode.empty())
-                    error("Bytecode must not be empty");
+                    throw std::runtime_error("Bytecode must not be empty");
                 if (stage == 0)
-                    error("Shader stage flags must not be 0");
+                    throw std::runtime_error("Shader stage flags must not be 0");
 
                 return std::make_shared<ShaderModule>(logicalDevice, bytecode, stage, entryPoint);
             }

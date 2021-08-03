@@ -19,7 +19,6 @@ namespace Vixen {
 
         VkShaderModule module;
         VK_CHECK_RESULT(vkCreateShaderModule(logicalDevice->device, &createInfo, nullptr, &module))
-        trace("Successfully created shader module");
 
         return module;
     }

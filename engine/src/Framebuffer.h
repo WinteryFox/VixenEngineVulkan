@@ -2,7 +2,6 @@
 #define VIXENENGINE_FRAMEBUFFER_H
 
 #include "LogicalDevice.h"
-#include "Vulkan.h"
 
 namespace Vixen {
     class Framebuffer {

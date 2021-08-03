@@ -1,7 +1,9 @@
 #pragma once
 
 #include <vk_mem_alloc.h>
-#include "Vulkan.h"
+#include <memory>
+#include "LogicalDevice.h"
+#include "CommandBuffer.h"
 
 namespace Vixen {
     class Buffer {
@@ -21,14 +23,13 @@ namespace Vixen {
 
         ~Buffer();
 
-        template<typename T>
-        void update(const T *data);
+        void write(const void *data, VkDeviceSize dataSize, VkDeviceSize offset);
 
-        void* map();
+        void *map();
 
         void unmap();
 
-        void copy(Buffer &other);
+        void copyFrom(const Buffer &other) const;
 
         [[nodiscard]] VkBuffer getBuffer() const;
     };

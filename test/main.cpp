@@ -16,6 +16,8 @@ inline constexpr int VIXEN_TEST_VERSION_PATCH = 1;
 #include "ModelViewProjection.h"
 
 int main() {
+    spdlog::set_level(spdlog::level::trace);
+
     std::vector<const char *> extensions = {
             "VK_EXT_debug_utils",
             "VK_KHR_get_physical_device_properties2"
@@ -72,9 +74,10 @@ int main() {
                             .addDescriptor(1, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
                             .build())));
 
+    Vixen::Logger logger = Vixen::Logger("Test");
+
     int fps = 0;
     double lastTime = 0;
-
     while (!window->shouldClose()) {
         window->update();
 
@@ -84,7 +87,7 @@ int main() {
         double currentTime = glfwGetTime();
         fps++;
         if (currentTime - lastTime >= 1.0) {
-            Vixen::info("FPS: " + std::to_string(fps));
+            logger.info("FPS: {}", fps);
             fps = 0;
             lastTime = currentTime;
         }

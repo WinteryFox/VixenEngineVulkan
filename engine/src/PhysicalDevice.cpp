@@ -4,33 +4,31 @@ namespace Vixen {
     PhysicalDevice::PhysicalDevice(const std::unique_ptr<Instance> &instance,
                                    const std::vector<const char *> &extensions)
             : enabledExtensions(extensions), instance(instance) {
-        /// Get the physical devices installed in this system
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(instance->instance, &deviceCount, nullptr);
-
         if (deviceCount == 0)
-            /// There are no physical devices installed in this system, or none are Vulkan supported
-            fatal(
+            logger.critical(
                     "There are no Vulkan supported GPUs available, updating your graphics drivers may fix this.");
 
         std::vector<VkPhysicalDevice> devices(deviceCount);
         vkEnumeratePhysicalDevices(instance->instance, &deviceCount, devices.data());
 
-        std::string output = "Found " + std::to_string(devices.size()) + " physical devices; ";
+        std::string output;
         for (const auto &physicalDevice : devices) {
             VkPhysicalDeviceProperties properties;
             vkGetPhysicalDeviceProperties(physicalDevice, &properties);
-            output += std::string(properties.deviceName) + "(" +
+            output += std::string(properties.deviceName) + " (" +
                       std::to_string(VK_VERSION_MAJOR(properties.apiVersion)) + "." +
                       std::to_string(VK_VERSION_MINOR(properties.apiVersion)) + "." +
                       std::to_string(VK_VERSION_PATCH(properties.apiVersion)) + ") ";
         }
-        trace(output);
+        logger.trace("Found {} physical device(s); {}", devices.size(), output);
 
         device = pickDevice(devices, extensions);
-        if (device == VK_NULL_HANDLE)
-            /// There are no suitable physical devices installed in this system
-            fatal("No suitable GPU found.");
+        if (device == VK_NULL_HANDLE) {
+            logger.critical("No suitable GPU found.");
+            exit(1);
+        }
 
         vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
         vkGetPhysicalDeviceProperties(device, &deviceProperties);
@@ -45,12 +43,9 @@ namespace Vixen {
 
         vkGetPhysicalDeviceProperties2(device, &deviceProperties2);
 
-        info("Allocated a GPU with name " + std::string(driverProperties.driverName) + " " +
-             std::string(deviceProperties.deviceName) + " " + driverProperties.driverInfo +
-             " running Vulkan version " +
-             std::to_string(VK_VERSION_MAJOR(deviceProperties.apiVersion)) + "." +
-             std::to_string(VK_VERSION_MINOR(deviceProperties.apiVersion)) + "." +
-             std::to_string(VK_VERSION_PATCH(deviceProperties.apiVersion)));
+        logger.info("Allocated a GPU with name {} {} running Vulkan v{}.{}.{}", deviceProperties.deviceName,
+                    driverProperties.driverInfo, VK_VERSION_MAJOR(deviceProperties.apiVersion),
+                    VK_VERSION_MINOR(deviceProperties.apiVersion), VK_VERSION_PATCH(deviceProperties.apiVersion));
     }
 
     // TODO: Fix this shit
@@ -182,7 +177,8 @@ namespace Vixen {
 
             if (tiling == VK_IMAGE_TILING_LINEAR && (formatProperties.linearTilingFeatures & features) == features) {
                 return format;
-            } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (formatProperties.optimalTilingFeatures & features) == features) {
+            } else if (tiling == VK_IMAGE_TILING_OPTIMAL &&
+                       (formatProperties.optimalTilingFeatures & features) == features) {
                 return format;
             }
         }

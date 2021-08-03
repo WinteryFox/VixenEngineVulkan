@@ -1,14 +1,17 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
 #include <set>
 #include <memory>
+#include "Logger.h"
+#include "Vulkan.h"
 #include "PhysicalDevice.h"
 
 namespace Vixen {
     class LogicalDevice {
     public:
+        Logger logger{"LogicalDevice"};
+
         /**
          * The Vulkan logical device
          */

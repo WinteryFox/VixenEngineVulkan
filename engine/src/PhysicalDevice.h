@@ -4,6 +4,7 @@
 #include <optional>
 #include <set>
 #include <memory>
+#include "Logger.h"
 #include "Instance.h"
 #include "VulkanException.h"
 
@@ -15,6 +16,29 @@ namespace Vixen {
     };
 
     class PhysicalDevice {
+        Logger logger{"PhysicalDevice"};
+
+        /**
+         * Automatically pick the best suited Vulkan capable physical device and Vulkan queue family
+         *
+         * @param[in] instance The Vulkan instance to pick the device for
+         * @param[in] devices The list of Vulkan physical devices to pick from
+         * @param[in] extensions The device extensions required by the application
+         * @return Returns the Vulkan physical device, can be VK_NULL_HANDLE if no suitable physical device was found
+         */
+        VkPhysicalDevice
+        pickDevice(const std::vector<VkPhysicalDevice> &devices, const std::vector<const char *> &extensions);
+
+        /**
+         * Automatically find and set the required graphics queue families for a Vulkan physical device
+         *
+         * @param[in] physicalDevice The physical device to find the queue families for
+         */
+        std::tuple<std::optional<uint32_t>, std::optional<uint32_t>, std::optional<uint32_t>>
+        findQueueFamilies(const VkPhysicalDevice &physicalDevice);
+
+        SwapChainSupportDetails querySwapChainSupportDetails(VkPhysicalDevice physicalDevice);
+
     public:
         /**
          * The Vulkan physical device
@@ -67,26 +91,5 @@ namespace Vixen {
                                 const std::vector<const char *> &extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME});
 
         SwapChainSupportDetails querySwapChainSupportDetails();
-    private:
-        /**
-         * Automatically pick the best suited Vulkan capable physical device and Vulkan queue family
-         *
-         * @param[in] instance The Vulkan instance to pick the device for
-         * @param[in] devices The list of Vulkan physical devices to pick from
-         * @param[in] extensions The device extensions required by the application
-         * @return Returns the Vulkan physical device, can be VK_NULL_HANDLE if no suitable physical device was found
-         */
-        VkPhysicalDevice
-        pickDevice(const std::vector<VkPhysicalDevice> &devices, const std::vector<const char *> &extensions);
-
-        /**
-         * Automatically find and set the required graphics queue families for a Vulkan physical device
-         *
-         * @param[in] physicalDevice The physical device to find the queue families for
-         */
-        std::tuple<std::optional<uint32_t>, std::optional<uint32_t>, std::optional<uint32_t>>
-        findQueueFamilies(const VkPhysicalDevice &physicalDevice);
-
-        SwapChainSupportDetails querySwapChainSupportDetails(VkPhysicalDevice physicalDevice);
     };
 }

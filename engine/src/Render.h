@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
 #include <memory>
+#include "Vulkan.h"
 #include "Shader.h"
 #include "Mesh.h"
 #include "Scene.h"
@@ -9,7 +9,6 @@
 #include "Framebuffer.h"
 #include "DescriptorSetLayout.h"
 #include "DescriptorPool.h"
-#include "Buffer.h"
 
 namespace Vixen {
     enum class BufferType {
@@ -19,6 +18,8 @@ namespace Vixen {
     };
 
     class Render {
+        Logger logger{"Render"};
+
         /**
          * The logical device this renderer was made by and should be destroyed by
          */
@@ -80,21 +81,15 @@ namespace Vixen {
 
         std::unique_ptr<DescriptorSetLayout> descriptorSetLayout = nullptr;
 
-        std::vector<VkBuffer> uniformBuffers;
-
-        std::vector<VmaAllocation> uniformBuffersMemory;
+        std::vector<std::unique_ptr<Buffer>> uniformBuffers;
 
         std::vector<std::vector<VkDescriptorSet>> descriptorSet;
 
         VkSampler textureSampler{};
 
-        VkFormat depthImageFormat{};
+        std::shared_ptr<Image> depthImage{};
 
-        VkImage depthImage{};
-
-        VkImageView depthImageView{};
-
-        VmaAllocation depthImageAllocation{};
+        std::unique_ptr<ImageView> depthImageView{};
 
         /**
          * The maximum number of frames in flight, also known as concurrently rendered frames
@@ -144,8 +139,6 @@ namespace Vixen {
         void createSampler();
 
         void destroySampler();
-
-        void destroyUniformBuffers();
 
         std::vector<std::vector<VkDescriptorSet>> createDescriptorSets();
 

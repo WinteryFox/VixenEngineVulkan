@@ -5,10 +5,11 @@
 #include <GLFW/glfw3.h>
 #include <stb_image.h>
 #include "Logger.h"
-#include "IOException.h"
 
 namespace Vixen {
     class Window {
+        Logger logger{"Window"};
+
     public:
         /**
          * The GLFW3 window instance

@@ -20,18 +20,17 @@ namespace Vixen {
         vmaDestroyBuffer(device->allocator, buffer, allocation);
     }
 
-    template<typename T>
-    void Buffer::update(const T *data) {
-        if (sizeof(T) > size)
+    void Buffer::write(const void *data, const VkDeviceSize dataSize, VkDeviceSize offset) {
+        if (offset + dataSize > size)
             throw std::runtime_error("Buffer overflow");
 
         void *d = map();
-        memcpy(d, data, sizeof(data));
+        memcpy(d, data, dataSize);
         unmap();
     }
 
     void *Buffer::map() {
-        void *data;
+        void* data = nullptr;
         vmaMapMemory(device->allocator, allocation, &data);
         return data;
     }
@@ -40,14 +39,13 @@ namespace Vixen {
         vmaUnmapMemory(device->allocator, allocation);
     }
 
-    void Buffer::copy(Buffer &other) {
-        auto commandBuffer = beginSingleUseCommandBuffer(device);
+    void Buffer::copyFrom(const Buffer &other) const {
+        CommandBuffer(device).recordAndSubmit([this, &other](VkCommandBuffer commandBuffer) {
+            VkBufferCopy copyRegion = {};
+            copyRegion.size = size;
 
-        VkBufferCopy copyRegion = {};
-        copyRegion.size = size;
-        vkCmdCopyBuffer(commandBuffer, other.getBuffer(), buffer, 1, &copyRegion);
-
-        endSingleUseCommandBuffer(device, commandBuffer);
+            vkCmdCopyBuffer(commandBuffer, other.getBuffer(), buffer, 1, &copyRegion);
+        });
     }
 
     VkBuffer Buffer::getBuffer() const {

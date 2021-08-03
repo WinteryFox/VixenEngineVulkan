@@ -9,16 +9,16 @@ namespace Vixen {
     ) {
         switch (messageSeverity) {
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-                trace("VULKAN " + std::string(pCallbackData->pMessage));
+                Logger("Vulkan").trace("{}", pCallbackData->pMessage);
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-                info("VULKAN " + std::string(pCallbackData->pMessage));
+                Logger{"Vulkan"}.info("{}", pCallbackData->pMessage);
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-                warning("VULKAN " + std::string(pCallbackData->pMessage));
+                Logger{"Vulkan"}.warning("{}", pCallbackData->pMessage);
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-                error("VULKAN " + std::string(pCallbackData->pMessage));
+                Logger{"Vulkan"}.error("{}", pCallbackData->pMessage);
                 break;
             default:
                 break;
@@ -90,32 +90,15 @@ namespace Vixen {
         enabledExtensions = totalExtensions;
         enabledLayers = requiredLayers;
 
-        /// Attempt to create the instance, throws runtime error if no instance could be made
-        VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
-        if (result == VK_ERROR_EXTENSION_NOT_PRESENT)
-            fatal("Failed to create Vulkan instance, extension not present!");
-        else if (result == VK_ERROR_LAYER_NOT_PRESENT)
-            fatal("Failed to create Vulkan instance, layer not present!");
-        else if (result != VK_SUCCESS)
-            fatal("Failed to create Vulkan instance, unknown error!");
+        VK_CHECK_RESULT(vkCreateInstance(&createInfo, nullptr, &instance))
+        VK_CHECK_RESULT(glfwCreateWindowSurface(instance, window.window, nullptr, &surface))
+        logger.trace("Successfully created the window surface");
 
-        if (glfwCreateWindowSurface(instance, window.window, nullptr, &surface) != VK_SUCCESS)
-            fatal("Failed to create window surface");
-        trace("Successfully created the window surface");
-
-        info("Vixen Engine version "
-             + std::to_string(VK_VERSION_MAJOR(appInfo.engineVersion)) + "."
-             + std::to_string(VK_VERSION_MINOR(appInfo.engineVersion)) + "."
-             + std::to_string(VK_VERSION_PATCH(appInfo.engineVersion))
-             + " running Vulkan version "
-             + std::to_string(VK_VERSION_MAJOR(appInfo.apiVersion)) + "."
-             + std::to_string(VK_VERSION_MINOR(appInfo.apiVersion)) + "."
-             + std::to_string(VK_VERSION_PATCH(appInfo.apiVersion)));
-        info("Serving application "
-             + std::string(appInfo.pApplicationName) + " "
-             + std::to_string(VK_VERSION_MAJOR(appVersion.x)) + "."
-             + std::to_string(VK_VERSION_MINOR(appVersion.y)) + "."
-             + std::to_string(VK_VERSION_PATCH(appVersion.z)));
+        logger.info("Vixen Engine v{}.{}.{} running Vulkan v{}.{}.{}",
+                    VK_VERSION_MAJOR(appInfo.engineVersion), VK_VERSION_MINOR(appInfo.engineVersion),
+                    VK_VERSION_PATCH(appInfo.engineVersion), VK_VERSION_MAJOR(appInfo.apiVersion),
+                    VK_VERSION_MINOR(appInfo.apiVersion), VK_VERSION_PATCH(appInfo.apiVersion));
+        logger.info("Serving application \"{}\" v{}.{}.{}", appInfo.pApplicationName, appVersion.x, appVersion.y, appVersion.z);
     }
 
     void Instance::queryLayers() {
@@ -144,13 +127,8 @@ namespace Vixen {
                 extensionNames.end())
                 result.push_back(extension);
 
-        std::string error = "Missing requested and required extensions; ";
-        if (!result.empty()) {
-            for (const char *extension : result)
-                error += std::string(extension) + " ";
-
-            fatal(error);
-        }
+        if (!result.empty())
+            logger.critical("Missing requested and required extensions");
     }
 
     void Instance::checkLayers(const std::vector<const char *> &requiredLayers) {
@@ -164,13 +142,8 @@ namespace Vixen {
             if (std::find(layerNames.begin(), layerNames.end(), layer) != layerNames.end())
                 result.push_back(layer);
 
-        std::string error = "Missing requested and required layers; ";
-        if (!result.empty()) {
-            for (const char *extension : result)
-                error += std::string(extension) + " ";
-
-            fatal(error);
-        }
+        if (!result.empty())
+            logger.critical("Missing requested and required layers; ");
     }
 
     void Instance::registerLogger() {
@@ -190,7 +163,7 @@ namespace Vixen {
         if (func != nullptr) {
             func(instance, &createInfo, nullptr, &debugMessenger);
         } else {
-            warning("Validation layers not present, Vulkan validation output is disabled!");
+            logger.debug("Validation layers not present, Vulkan validation output is disabled!");
         }
     }
 }

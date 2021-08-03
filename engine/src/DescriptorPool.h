@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Vulkan.h"
 #include "LogicalDevice.h"
 #include "DescriptorSetLayout.h"
 

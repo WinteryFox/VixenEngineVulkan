@@ -32,19 +32,19 @@ namespace Vixen {
         deviceCreateInfo.ppEnabledExtensionNames = physicalDevice->enabledExtensions.data();
 
         if (vkCreateDevice(physicalDevice->device, &deviceCreateInfo, nullptr, &device) != VK_SUCCESS)
-            fatal("Failed to create logical device");
-        trace("Successfully created logical device");
+            logger.critical("Failed to create logical device");
+        logger.trace("Successfully created logical device");
 
         /// Retrieve the graphics queue handle
         vkGetDeviceQueue(device, physicalDevice->graphicsFamilyIndex, 0, &graphicsQueue);
-        trace("Successfully created graphics queue interface");
+        logger.trace("Successfully created graphics queue interface");
 
         /// Retrieve the presentation queue handle
         vkGetDeviceQueue(device, physicalDevice->presentFamilyIndex, 0, &presentQueue);
-        trace("Successfully created presentation queue interface");
+        logger.trace("Successfully created presentation queue interface");
 
         vkGetDeviceQueue(device, physicalDevice->transferFamilyIndex, 0, &transferQueue);
-        trace("Successfully created memory transfer queue interface");
+        logger.trace("Successfully created memory transfer queue interface");
 
         SwapChainSupportDetails details = physicalDevice->querySwapChainSupportDetails();
         imageCount = details.capabilities.minImageCount + 1;
@@ -61,8 +61,8 @@ namespace Vixen {
         poolCreateInfo.flags = 0;
 
         if (vkCreateCommandPool(device, &poolCreateInfo, nullptr, &commandPool) != VK_SUCCESS)
-            fatal("Failed to create command pool");
-        trace("Successfully created command pool");
+            logger.critical("Failed to create command pool");
+        logger.trace("Successfully created command pool");
 
         VkCommandPoolCreateInfo transferCommandPoolCreateInfo = {};
         transferCommandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -71,15 +71,15 @@ namespace Vixen {
 
         if (vkCreateCommandPool(device, &transferCommandPoolCreateInfo, nullptr, &transferCommandPool) !=
             VK_SUCCESS)
-            fatal("Failed to create memory transfer command pool");
-        trace("Successfully created memory transfer command pool");
+            logger.critical("Failed to create memory transfer command pool");
+        logger.trace("Successfully created memory transfer command pool");
 
         VkFenceCreateInfo fenceCreateInfo = {};
         fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
         if (vkCreateFence(device, &fenceCreateInfo, nullptr, &transferFence) != VK_SUCCESS)
-            fatal("Failed to create memory transfer fence");
+            logger.critical("Failed to create memory transfer fence");
 
         /// Create the VMA allocator
         VmaAllocatorCreateInfo allocatorCreateInfo = {};
@@ -88,7 +88,7 @@ namespace Vixen {
         allocatorCreateInfo.instance = instance->instance;
 
         if (vmaCreateAllocator(&allocatorCreateInfo, &allocator) != VK_SUCCESS)
-            fatal("Failed to create VMA allocator");
+            logger.critical("Failed to create VMA allocator");
     }
 
     LogicalDevice::~LogicalDevice() {
@@ -153,9 +153,8 @@ namespace Vixen {
             extent = actualExtent;
         }
 
-        trace("Using the following swap surface format and swap present mode; " + std::to_string(surfaceFormat.format) +
-              "(" + std::to_string(surfaceFormat.colorSpace) + ")" + ", " + std::to_string(presentMode) +
-              " with the following extent " + std::to_string(extent.width) + ", " + std::to_string(extent.height));
+        logger.trace("Using swap surface format {} ({}) with present mode {} ({}, {})", surfaceFormat.format,
+                     surfaceFormat.colorSpace, presentMode, extent.width, extent.height);
     }
 
     void LogicalDevice::createImageViews() {
@@ -177,7 +176,7 @@ namespace Vixen {
             createInfo.subresourceRange.layerCount = 1;
 
             if (vkCreateImageView(device, &createInfo, nullptr, &imageViews[i]) != VK_SUCCESS)
-                fatal("Failed to create image views");
+                logger.critical("Failed to create image views");
         }
     }
 
@@ -219,8 +218,8 @@ namespace Vixen {
 
         /// Create the swap chain
         if (vkCreateSwapchainKHR(device, &swapchainCreateInfo, nullptr, &swapchain) != VK_SUCCESS)
-            fatal("Failed to create swap chain");
-        info("Successfully created swap chain");
+            logger.critical("Failed to create swap chain");
+        logger.info("Successfully created swap chain");
 
         /// Create the swap chain image views
         vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);

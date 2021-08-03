@@ -5,14 +5,14 @@
 namespace Vixen {
     Window::Window(const std::string &name, const std::string &icon, GLFWmonitor *monitor, int width, int height) {
         glfwSetErrorCallback([](int code, const char* message) {
-            error("[GLFW] " + std::to_string(code) + ": " + std::string(message));
+            Logger{"GLFW"}.error("{} ({})", message, code);
         });
 
         if (glfwInit() != GLFW_TRUE)
-            fatal("Failed to initialize GLFW");
+            logger.critical("Failed to initialize GLFW");
 
         if (glfwVulkanSupported() != GLFW_TRUE)
-            fatal("Vulkan is not supported, updating your graphics drivers may fix this.");
+            logger.critical("Vulkan is not supported, updating your graphics drivers may fix this.");
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_SAMPLES, 4);
@@ -23,7 +23,7 @@ namespace Vixen {
         window = glfwCreateWindow(width, height, name.c_str(), monitor, nullptr);
         if (!window) {
             glfwTerminate();
-            fatal("GLFW failed to create the window!");
+            logger.critical("GLFW failed to create the window!");
         }
 
         /// Centralize the window on the screen
@@ -64,7 +64,7 @@ namespace Vixen {
         stbi_uc *pixels = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
         if (!pixels) {
             glfwTerminate();
-            throw IOException("Failed to load the window icon", path);
+            throw std::runtime_error("Failed to load the window icon");
         }
 
         GLFWimage image;

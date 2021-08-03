@@ -1,96 +1,52 @@
 #pragma once
 
-#ifdef __WIN32__
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
-#include <windows.h>
-#include <direct.h>
-
-#elif __linux__
-
-#include <sys/stat.h>
-
-#endif
-
-#include <ctime>
-#include <iomanip>
-#include <fstream>
-#include <iostream>
-
-// TODO: Redo this in a way that doesn't suck
 namespace Vixen {
-    enum class LogSeverity {
-        LOG_SEVERITY_TRACE = 5,
-        LOG_SEVERITY_INFO = 4,
-        LOG_SEVERITY_WARNING = 3,
-        LOG_SEVERITY_ERR = 2,
-        LOG_SEVERITY_FATAL = 1,
-        LOG_SEVERITY_NONE = 0
-    };
+    class Logger {
+        std::string name;
 
-    static void log(LogSeverity severity, const std::string &message) {
-        //if (VIXEN_DEBUG_LEVEL < (int) severity)
-        //    return;
+        const std::shared_ptr<spdlog::logger> logger;
 
-        time_t time = std::time(nullptr);
-        std::tm *localtime = std::localtime(&time);
-        const auto &stamp = std::put_time(localtime, "%Y-%m-%d %H:%M:%S");
+    public:
+        explicit Logger(const std::string &name);
 
-        std::stringstream out;
-        out << stamp;
-        switch (severity) {
-            case LogSeverity::LOG_SEVERITY_TRACE:
-                out << " TRACE ";
-                break;
-            case LogSeverity::LOG_SEVERITY_INFO:
-                out << " INFO ";
-                break;
-            case LogSeverity::LOG_SEVERITY_WARNING:
-                out << " WARNING ";
-                break;
-            case LogSeverity::LOG_SEVERITY_ERR:
-                out << " ERROR ";
-                break;
-            case LogSeverity::LOG_SEVERITY_FATAL:
-                out << " FATAL ";
-                break;
-            case LogSeverity::LOG_SEVERITY_NONE:
-                break;
+        ~Logger();
+
+        template<typename... Args>
+        void trace(fmt::format_string<Args...> message, Args &&...args) {
+            logger->log(spdlog::level::trace, message, std::forward<Args>(args)...);
         }
 
-        out << message << std::endl;
-        std::cout << out.str();
-    }
+        template<typename... Args>
+        void debug(fmt::format_string<Args...> message, Args &&...args) {
+            logger->log(spdlog::level::debug, message, std::forward<Args>(args)...);
+        }
 
-    static void trace(const std::string &message) {
-        log(LogSeverity::LOG_SEVERITY_TRACE, message);
-    }
+        template<typename... Args>
+        void info(fmt::format_string<Args...> message, Args &&...args) {
+            logger->log(spdlog::level::info, message, std::forward<Args>(args)...);
+        }
 
-    static void info(const std::string &message) {
-        log(LogSeverity::LOG_SEVERITY_INFO, message);
-    }
+        template<typename... Args>
+        void warning(fmt::format_string<Args...> message, Args &&...args) {
+            logger->log(spdlog::level::warn, message, std::forward<Args>(args)...);
+        }
 
-    static void warning(const std::string &message) {
-        log(LogSeverity::LOG_SEVERITY_WARNING, message);
-    }
+        template<typename... Args>
+        void error(fmt::format_string<Args...> message, Args &&...args) {
+            logger->log(spdlog::level::err, message, std::forward<Args>(args)...);
+        }
 
-    static void error(const std::string &message) {
-        log(LogSeverity::LOG_SEVERITY_ERR, message);
-    }
+        template<typename... Args>
+        void error(const std::runtime_error &error, Args &&...args) {
+            logger->log(spdlog::level::err, error.what(), std::forward<Args>(args)...);
+        }
 
-    static void error(const std::runtime_error &error) {
-        log(LogSeverity::LOG_SEVERITY_ERR, error.what());
-    }
-
-    static void fatal(const std::string &message) {
-        log(LogSeverity::LOG_SEVERITY_FATAL, message);
-#ifdef __WIN32__
-        MessageBox(
-                nullptr,
-                message.c_str(),
-                "Fatal error occurred",
-                MB_ICONERROR | MB_OK | MB_DEFBUTTON2
-        );
-#endif
-        exit(EXIT_FAILURE);
-    }
+        template<typename... Args>
+        void critical(fmt::format_string<Args...> message, Args &&...args) {
+            logger->log(spdlog::level::critical, message, std::forward<Args>(args)...);
+        }
+    };
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Vulkan.h"
 #include "ShaderModule.h"
 #include "ShaderDescriptor.h"
 

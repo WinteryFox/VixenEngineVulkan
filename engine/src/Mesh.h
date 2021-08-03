@@ -4,7 +4,6 @@
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 #include <glm/glm.hpp>
-#include "Vulkan.h"
 #include "LogicalDevice.h"
 #include "Texture.h"
 #include "Buffer.h"

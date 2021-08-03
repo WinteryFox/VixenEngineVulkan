@@ -24,7 +24,7 @@ namespace Vixen {
             invalidate();
             return;
         } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-            fatal("Failed to acquire image " + std::to_string(result));
+            logger.critical("Failed to acquire image {}", errorString(result));
         }
 
         updateUniformBuffer(camera, scene.entities[0], imageIndex);
@@ -47,7 +47,7 @@ namespace Vixen {
         vkResetFences(logicalDevice->device, 1, &fences[currentFrame]);
 
         if (vkQueueSubmit(logicalDevice->graphicsQueue, 1, &submitInfo, fences[currentFrame]) != VK_SUCCESS)
-            fatal("Failed to submit command to queue");
+            logger.critical("Failed to submit command to queue");
 
         VkPresentInfoKHR presentInfo = {};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -66,8 +66,7 @@ namespace Vixen {
     }
 
     void Render::updateUniformBuffer(const std::unique_ptr<Camera> &camera, const Entity &entity, uint32_t imageIndex) {
-        void *data;
-        vmaMapMemory(logicalDevice->allocator, uniformBuffersMemory[imageIndex], &data);
+        void *data = uniformBuffers[imageIndex]->map();
 
         glm::mat4 model = entity.getModelMatrix();
         glm::mat4 view = camera->getView();
@@ -79,17 +78,18 @@ namespace Vixen {
         memcpy((glm::mat4 *) data + 1, &view, sizeof(glm::mat4));
         memcpy((glm::mat4 *) data + 2, &projection, sizeof(glm::mat4));
 
-        vmaUnmapMemory(logicalDevice->allocator, uniformBuffersMemory[imageIndex]);
+        uniformBuffers[imageIndex]->unmap();
     }
 
     void Render::createFramebuffers() {
         framebuffers.reserve(logicalDevice->imageViews.size());
 
         for (auto &imageView : logicalDevice->imageViews) {
-            framebuffers.emplace_back(logicalDevice, renderPass, std::vector<VkImageView>{imageView, depthImageView},
+            framebuffers.emplace_back(logicalDevice, renderPass,
+                                      std::vector<VkImageView>{imageView, depthImageView->getView()},
                                       logicalDevice->extent.width, logicalDevice->extent.height);
         }
-        trace("Successfully created frame buffers");
+        logger.trace("Successfully created frame buffers");
     }
 
     void Render::destroyFramebuffers() {
@@ -115,8 +115,8 @@ namespace Vixen {
                 vkCreateSemaphore(logicalDevice->device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]) !=
                 VK_SUCCESS ||
                 vkCreateFence(logicalDevice->device, &fenceCreateInfo, nullptr, &fences[i]) != VK_SUCCESS)
-                fatal("Failed to create semaphores and fences");
-        trace("Successfully created semaphores and fences");
+                logger.critical("Failed to create semaphores and fences");
+        logger.trace("Successfully created semaphores and fences");
     }
 
     void Render::destroySyncObjects() {
@@ -125,7 +125,7 @@ namespace Vixen {
             vkDestroySemaphore(logicalDevice->device, renderFinishedSemaphores[i], nullptr);
             vkDestroyFence(logicalDevice->device, fences[i], nullptr);
         }
-        trace("Destroyed sync objects");
+        logger.trace("Destroyed sync objects");
     }
 
     void Render::createCommandBuffers() {
@@ -137,7 +137,7 @@ namespace Vixen {
         allocateInfo.commandBufferCount = commandBuffers.size();
 
         VK_CHECK_RESULT(vkAllocateCommandBuffers(logicalDevice->device, &allocateInfo, commandBuffers.data()))
-        trace("Successfully allocated command buffers");
+        logger.trace("Successfully allocated command buffers");
 
         for (std::vector<VkCommandBuffer>::size_type i = 0; i < commandBuffers.size(); i++) {
             VkCommandBufferBeginInfo beginInfo = {};
@@ -192,13 +192,13 @@ namespace Vixen {
 
             VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffers[i]))
         }
-        trace("Successfully created command buffers");
+        logger.trace("Successfully created command buffers");
     }
 
     void Render::destroyCommandBuffers() {
         vkFreeCommandBuffers(logicalDevice->device, logicalDevice->commandPool, commandBuffers.size(),
                              commandBuffers.data());
-        trace("Freed command buffers");
+        logger.trace("Freed command buffers");
     }
 
     void Render::createRenderPass() {
@@ -218,7 +218,7 @@ namespace Vixen {
         colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         VkAttachmentDescription depthAttachment{};
-        depthAttachment.format = depthImageFormat;
+        depthAttachment.format = depthImage->getFormat();
         depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
         depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -256,13 +256,13 @@ namespace Vixen {
         renderPassCreateInfo.pDependencies = &dependency;
 
         if (vkCreateRenderPass(logicalDevice->device, &renderPassCreateInfo, nullptr, &renderPass) != VK_SUCCESS)
-            fatal("Failed to create render pass");
-        trace("Successfully created render pass");
+            logger.critical("Failed to create render pass");
+        logger.trace("Successfully created render pass");
     }
 
     void Render::destroyRenderPass() {
         vkDestroyRenderPass(logicalDevice->device, renderPass, nullptr);
-        trace("Destroyed render pass");
+        logger.trace("Destroyed render pass");
     }
 
     void Render::createPipeline() {
@@ -387,12 +387,12 @@ namespace Vixen {
         VK_CHECK_RESULT(
                 vkCreateGraphicsPipelines(logicalDevice->device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr,
                                           &pipeline))
-        trace("Successfully created a graphics pipeline");
+        logger.trace("Successfully created a graphics pipeline");
     }
 
     void Render::destroyPipeline() {
         vkDestroyPipeline(logicalDevice->device, pipeline, nullptr);
-        trace("Destroyed pipeline");
+        logger.trace("Destroyed pipeline");
     }
 
     void Render::createPipelineLayout() {
@@ -408,29 +408,22 @@ namespace Vixen {
 
         VK_CHECK_RESULT(
                 vkCreatePipelineLayout(logicalDevice->device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout))
-        trace("Successfully created pipeline layout");
+        logger.trace("Successfully created pipeline layout");
     }
 
     void Render::destroyPipelineLayout() {
         vkDestroyPipelineLayout(logicalDevice->device, pipelineLayout, nullptr);
-        trace("Destroyed pipeline layout");
+        logger.trace("Destroyed pipeline layout");
     }
 
     void Render::createUniformBuffers() {
         VkDeviceSize bufferSize = 3 * sizeof(glm::mat4);
         uniformBuffers.resize(logicalDevice->images.size());
-        uniformBuffersMemory.resize(logicalDevice->images.size());
 
         for (std::vector<VkImage>::size_type i = 0; i < logicalDevice->images.size(); i++)
-            createBuffer(logicalDevice, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_ONLY,
-                         uniformBuffers[i], uniformBuffersMemory[i]);
-        trace("Successfully created uniform buffers");
-    }
-
-    void Render::destroyUniformBuffers() {
-        for (std::vector<VkBuffer>::size_type i = 0; i < uniformBuffers.size(); i++)
-            vmaDestroyBuffer(logicalDevice->allocator, uniformBuffers[i], uniformBuffersMemory[i]);
-        trace("Destroyed uniform buffers");
+            uniformBuffers[i] = std::make_unique<Buffer>(logicalDevice, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                                         VMA_MEMORY_USAGE_CPU_ONLY); // TODO: This VMA usage flag seems sus
+        logger.trace("Successfully created uniform buffers");
     }
 
     std::vector<std::vector<VkDescriptorSet>> Render::createDescriptorSets() {
@@ -454,7 +447,7 @@ namespace Vixen {
                     switch (descriptor.getType()) {
                         case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER: {
                             VkDescriptorBufferInfo buffer{};
-                            buffer.buffer = uniformBuffers[i];
+                            buffer.buffer = uniformBuffers[i]->getBuffer();
                             buffer.offset = 0;
                             buffer.range = descriptor.getSize();
 
@@ -464,7 +457,7 @@ namespace Vixen {
                             const auto &texture = scene.entities[j].mesh->texture;
                             VkDescriptorImageInfo image{};
                             image.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                            image.imageView = texture != nullptr ? texture->getView() : nullptr;
+                            image.imageView = texture != nullptr ? texture->getView()->getView() : nullptr;
                             image.sampler = textureSampler;
 
                             write.pImageInfo = &image;
@@ -478,7 +471,7 @@ namespace Vixen {
                 vkUpdateDescriptorSets(logicalDevice->device, writes.size(), writes.data(), 0, nullptr);
             }
         }
-        trace("Successfully updated descriptor sets");
+        logger.trace("Successfully updated descriptor sets");
 
         return sets;
     }
@@ -502,7 +495,6 @@ namespace Vixen {
     void Render::destroy() {
         vkDeviceWaitIdle(logicalDevice->device);
 
-        destroyUniformBuffers();
         destroyDepthImage();
         destroyFramebuffers();
         destroyCommandBuffers();
@@ -516,13 +508,13 @@ namespace Vixen {
     /// TODO: Redo this shit, it sucks
     void Render::invalidate() {
         double oldTime = glfwGetTime();
-        trace("Invalidating render...");
+        logger.trace("Invalidating render...");
         logicalDevice->destroySwapchain();
         destroy();
         logicalDevice->createSwapchain();
         logicalDevice->createImageViews();
         create();
-        trace("Invalidation took " + std::to_string(glfwGetTime() - oldTime));
+        logger.trace("Invalidation took {}ms", glfwGetTime() - oldTime);
     }
 
     void Render::createSampler() {
@@ -560,18 +552,18 @@ namespace Vixen {
     }
 
     void Render::createDepthImage() {
-        depthImageFormat = physicalDevice->findSupportedFormat(
+        const auto &depthImageFormat = physicalDevice->findSupportedFormat(
                 {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
                 VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
-        createImage(logicalDevice, physicalDevice, logicalDevice->extent.width, logicalDevice->extent.height,
-                    depthImageFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depthImage,
-                    depthImageAllocation);
-        depthImageView = createImageView(logicalDevice, depthImage, depthImageFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+        depthImage = std::make_shared<Image>(logicalDevice, logicalDevice->extent.width, logicalDevice->extent.height,
+                                             depthImageFormat, VK_IMAGE_TILING_OPTIMAL,
+                                             VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+        depthImageView = std::make_unique<ImageView>(depthImage, VK_IMAGE_ASPECT_DEPTH_BIT);
     }
 
     void Render::destroyDepthImage() {
-        vkDestroyImageView(logicalDevice->device, depthImageView, nullptr);
-        vmaDestroyImage(logicalDevice->allocator, depthImage, depthImageAllocation);
+        depthImageView = nullptr;
+        depthImage = nullptr;
     }
 }
