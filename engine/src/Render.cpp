@@ -406,9 +406,8 @@ namespace Vixen {
         pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
         pipelineLayoutCreateInfo.pPushConstantRanges = nullptr;
 
-        if (vkCreatePipelineLayout(logicalDevice->device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout) !=
-            VK_SUCCESS)
-            fatal("Failed to create pipeline layout");
+        VK_CHECK_RESULT(
+                vkCreatePipelineLayout(logicalDevice->device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout))
         trace("Successfully created pipeline layout");
     }
 

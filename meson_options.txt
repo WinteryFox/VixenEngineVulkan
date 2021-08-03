@@ -1,0 +1,1 @@
+option('vixen_debug', type : 'boolean', value : false)

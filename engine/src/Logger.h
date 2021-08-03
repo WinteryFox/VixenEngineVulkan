@@ -39,19 +39,20 @@ namespace Vixen {
         out << stamp;
         switch (severity) {
             case LogSeverity::LOG_SEVERITY_TRACE:
-                out << " [TRACE] ";
+                out << " TRACE ";
                 break;
             case LogSeverity::LOG_SEVERITY_INFO:
-                out << " [INFO] ";
+                out << " INFO ";
                 break;
             case LogSeverity::LOG_SEVERITY_WARNING:
-                out << " [WARNING] ";
+                out << " WARNING ";
                 break;
             case LogSeverity::LOG_SEVERITY_ERR:
-                out << " [ERROR] ";
+                out << " ERROR ";
                 break;
             case LogSeverity::LOG_SEVERITY_FATAL:
-                out << " [FATAL] ";
+                out << " FATAL ";
+                break;
             case LogSeverity::LOG_SEVERITY_NONE:
                 break;
         }
@@ -74,12 +75,10 @@ namespace Vixen {
 
     static void error(const std::string &message) {
         log(LogSeverity::LOG_SEVERITY_ERR, message);
-        throw std::runtime_error(message);
     }
 
     static void error(const std::runtime_error &error) {
         log(LogSeverity::LOG_SEVERITY_ERR, error.what());
-        throw error;
     }
 
     static void fatal(const std::string &message) {

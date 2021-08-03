@@ -9,18 +9,16 @@ namespace Vixen {
     ) {
         switch (messageSeverity) {
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-                trace("[VULKAN] " + std::string(pCallbackData->pMessage));
+                trace("VULKAN " + std::string(pCallbackData->pMessage));
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-                info("[VULKAN] " + std::string(pCallbackData->pMessage));
+                info("VULKAN " + std::string(pCallbackData->pMessage));
                 break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+                warning("VULKAN " + std::string(pCallbackData->pMessage));
+                break;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-#ifdef VIXEN_DEBUG
-                fatal("[VULKAN] " + std::string(pCallbackData->pMessage));
-#else
-                warning("[VULKAN] " + std::string(pCallbackData->pMessage));
-#endif
+                error("VULKAN " + std::string(pCallbackData->pMessage));
                 break;
             default:
                 break;
