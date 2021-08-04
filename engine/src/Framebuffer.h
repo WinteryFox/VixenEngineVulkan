@@ -5,13 +5,14 @@
 
 namespace Vixen {
     class Framebuffer {
-        const std::unique_ptr<LogicalDevice> &logicalDevice;
+        const std::shared_ptr<LogicalDevice> logicalDevice;
+
         VkFramebuffer framebuffer = VK_NULL_HANDLE;
 
     public:
         Framebuffer() = delete;
 
-        Framebuffer(const std::unique_ptr<LogicalDevice> &logicalDevice, VkRenderPass renderPass,
+        Framebuffer(const std::shared_ptr<LogicalDevice> &logicalDevice, VkRenderPass renderPass,
                     const std::vector<VkImageView> &attachments, int width, int height);
 
         Framebuffer(Framebuffer&&) = default;

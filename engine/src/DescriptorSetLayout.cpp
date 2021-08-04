@@ -1,7 +1,7 @@
 #include "DescriptorSetLayout.h"
 
 namespace Vixen {
-    DescriptorSetLayout::DescriptorSetLayout(const std::unique_ptr<LogicalDevice> &logicalDevice,
+    DescriptorSetLayout::DescriptorSetLayout(const std::shared_ptr<LogicalDevice> &logicalDevice,
                                              const std::vector<VkDescriptorSetLayoutBinding> &layoutBindings)
             : logicalDevice(logicalDevice) {
         VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
@@ -13,7 +13,7 @@ namespace Vixen {
                 vkCreateDescriptorSetLayout(logicalDevice->device, &descriptorSetLayoutCreateInfo, nullptr, &layout))
     }
 
-    DescriptorSetLayout::DescriptorSetLayout(const std::unique_ptr<LogicalDevice> &logicalDevice,
+    DescriptorSetLayout::DescriptorSetLayout(const std::shared_ptr<LogicalDevice> &logicalDevice,
                                              const Shader &shader)
             : DescriptorSetLayout(logicalDevice, createBindings(shader)) {}
 

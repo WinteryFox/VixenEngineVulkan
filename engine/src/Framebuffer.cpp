@@ -1,7 +1,7 @@
 #include "Framebuffer.h"
 
 namespace Vixen {
-    Framebuffer::Framebuffer(const std::unique_ptr<LogicalDevice> &logicalDevice, VkRenderPass renderPass,
+    Framebuffer::Framebuffer(const std::shared_ptr<LogicalDevice> &logicalDevice, VkRenderPass renderPass,
                              const std::vector<VkImageView> &attachments, int width,
                              int height) : logicalDevice(logicalDevice) {
         VkFramebufferCreateInfo framebufferCreateInfo{};

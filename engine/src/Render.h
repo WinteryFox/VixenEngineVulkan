@@ -23,9 +23,9 @@ namespace Vixen {
         /**
          * The logical device this renderer was made by and should be destroyed by
          */
-        const std::unique_ptr<LogicalDevice> &logicalDevice;
+        const std::shared_ptr<LogicalDevice> logicalDevice;
 
-        const std::unique_ptr<PhysicalDevice> &physicalDevice;
+        const std::shared_ptr<PhysicalDevice> physicalDevice;
 
         /**
          * The view port used by the renderer
@@ -159,7 +159,7 @@ namespace Vixen {
          * @param[in] fragment The fragment shader this pipeline will use
          * @param[in] framesInFlight The maximum frames in flight to be used by this renderer
          */
-        Render(const std::unique_ptr<LogicalDevice> &device, const std::unique_ptr<PhysicalDevice> &physicalDevice,
+        Render(std::shared_ptr<LogicalDevice> device, std::shared_ptr<PhysicalDevice> physicalDevice,
                const Scene &scene, std::shared_ptr<const Shader>  shader, BufferType bufferType = BufferType::DOUBLE_BUFFER);
 
         ~Render();

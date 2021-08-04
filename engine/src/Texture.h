@@ -15,8 +15,8 @@ namespace Vixen {
         std::unique_ptr<ImageView> view;
 
     public:
-        Texture(const std::unique_ptr<LogicalDevice> &logicalDevice,
-                const std::unique_ptr<PhysicalDevice> &physicalDevice, const std::string &path);
+        Texture(const std::shared_ptr<LogicalDevice> &logicalDevice,
+                const std::shared_ptr<PhysicalDevice> &physicalDevice, const std::string &path);
 
         [[nodiscard]] const std::shared_ptr<Image> &getImage() const;
 

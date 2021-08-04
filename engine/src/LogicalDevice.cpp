@@ -3,12 +3,11 @@
 #include "LogicalDevice.h"
 
 namespace Vixen {
-    LogicalDevice::LogicalDevice(const std::unique_ptr<Instance> &instance,
-                                 const std::unique_ptr<Window> &window,
-                                 const std::unique_ptr<PhysicalDevice> &physicalDevice) : instance(instance),
-                                                                                          window(window),
+    LogicalDevice::LogicalDevice(const std::shared_ptr<Instance> &instance, const std::shared_ptr<Window> &window,
+                                 const std::shared_ptr<PhysicalDevice> &physicalDevice) : instance(instance),
                                                                                           physicalDevice(
-                                                                                                  physicalDevice) {
+                                                                                                  physicalDevice),
+                                                                                          window(window) {
         std::set<uint32_t> queueFamilies = {physicalDevice->graphicsFamilyIndex, physicalDevice->presentFamilyIndex,
                                             physicalDevice->transferFamilyIndex};
         /// Create all the queue create info structs specified in queueFamilies
@@ -85,7 +84,7 @@ namespace Vixen {
         VmaAllocatorCreateInfo allocatorCreateInfo = {};
         allocatorCreateInfo.device = device;
         allocatorCreateInfo.physicalDevice = physicalDevice->device;
-        allocatorCreateInfo.instance = instance->instance;
+        allocatorCreateInfo.instance = instance->getInstance();
 
         if (vmaCreateAllocator(&allocatorCreateInfo, &allocator) != VK_SUCCESS)
             logger.critical("Failed to create VMA allocator");
@@ -189,7 +188,7 @@ namespace Vixen {
         /// Create the swap chain info struct
         VkSwapchainCreateInfoKHR swapchainCreateInfo = {};
         swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        swapchainCreateInfo.surface = instance->surface;
+        swapchainCreateInfo.surface = instance->getSurface();
         swapchainCreateInfo.minImageCount = imageCount;
         swapchainCreateInfo.imageFormat = surfaceFormat.format;
         swapchainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;

@@ -1,8 +1,8 @@
 #include "Texture.h"
 
 namespace Vixen {
-    Texture::Texture(const std::unique_ptr<LogicalDevice> &logicalDevice,
-                     const std::unique_ptr<PhysicalDevice> &physicalDevice, const std::string &path) {
+    Texture::Texture(const std::shared_ptr<LogicalDevice> &logicalDevice,
+                     const std::shared_ptr<PhysicalDevice> &physicalDevice, const std::string &path) {
         /// Load texture from disk
         int32_t width, height, channels;
         stbi_uc *pixels = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);

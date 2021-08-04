@@ -1,10 +1,10 @@
 #include "Image.h"
 
 namespace Vixen {
-    Image::Image(const std::unique_ptr<LogicalDevice> &device, uint16_t width, uint16_t height, VkFormat format,
+    Image::Image(const std::shared_ptr<LogicalDevice> &device, uint16_t width, uint16_t height, VkFormat format,
                  VkImageTiling tiling, VkImageUsageFlags usage) : device(device), width(width),
-                                                                                        height(height), format(format),
-                                                                                        usage(usage) {
+                                                                  height(height), format(format),
+                                                                  usage(usage) {
         VkImageCreateInfo imageCreateInfo{};
         imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -15,7 +15,7 @@ namespace Vixen {
         imageCreateInfo.arrayLayers = 1;
         imageCreateInfo.format = format;
         imageCreateInfo.tiling = tiling;
-        imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageCreateInfo.initialLayout = layout;
         imageCreateInfo.usage = usage;
         imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
         imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -98,7 +98,7 @@ namespace Vixen {
         });
     }
 
-    const std::unique_ptr<LogicalDevice> &Image::getDevice() const {
+    std::shared_ptr<LogicalDevice> Image::getDevice() const {
         return device;
     }
 

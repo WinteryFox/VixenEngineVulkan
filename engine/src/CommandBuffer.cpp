@@ -1,7 +1,7 @@
 #include "CommandBuffer.h"
 
 namespace Vixen {
-    CommandBuffer::CommandBuffer(const std::unique_ptr<LogicalDevice> &device) : device(device) {
+    CommandBuffer::CommandBuffer(const std::shared_ptr<LogicalDevice> &device) : device(device) {
         VkCommandBufferAllocateInfo allocateInfo = {};
         allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;

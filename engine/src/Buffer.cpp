@@ -1,7 +1,7 @@
 #include "Buffer.h"
 
 namespace Vixen {
-    Buffer::Buffer(const std::unique_ptr<LogicalDevice> &device, VkDeviceSize size, VkBufferUsageFlags bufferUsage,
+    Buffer::Buffer(const std::shared_ptr<LogicalDevice> &device, VkDeviceSize size, VkBufferUsageFlags bufferUsage,
                    VmaMemoryUsage allocationUsage)
             : device(device), size(size) {
         VkBufferCreateInfo bufferCreateInfo = {};

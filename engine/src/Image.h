@@ -6,7 +6,7 @@
 
 namespace Vixen {
     class Image {
-        const std::unique_ptr<LogicalDevice> &device;
+        const std::shared_ptr<LogicalDevice> device;
 
         VkImage image{};
 
@@ -18,12 +18,12 @@ namespace Vixen {
 
         VkFormat format;
 
-        VkImageLayout layout;
+        VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED;
 
         VkImageUsageFlags usage;
 
     public:
-        Image(const std::unique_ptr<LogicalDevice> &device, uint16_t width, uint16_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage);
+        Image(const std::shared_ptr<LogicalDevice> &device, uint16_t width, uint16_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage);
 
         Image(const Image &other) = delete;
 
@@ -33,7 +33,7 @@ namespace Vixen {
 
         void copyFrom(const Buffer &buffer);
 
-        [[nodiscard]] const std::unique_ptr<LogicalDevice> &getDevice() const;
+        [[nodiscard]] std::shared_ptr<LogicalDevice> getDevice() const;
 
         [[nodiscard]] VkImage getImage() const;
 

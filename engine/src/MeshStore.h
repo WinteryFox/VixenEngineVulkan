@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <utility>
 #include <vector>
 #include <memory>
 #include <filesystem>
@@ -13,9 +14,9 @@ namespace Vixen {
     struct MeshStore {
         std::vector<std::shared_ptr<Mesh>> meshes;
 
-        explicit MeshStore(const std::unique_ptr<LogicalDevice> &logicalDevice,
-                           const std::unique_ptr<PhysicalDevice> &physicalDevice) : logicalDevice(logicalDevice),
-                                                                                    physicalDevice(physicalDevice) {}
+        explicit MeshStore(std::shared_ptr<LogicalDevice> logicalDevice,
+                           std::shared_ptr<PhysicalDevice> physicalDevice) : logicalDevice(std::move(logicalDevice)),
+                                                                                   physicalDevice(std::move(physicalDevice)) {}
 
         void loadMesh(const std::string &path) {
             Assimp::Importer importer;
@@ -82,7 +83,9 @@ namespace Vixen {
                                     physicalDevice,
                                     std::filesystem::path(path).remove_filename().append(relative).string()
                             );
-                        } catch (std::runtime_error &) {}
+                        } catch (std::runtime_error &error) {
+                            logger.trace("Failed to load texture at path \"{}\" ({})", relative, error.what());
+                        }
                     }
                 }
 
@@ -100,7 +103,7 @@ namespace Vixen {
 
     private:
         Logger logger{"MeshStore"};
-        const std::unique_ptr<LogicalDevice> &logicalDevice;
-        const std::unique_ptr<PhysicalDevice> &physicalDevice;
+        const std::shared_ptr<LogicalDevice> logicalDevice;
+        const std::shared_ptr<PhysicalDevice> physicalDevice;
     };
 }

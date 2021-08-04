@@ -1,7 +1,9 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+
 #define GLFW_INCLUDE_NONE
+
 #include <GLFW/glfw3.h>
 #include <stb_image.h>
 #include "Logger.h"
@@ -27,6 +29,8 @@ namespace Vixen {
          */
         explicit Window(const std::string &name, const std::string &icon,
                         GLFWmonitor *monitor = nullptr, int width = 1280, int height = 720);
+
+        Window(const Window &) = delete;
 
         ~Window();
 

@@ -11,29 +11,19 @@ inline constexpr int VIXEN_TEST_VERSION_MINOR = 0;
 inline constexpr int VIXEN_TEST_VERSION_PATCH = 1;
 
 #include <memory>
-#include <vector>
 #include <VixenEngine.h>
 #include "ModelViewProjection.h"
 
 int main() {
     spdlog::set_level(spdlog::level::trace);
 
-    std::vector<const char *> extensions = {
-            "VK_EXT_debug_utils",
-            "VK_KHR_get_physical_device_properties2"
-    };
-
-    std::vector<const char *> layers = {
-            "VK_LAYER_KHRONOS_validation"
-    };
-
-    std::unique_ptr<Vixen::Window> window(new Vixen::Window("Vixen Engine Test Application", "../../icon.png"));
-    std::unique_ptr<Vixen::Instance> instance(
-            new Vixen::Instance(*window, "Vixen Engine Test Application",
-                                glm::ivec3(VIXEN_TEST_VERSION_MAJOR, VIXEN_TEST_VERSION_MINOR,
-                                           VIXEN_TEST_VERSION_PATCH), extensions, layers));
-    std::unique_ptr<Vixen::PhysicalDevice> physicalDevice(new Vixen::PhysicalDevice(instance));
-    std::unique_ptr<Vixen::LogicalDevice> logicalDevice(new Vixen::LogicalDevice(instance, window, physicalDevice));
+    const auto window = std::make_shared<Vixen::Window>("Vixen Engine Test Application", "../../icon.png");
+    const auto instance = std::make_shared<Vixen::Instance>(window, "Vixen Engine Test Application",
+                                                            glm::ivec3(VIXEN_TEST_VERSION_MAJOR,
+                                                                       VIXEN_TEST_VERSION_MINOR,
+                                                                       VIXEN_TEST_VERSION_PATCH));
+    const auto physicalDevice = std::make_shared<Vixen::PhysicalDevice>(instance);
+    const auto logicalDevice = std::make_shared<Vixen::LogicalDevice>(instance, window, physicalDevice);
 
     std::unique_ptr<Vixen::Camera> camera(new Vixen::Camera(
             {0, 0, 3}
@@ -41,7 +31,7 @@ int main() {
 
     std::unique_ptr<Vixen::Input> input(new Vixen::Input(window));
 
-    std::unique_ptr<Vixen::MeshStore> meshStore(new Vixen::MeshStore(logicalDevice, physicalDevice));
+    const auto meshStore = std::make_unique<Vixen::MeshStore>(logicalDevice, physicalDevice);
     meshStore->loadMesh("../../test/models/fox/Fox.fbx");
     meshStore->loadMesh("../../test/models/crystal/Crystal.fbx");
 
@@ -70,8 +60,10 @@ int main() {
                             .addBinding(0, VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec3))
                             .addBinding(1, VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec2))
                             .addBinding(2, VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec4))
-                            .addDescriptor(0, sizeof(Vixen::Test::ModelViewProjection), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-                            .addDescriptor(1, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+                            .addDescriptor(0, sizeof(Vixen::Test::ModelViewProjection),
+                                           VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+                            .addDescriptor(1, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                           VK_SHADER_STAGE_FRAGMENT_BIT)
                             .build())));
 
     Vixen::Logger logger = Vixen::Logger("Test");

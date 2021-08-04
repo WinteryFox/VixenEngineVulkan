@@ -46,7 +46,7 @@ namespace Vixen {
     }
 
     Window::~Window() {
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
+        glfwSetWindowShouldClose(window, GLFW_TRUE); // TODO: Sus to destroy without waiting on actual closure
         glfwDestroyWindow(window);
         glfwTerminate();
     }

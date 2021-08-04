@@ -1,7 +1,7 @@
 #include "DescriptorPool.h"
 
 namespace Vixen {
-    DescriptorPool::DescriptorPool(const std::unique_ptr<LogicalDevice> &logicalDevice,
+    DescriptorPool::DescriptorPool(const std::shared_ptr<LogicalDevice> &logicalDevice,
                                    const std::vector<VkDescriptorPoolSize> &sizes, uint32_t maxSets)
             : device(logicalDevice) {
         VkDescriptorPoolCreateInfo info{};
@@ -13,7 +13,7 @@ namespace Vixen {
         VK_CHECK_RESULT(vkCreateDescriptorPool(logicalDevice->device, &info, nullptr, &pool))
     }
 
-    DescriptorPool::DescriptorPool(const std::unique_ptr<LogicalDevice> &logicalDevice,
+    DescriptorPool::DescriptorPool(const std::shared_ptr<LogicalDevice> &logicalDevice,
                                    const Shader *shader, uint32_t maxSets)
             : DescriptorPool(logicalDevice, createSizes(logicalDevice, shader), maxSets) {}
 
@@ -25,12 +25,12 @@ namespace Vixen {
         return pool;
     }
 
-    const std::unique_ptr<LogicalDevice> &DescriptorPool::getDevice() const {
+    const std::shared_ptr<LogicalDevice> &DescriptorPool::getDevice() const {
         return device;
     }
 
     std::vector<VkDescriptorPoolSize>
-    DescriptorPool::createSizes(const std::unique_ptr<LogicalDevice> &logicalDevice, const Shader *shader) {
+    DescriptorPool::createSizes(const std::shared_ptr<LogicalDevice> &logicalDevice, const Shader *shader) {
         std::vector<VkDescriptorPoolSize> sizes{};
         sizes.reserve(shader->getDescriptors().size());
 

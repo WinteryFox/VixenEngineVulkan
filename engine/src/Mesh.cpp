@@ -1,11 +1,11 @@
 #include "Mesh.h"
 
 namespace Vixen {
-    Mesh::Mesh(const std::unique_ptr<LogicalDevice> &logicalDevice, std::shared_ptr<const Texture> texture,
+    Mesh::Mesh(const std::shared_ptr<LogicalDevice> &logicalDevice, const std::shared_ptr<Texture> &texture,
                const std::vector<glm::vec3> &vertices, const std::vector<uint32_t> &indices,
                const std::vector<glm::vec2> &uvs, const std::vector<glm::vec4> &colors)
             : logicalDevice(logicalDevice), vertexCount(vertices.size()), indexCount(indices.size()),
-              texture(std::move(texture)) {
+              texture(texture) {
         if (vertices.size() != uvs.size())
             throw std::runtime_error("Vertex count must be equal to UV count");
         if (vertices.size() != colors.size())
@@ -35,5 +35,17 @@ namespace Vixen {
 
     const std::unique_ptr<Buffer> &Mesh::getBuffer() const {
         return buffer;
+    }
+
+    uint32_t Mesh::getVertexCount() const {
+        return vertexCount;
+    }
+
+    uint32_t Mesh::getIndexCount() const {
+        return indexCount;
+    }
+
+    const std::shared_ptr<const Texture> &Mesh::getTexture() const {
+        return texture;
     }
 }

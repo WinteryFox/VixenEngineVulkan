@@ -1,17 +1,17 @@
 #include "PhysicalDevice.h"
 
 namespace Vixen {
-    PhysicalDevice::PhysicalDevice(const std::unique_ptr<Instance> &instance,
+    PhysicalDevice::PhysicalDevice(const std::shared_ptr<const Instance> &instance,
                                    const std::vector<const char *> &extensions)
             : enabledExtensions(extensions), instance(instance) {
         uint32_t deviceCount = 0;
-        vkEnumeratePhysicalDevices(instance->instance, &deviceCount, nullptr);
+        vkEnumeratePhysicalDevices(instance->getInstance(), &deviceCount, nullptr);
         if (deviceCount == 0)
             logger.critical(
                     "There are no Vulkan supported GPUs available, updating your graphics drivers may fix this.");
 
         std::vector<VkPhysicalDevice> devices(deviceCount);
-        vkEnumeratePhysicalDevices(instance->instance, &deviceCount, devices.data());
+        vkEnumeratePhysicalDevices(instance->getInstance(), &deviceCount, devices.data());
 
         std::string output;
         for (const auto &physicalDevice : devices) {
@@ -128,44 +128,42 @@ namespace Vixen {
                 transferIndex = i;
 
             VkBool32 presentSupport = VK_FALSE;
-            vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, instance->surface, &presentSupport);
+            vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, instance->getSurface(), &presentSupport);
             if (presentSupport)
                 presentIndex = i;
 
             i++;
         }
 
-        return std::tuple<std::optional<uint32_t>, std::optional<uint32_t>, std::optional<uint32_t>>(graphicsIndex,
-                                                                                                     presentIndex,
-                                                                                                     transferIndex);
+        return std::tuple{graphicsIndex, presentIndex, transferIndex};
     }
 
-    SwapChainSupportDetails PhysicalDevice::querySwapChainSupportDetails(VkPhysicalDevice physicalDevice) {
+    SwapChainSupportDetails PhysicalDevice::querySwapChainSupportDetails(VkPhysicalDevice physicalDevice) const {
         SwapChainSupportDetails details;
 
         /// Get the surface capabilities
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, instance->surface, &details.capabilities);
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, instance->getSurface(), &details.capabilities);
 
         /// Get the supported surface formats
         uint32_t formatCount;
-        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, instance->surface, &formatCount, nullptr);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, instance->getSurface(), &formatCount, nullptr);
 
         details.formats.resize(formatCount);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, instance->surface, &formatCount,
+        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, instance->getSurface(), &formatCount,
                                              details.formats.data());
 
         /// Get the supported present modes
         uint32_t presentModeCount;
-        vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, instance->surface, &presentModeCount, nullptr);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, instance->getSurface(), &presentModeCount, nullptr);
 
         details.presentModes.resize(presentModeCount);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, instance->surface, &presentModeCount,
+        vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, instance->getSurface(), &presentModeCount,
                                                   details.presentModes.data());
 
         return details;
     }
 
-    SwapChainSupportDetails PhysicalDevice::querySwapChainSupportDetails() {
+    SwapChainSupportDetails PhysicalDevice::querySwapChainSupportDetails() const {
         return querySwapChainSupportDetails(device);
     }
 

@@ -1,9 +1,9 @@
 #include "Render.h"
 
 namespace Vixen {
-    Render::Render(const std::unique_ptr<LogicalDevice> &device, const std::unique_ptr<PhysicalDevice> &physicalDevice,
+    Render::Render(std::shared_ptr<LogicalDevice> device, std::shared_ptr<PhysicalDevice> physicalDevice,
                    const Scene &scene, std::shared_ptr<const Shader> shader, BufferType bufferType)
-            : logicalDevice(device), physicalDevice(physicalDevice), framesInFlight(static_cast<const int>(bufferType)),
+            : logicalDevice(std::move(device)), physicalDevice(std::move(physicalDevice)), framesInFlight(static_cast<const int>(bufferType)),
               shader(std::move(shader)), scene(scene) {
         create();
     }
@@ -174,18 +174,18 @@ namespace Vixen {
 
                 /// Bind the mesh's buffers
                 const std::vector<VkBuffer> buffers(3, mesh->getBuffer()->getBuffer());
-                std::array<VkDeviceSize, 3> offsets{0, mesh->vertexCount * sizeof(glm::vec3),
-                                                    mesh->vertexCount * sizeof(glm::vec3) +
-                                                    mesh->vertexCount * sizeof(glm::vec2)};
+                std::array<VkDeviceSize, 3> offsets{0, mesh->getVertexCount() * sizeof(glm::vec3),
+                                                    mesh->getVertexCount() * sizeof(glm::vec3) +
+                                                    mesh->getVertexCount() * sizeof(glm::vec2)};
                 vkCmdBindVertexBuffers(commandBuffers[i], 0, buffers.size(), buffers.data(), offsets.data());
                 vkCmdBindIndexBuffer(commandBuffers[i], mesh->getBuffer()->getBuffer(),
-                                     mesh->vertexCount * sizeof(glm::vec3) +
-                                     mesh->vertexCount * sizeof(glm::vec2) +
-                                     mesh->vertexCount * sizeof(glm::vec4),
+                                     mesh->getVertexCount() * sizeof(glm::vec3) +
+                                     mesh->getVertexCount() * sizeof(glm::vec2) +
+                                     mesh->getVertexCount() * sizeof(glm::vec4),
                                      VK_INDEX_TYPE_UINT32);
 
                 /// Draw the mesh
-                vkCmdDrawIndexed(commandBuffers[i], mesh->indexCount, 1, 0, 0, 0);
+                vkCmdDrawIndexed(commandBuffers[i], mesh->getIndexCount(), 1, 0, 0, 0);
             }
 
             vkCmdEndRenderPass(commandBuffers[i]);
@@ -454,7 +454,7 @@ namespace Vixen {
                             write.pBufferInfo = &buffer;
                         }
                         case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER: {
-                            const auto &texture = scene.entities[j].mesh->texture;
+                            const auto &texture = scene.entities[j].mesh->getTexture();
                             VkDescriptorImageInfo image{};
                             image.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                             image.imageView = texture != nullptr ? texture->getView()->getView() : nullptr;

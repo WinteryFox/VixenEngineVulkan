@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.h>
 #include <fstream>
+#include <utility>
 #include <vector>
 #include <memory>
 #include "LogicalDevice.h"
@@ -12,19 +13,16 @@ namespace Vixen {
         /**
          * The logical device this shader is made by, required to be stored to destroy the shader
          */
-        const std::unique_ptr<LogicalDevice> &logicalDevice;
+        const std::shared_ptr<const LogicalDevice> logicalDevice;
 
         /**
          * The vertex shader module
          */
-        VkShaderModule module;
+        VkShaderModule module{};
 
         const VkShaderStageFlagBits stage;
 
         const std::string entryPoint;
-
-        static VkShaderModule
-        createModule(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::vector<char> &bytecode);
 
     public:
         /**
@@ -33,7 +31,7 @@ namespace Vixen {
          * @param[in] logicalDevice The device to make the shader for
          * @param[in] bytecode The source bytecode of the shader
          */
-        ShaderModule(const std::unique_ptr<LogicalDevice> &logicalDevice, const std::vector<char> &bytecode,
+        ShaderModule(const std::shared_ptr<LogicalDevice> &logicalDevice, const std::vector<char> &bytecode,
                      VkShaderStageFlagBits stage, std::string entryPoint);
 
         ShaderModule(ShaderModule &&) = delete;
@@ -47,7 +45,7 @@ namespace Vixen {
         [[nodiscard]] const VkShaderStageFlagBits &getStage() const;
 
         class Builder {
-            const std::unique_ptr<LogicalDevice> &logicalDevice;
+            const std::shared_ptr<LogicalDevice> logicalDevice;
 
             std::vector<char> bytecode{};
 
@@ -56,7 +54,7 @@ namespace Vixen {
             std::string entryPoint = "main";
 
         public:
-            explicit Builder(const std::unique_ptr<LogicalDevice> &logicalDevice) : logicalDevice(logicalDevice) {}
+            explicit Builder(std::shared_ptr<LogicalDevice> logicalDevice) : logicalDevice(std::move(logicalDevice)) {}
 
             Builder &setBytecode(std::vector<char> bytes) {
                 bytecode = std::move(bytes);
@@ -87,7 +85,7 @@ namespace Vixen {
                 return *this;
             }
 
-            [[nodiscard]] std::shared_ptr<const ShaderModule> build() const {
+            [[nodiscard]] std::shared_ptr<ShaderModule> build() const {
                 if (bytecode.empty())
                     throw std::runtime_error("Bytecode must not be empty");
                 if (stage == 0)

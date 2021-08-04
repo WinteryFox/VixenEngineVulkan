@@ -11,9 +11,9 @@ namespace Vixen {
     struct Input {
         const float speed = 0.0005f;
 
-        const std::unique_ptr<Window> &window;
+        const std::shared_ptr<Window> &window;
 
-        explicit Input(const std::unique_ptr<Window> &window);
+        explicit Input(const std::shared_ptr<Window> &window);
 
         //static void keyInputCallback(GLFWwindow* window, int key, int code, int action, int modifiers);
 

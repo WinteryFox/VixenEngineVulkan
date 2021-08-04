@@ -87,17 +87,17 @@ namespace Vixen {
         /**
          * A pointer to the instance this logical device was created by
          */
-        const std::unique_ptr<Instance> &instance;
+        const std::shared_ptr<const Instance> instance;
 
         /**
          * A pointer to the physical device this logical device was created by
          */
-        const std::unique_ptr<PhysicalDevice> &physicalDevice;
+        const std::shared_ptr<const PhysicalDevice> physicalDevice;
 
         /**
          * A pointer to the window this device will use
          */
-        const std::unique_ptr<Window> &window;
+        const std::shared_ptr<const Window> window;
 
         /**
          * Creates a new Vulkan logical device
@@ -105,9 +105,8 @@ namespace Vixen {
          * @param[in] instance The Vulkan instance to create the logical device for
          * @param[in] physicalDevice The Vulkan physical device to make the logical device for
          */
-        LogicalDevice(const std::unique_ptr<Instance> &instance,
-                      const std::unique_ptr<Window> &window,
-                      const std::unique_ptr<PhysicalDevice> &physicalDevice);
+        LogicalDevice(const std::shared_ptr<Instance> &instance, const std::shared_ptr<Window> &window,
+                      const std::shared_ptr<PhysicalDevice> &physicalDevice);
 
         ~LogicalDevice();
 

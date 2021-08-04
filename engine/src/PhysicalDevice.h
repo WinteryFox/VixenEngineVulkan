@@ -37,7 +37,7 @@ namespace Vixen {
         std::tuple<std::optional<uint32_t>, std::optional<uint32_t>, std::optional<uint32_t>>
         findQueueFamilies(const VkPhysicalDevice &physicalDevice);
 
-        SwapChainSupportDetails querySwapChainSupportDetails(VkPhysicalDevice physicalDevice);
+        SwapChainSupportDetails querySwapChainSupportDetails(VkPhysicalDevice physicalDevice) const;
 
     public:
         /**
@@ -76,7 +76,7 @@ namespace Vixen {
 
         uint32_t transferFamilyIndex = 0;
 
-        const std::unique_ptr<Instance> &instance;
+        const std::shared_ptr<const Instance> instance;
 
         [[nodiscard]] VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
 
@@ -87,9 +87,9 @@ namespace Vixen {
          * @param[in] devices The list of Vulkan physical devices to pick from
          * @param[in] extensions The device extensions required by the application
          */
-        explicit PhysicalDevice(const std::unique_ptr<Instance> &instance,
+        explicit PhysicalDevice(const std::shared_ptr<const Instance> &instance,
                                 const std::vector<const char *> &extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME});
 
-        SwapChainSupportDetails querySwapChainSupportDetails();
+        [[nodiscard]] SwapChainSupportDetails querySwapChainSupportDetails() const;
     };
 }

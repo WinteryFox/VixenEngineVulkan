@@ -5,6 +5,8 @@
 
 namespace Vixen {
     class ImageView {
+        const Logger logger{"ImageView"};
+
         const std::shared_ptr<Image> image;
 
         VkImageView view{};
@@ -12,7 +14,11 @@ namespace Vixen {
     public:
         explicit ImageView(const std::shared_ptr<Image> &image, VkImageAspectFlags flags);
 
-        ImageView(const ImageView &other) = delete;
+        ImageView() = delete;
+
+        ImageView(const ImageView &) = delete;
+
+        ImageView &operator=(const ImageView &) = delete;
 
         ~ImageView();
 

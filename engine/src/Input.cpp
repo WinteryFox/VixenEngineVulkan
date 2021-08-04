@@ -1,7 +1,7 @@
 #include "Input.h"
 
 namespace Vixen {
-    Input::Input(const std::unique_ptr<Window> &window) : window(window) {
+    Input::Input(const std::shared_ptr<Window> &window) : window(window) {
         glfwGetCursorPos(window->window, &lastX, &lastY);
     }
 

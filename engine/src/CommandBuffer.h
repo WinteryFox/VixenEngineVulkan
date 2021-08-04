@@ -5,12 +5,12 @@
 
 namespace Vixen {
     class CommandBuffer {
-        const std::unique_ptr<LogicalDevice> &device;
+        const std::shared_ptr<LogicalDevice> device;
 
         VkCommandBuffer buffer{};
 
     public:
-        explicit CommandBuffer(const std::unique_ptr<LogicalDevice> &device);
+        explicit CommandBuffer(const std::shared_ptr<LogicalDevice> &device);
 
         ~CommandBuffer();
 
