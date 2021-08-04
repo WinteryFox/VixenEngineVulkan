@@ -34,10 +34,13 @@ namespace Vixen {
     Instance::Instance(const std::shared_ptr<Window> &window, const std::string &appName, const glm::ivec3 appVersion)
             : window(window) {
         uint32_t glfwExtensionCount;
-        const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+        const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
         std::vector<const char *> totalExtensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-        //totalExtensions.push_back("VK_EXT_robustness2");
+#ifdef VIXEN_DEBUG
+        totalExtensions.push_back("VK_EXT_debug_report");
+        totalExtensions.push_back("VK_EXT_debug_utils");
+#endif
 
         VkApplicationInfo appInfo{};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -61,6 +64,18 @@ namespace Vixen {
 
         createInfo.enabledLayerCount = l.size();
         createInfo.ppEnabledLayerNames = l.data();
+
+        VkDebugUtilsMessengerCreateInfoEXT debugInfo = {};
+        debugInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+        debugInfo.messageSeverity =
+                VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        debugInfo.messageType =
+                VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+        debugInfo.pfnUserCallback = debugCallback;
+        debugInfo.pUserData = nullptr;
+
+        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT *) &debugInfo;
 #endif
 
         VK_CHECK_RESULT(vkCreateInstance(&createInfo, nullptr, &instance))
@@ -75,17 +90,6 @@ namespace Vixen {
         auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance,
                                                                                "vkCreateDebugUtilsMessengerEXT");
         if (func != nullptr) {
-            VkDebugUtilsMessengerCreateInfoEXT debugInfo = {};
-            debugInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-            debugInfo.messageSeverity =
-                    VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                    VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-            debugInfo.messageType =
-                    VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                    VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-            debugInfo.pfnUserCallback = debugCallback;
-            debugInfo.pUserData = nullptr;
-
             func(instance, &debugInfo, nullptr, &debugMessenger);
             logger.debug("Vulkan validation output has been enabled");
         } else {

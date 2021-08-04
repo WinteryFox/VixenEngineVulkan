@@ -25,7 +25,7 @@ namespace Vixen {
         Logger logger{"Instance"};
 
 #ifdef VIXEN_DEBUG
-        VkDebugUtilsMessengerEXT debugMessenger;
+        VkDebugUtilsMessengerEXT debugMessenger{};
 #endif
 
         const std::shared_ptr<Window> window;
