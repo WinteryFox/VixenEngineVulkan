@@ -67,9 +67,10 @@ namespace Vixen {
             throw std::runtime_error("Unsupported transition layout");
         }
 
-        CommandBuffer(device).recordAndSubmit([&source, &destination, &barrier](VkCommandBuffer buffer) {
-            vkCmdPipelineBarrier(buffer, source, destination, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-        });
+        CommandBuffer(device)
+                .record(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT)
+                .cmdPipelineBarrier(source, destination, {}, {}, {}, {barrier})
+                .submitAndWait();
 
         layout = newLayout;
     }
@@ -92,10 +93,10 @@ namespace Vixen {
                 1
         };
 
-        CommandBuffer(device).recordAndSubmit([this, &buffer, &region](VkCommandBuffer commandBuffer) {
-            vkCmdCopyBufferToImage(commandBuffer, buffer.getBuffer(), image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
-                                   &region);
-        });
+        CommandBuffer(device)
+                .record(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT)
+                .cmdCopyBufferToImage(buffer.getBuffer(), image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, {region})
+                .submitAndWait();
     }
 
     std::shared_ptr<LogicalDevice> Image::getDevice() const {

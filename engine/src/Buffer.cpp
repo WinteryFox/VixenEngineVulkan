@@ -30,7 +30,7 @@ namespace Vixen {
     }
 
     void *Buffer::map() {
-        void* data = nullptr;
+        void *data = nullptr;
         vmaMapMemory(device->allocator, allocation, &data);
         return data;
     }
@@ -40,12 +40,13 @@ namespace Vixen {
     }
 
     void Buffer::copyFrom(const Buffer &other) const {
-        CommandBuffer(device).recordAndSubmit([this, &other](VkCommandBuffer commandBuffer) {
-            VkBufferCopy copyRegion = {};
-            copyRegion.size = size;
+        VkBufferCopy copyRegion = {};
+        copyRegion.size = size;
 
-            vkCmdCopyBuffer(commandBuffer, other.getBuffer(), buffer, 1, &copyRegion);
-        });
+        CommandBuffer(device)
+                .record(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT)
+                .cmdCopyBuffer(other.getBuffer(), buffer, std::vector<VkBufferCopy>{copyRegion})
+                .submitAndWait();
     }
 
     VkBuffer Buffer::getBuffer() const {

@@ -16,7 +16,7 @@ namespace Vixen {
         else if (channels == STBI_rgb)
             format = VK_FORMAT_R8G8B8_SRGB;
         else
-            throw VulkanException("Unsupported image format");
+            throw std::runtime_error("Unsupported image format");
 
         Buffer staging = Buffer(logicalDevice, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
         staging.write(pixels, size, 0);
