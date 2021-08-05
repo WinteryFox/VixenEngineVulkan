@@ -44,7 +44,7 @@ namespace Vixen {
         copyRegion.size = size;
 
         CommandBuffer(device)
-                .record(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT)
+                .recordSingleUsage()
                 .cmdCopyBuffer(other.getBuffer(), buffer, std::vector<VkBufferCopy>{copyRegion})
                 .submitAndWait();
     }

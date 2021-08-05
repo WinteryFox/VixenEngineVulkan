@@ -18,7 +18,7 @@ namespace Vixen {
     };
 
     class Render {
-        Logger logger{"Render"};
+        const Logger logger{"Render"};
 
         /**
          * The logical device this renderer was made by and should be destroyed by

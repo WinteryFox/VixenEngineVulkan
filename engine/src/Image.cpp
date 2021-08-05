@@ -68,7 +68,7 @@ namespace Vixen {
         }
 
         CommandBuffer(device)
-                .record(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT)
+                .recordSingleUsage()
                 .cmdPipelineBarrier(source, destination, {}, {}, {}, {barrier})
                 .submitAndWait();
 
@@ -94,7 +94,7 @@ namespace Vixen {
         };
 
         CommandBuffer(device)
-                .record(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT)
+                .recordSingleUsage()
                 .cmdCopyBufferToImage(buffer.getBuffer(), image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, {region})
                 .submitAndWait();
     }

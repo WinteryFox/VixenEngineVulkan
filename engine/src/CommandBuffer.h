@@ -13,6 +13,8 @@ namespace Vixen {
 
         bool recording = false;
 
+        CommandBuffer &record(VkCommandBufferUsageFlags usage);
+
     public:
         explicit CommandBuffer(const std::shared_ptr<LogicalDevice> &device);
 
@@ -28,7 +30,7 @@ namespace Vixen {
 
         void reset();
 
-        CommandBuffer &record(VkCommandBufferUsageFlags usage);
+        CommandBuffer &recordSingleUsage();
 
         CommandBuffer &stop();
 

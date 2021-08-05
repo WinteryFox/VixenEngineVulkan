@@ -45,12 +45,20 @@ namespace Vixen {
     }
 
     CommandBuffer &CommandBuffer::record(VkCommandBufferUsageFlags usage) {
+        if (recording)
+            throw std::runtime_error("Already recording");
+
         VkCommandBufferBeginInfo beginInfo = {};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags = usage;
 
         VK_CHECK_RESULT(vkBeginCommandBuffer(buffer, &beginInfo))
         recording = true;
+        return *this;
+    }
+
+    CommandBuffer &CommandBuffer::recordSingleUsage() {
+        record(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
         return *this;
     }
 
