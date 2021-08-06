@@ -55,12 +55,12 @@ namespace Vixen {
         /**
          * A list of frame buffers used by this graphics pipeline
          */
-        std::vector<Framebuffer> framebuffers = {};
+        std::vector<std::shared_ptr<Framebuffer>> framebuffers = {};
 
         /**
          * A list of command buffers associated with the corresponding framebuffer
          */
-        std::vector<VkCommandBuffer> commandBuffers = {};
+        std::vector<std::shared_ptr<CommandBuffer>> commandBuffers = {};
 
         /**
          * A list of all the semaphores for the image available signal for GPU-GPU synchronization
@@ -72,11 +72,6 @@ namespace Vixen {
          */
         std::vector<VkSemaphore> renderFinishedSemaphores = {};
 
-        /**
-         * A list of all the fences, used for CPU-GPU synchronization
-         */
-        std::vector<VkFence> fences = {};
-
         std::shared_ptr<DescriptorPool> descriptorPool = nullptr;
 
         std::unique_ptr<DescriptorSetLayout> descriptorSetLayout = nullptr;
@@ -87,9 +82,7 @@ namespace Vixen {
 
         VkSampler textureSampler{};
 
-        std::shared_ptr<Image> depthImage{};
-
-        std::unique_ptr<ImageView> depthImageView{};
+        std::unique_ptr<ImageView> depthImage{};
 
         /**
          * The maximum number of frames in flight, also known as concurrently rendered frames
@@ -104,17 +97,13 @@ namespace Vixen {
         /**
          * The current frame in relation to the maximum frames in flight
          */
-        size_t currentFrame = 0;
+        uint32_t currentFrame = 0;
 
         void createDepthImage();
 
         void destroyDepthImage();
 
         void createCommandBuffers();
-
-        void destroyCommandBuffers();
-
-        void createFramebuffers();
 
         void destroyFramebuffers();
 

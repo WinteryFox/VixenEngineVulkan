@@ -19,6 +19,7 @@ engine_sources = [
     'src/Image.cpp',
     'src/ImageView.cpp',
     'src/CommandBuffer.cpp',
+    'src/Fence.cpp',
 ]
 
 engine_deps = [

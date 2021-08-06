@@ -36,7 +36,7 @@ int main() {
     meshStore->loadMesh("../../test/models/crystal/Crystal.fbx");
 
     Vixen::Scene scene{};
-    scene.entities.push_back(Vixen::Entity(meshStore->meshes[0], {}, {}, 0.01f));
+    //scene.entities.push_back(Vixen::Entity(meshStore->meshes[0], {}, {}, 0.01f));
     scene.entities.push_back(Vixen::Entity(meshStore->meshes[1], {}, {}, 0.01f));
     scene.entities.push_back(Vixen::Entity(meshStore->meshes[2], {}, {}, 1.0f));
 

@@ -22,19 +22,14 @@ namespace Vixen {
         staging.write(pixels, size, 0);
         stbi_image_free(pixels);
 
-        image = std::make_shared<Image>(logicalDevice, width, height, format, VK_IMAGE_TILING_OPTIMAL,
-                                        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+        image = std::make_shared<ImageView>(logicalDevice, width, height, format, VK_IMAGE_TILING_OPTIMAL,
+                                        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
         image->transition(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         image->copyFrom(staging);
         image->transition(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        view = std::make_unique<ImageView>(image, VK_IMAGE_ASPECT_COLOR_BIT);
     }
 
-    const std::shared_ptr<Image> &Texture::getImage() const {
+    const std::shared_ptr<ImageView> &Texture::getImage() const {
         return image;
-    }
-
-    const std::unique_ptr<ImageView> &Texture::getView() const {
-        return view;
     }
 }

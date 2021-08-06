@@ -1,18 +1,15 @@
 #pragma once
 
-#include "LogicalDevice.h"
 #include "Image.h"
 
 namespace Vixen {
-    class ImageView {
+    class ImageView : public Image {
         const Logger logger{"ImageView"};
-
-        const std::shared_ptr<Image> image;
 
         VkImageView view{};
 
     public:
-        explicit ImageView(const std::shared_ptr<Image> &image, VkImageAspectFlags flags);
+        ImageView(const std::shared_ptr<LogicalDevice> &device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usageFlags, VkImageAspectFlags aspectFlags);
 
         ImageView() = delete;
 
@@ -21,8 +18,6 @@ namespace Vixen {
         ImageView &operator=(const ImageView &) = delete;
 
         ~ImageView();
-
-        [[nodiscard]] const std::shared_ptr<Image> &getImage() const;
 
         [[nodiscard]] VkImageView getView() const;
     };

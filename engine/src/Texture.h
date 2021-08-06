@@ -10,16 +10,12 @@
 
 namespace Vixen {
     class Texture {
-        std::shared_ptr<Image> image;
-
-        std::unique_ptr<ImageView> view;
+        std::shared_ptr<ImageView> image;
 
     public:
         Texture(const std::shared_ptr<LogicalDevice> &logicalDevice,
                 const std::shared_ptr<PhysicalDevice> &physicalDevice, const std::string &path);
 
-        [[nodiscard]] const std::shared_ptr<Image> &getImage() const;
-
-        [[nodiscard]] const std::unique_ptr<ImageView> &getView() const;
+        [[nodiscard]] const std::shared_ptr<ImageView> &getImage() const;
     };
 }

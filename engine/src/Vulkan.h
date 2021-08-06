@@ -6,9 +6,9 @@
 #include <spdlog/spdlog.h>
 
 #define VK_CHECK_RESULT(f) { \
-    VkResult result = (f); \
-    if (result != VK_SUCCESS) { \
-        SPDLOG_ERROR("VkResult is \"{}\" ({})", Vixen::errorString(result), result); \
+    VkResult _result = (f); \
+    if (_result != VK_SUCCESS) { \
+        SPDLOG_ERROR("VkResult is \"{}\" ({})", Vixen::errorString(_result), _result); \
     } \
 }
 #else

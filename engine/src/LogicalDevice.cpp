@@ -180,12 +180,10 @@ namespace Vixen {
     }
 
     void LogicalDevice::createSwapchain() {
-        /// Automatically choose the surface format, swap present mode and swap extent to be used
         chooseSwapSurfaceFormat();
         chooseSwapPresentMode();
         chooseSwapExtent();
 
-        /// Create the swap chain info struct
         VkSwapchainCreateInfoKHR swapchainCreateInfo = {};
         swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         swapchainCreateInfo.surface = instance->getSurface();

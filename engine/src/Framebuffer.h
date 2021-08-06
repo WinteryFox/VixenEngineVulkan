@@ -1,5 +1,4 @@
-#ifndef VIXENENGINE_FRAMEBUFFER_H
-#define VIXENENGINE_FRAMEBUFFER_H
+#pragma once
 
 #include "LogicalDevice.h"
 
@@ -7,20 +6,18 @@ namespace Vixen {
     class Framebuffer {
         const std::shared_ptr<LogicalDevice> logicalDevice;
 
-        VkFramebuffer framebuffer = VK_NULL_HANDLE;
+        VkFramebuffer framebuffer{};
 
     public:
-        Framebuffer() = delete;
-
         Framebuffer(const std::shared_ptr<LogicalDevice> &logicalDevice, VkRenderPass renderPass,
                     const std::vector<VkImageView> &attachments, int width, int height);
 
-        Framebuffer(Framebuffer&&) = default;
+        Framebuffer(const Framebuffer &) = delete;
+
+        Framebuffer &operator=(const Framebuffer &) = delete;
 
         ~Framebuffer();
 
         [[nodiscard]] VkFramebuffer getFramebuffer() const;
     };
 }
-
-#endif

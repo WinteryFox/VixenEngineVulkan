@@ -1,10 +1,10 @@
 #include "Image.h"
 
 namespace Vixen {
-    Image::Image(const std::shared_ptr<LogicalDevice> &device, uint16_t width, uint16_t height, VkFormat format,
-                 VkImageTiling tiling, VkImageUsageFlags usage) : device(device), width(width),
-                                                                  height(height), format(format),
-                                                                  usage(usage) {
+    Image::Image(const std::shared_ptr<LogicalDevice> &device, uint32_t width, uint32_t height, VkFormat format,
+                 VkImageTiling tiling, VkImageUsageFlags usageFlags) : width(width), height(height),
+                                                                  format(format), usageFlags(usageFlags),
+                                                                  device(device) {
         VkImageCreateInfo imageCreateInfo{};
         imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -16,7 +16,7 @@ namespace Vixen {
         imageCreateInfo.format = format;
         imageCreateInfo.tiling = tiling;
         imageCreateInfo.initialLayout = layout;
-        imageCreateInfo.usage = usage;
+        imageCreateInfo.usage = usageFlags;
         imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
         imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
@@ -70,7 +70,7 @@ namespace Vixen {
         CommandBuffer(device)
                 .recordSingleUsage()
                 .cmdPipelineBarrier(source, destination, {}, {}, {}, {barrier})
-                .submitAndWait();
+                .submit();
 
         layout = newLayout;
     }
@@ -96,7 +96,7 @@ namespace Vixen {
         CommandBuffer(device)
                 .recordSingleUsage()
                 .cmdCopyBufferToImage(buffer.getBuffer(), image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, {region})
-                .submitAndWait();
+                .submit();
     }
 
     std::shared_ptr<LogicalDevice> Image::getDevice() const {
@@ -115,7 +115,7 @@ namespace Vixen {
         return format;
     }
 
-    VkImageUsageFlags Image::getUsage() const {
-        return usage;
+    VkImageUsageFlags Image::getUsageFlags() const {
+        return usageFlags;
     }
 }

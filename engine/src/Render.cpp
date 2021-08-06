@@ -3,7 +3,8 @@
 namespace Vixen {
     Render::Render(std::shared_ptr<LogicalDevice> device, std::shared_ptr<PhysicalDevice> physicalDevice,
                    const Scene &scene, std::shared_ptr<const Shader> shader, BufferType bufferType)
-            : logicalDevice(std::move(device)), physicalDevice(std::move(physicalDevice)), framesInFlight(static_cast<const int>(bufferType)),
+            : logicalDevice(std::move(device)), physicalDevice(std::move(physicalDevice)),
+              framesInFlight(static_cast<const int>(bufferType)),
               shader(std::move(shader)), scene(scene) {
         create();
     }
@@ -13,55 +14,34 @@ namespace Vixen {
     }
 
     void Render::render(const std::unique_ptr<Camera> &camera) {
-        vkWaitForFences(logicalDevice->device, 1, &fences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
+        commandBuffers[currentFrame]->wait();
 
         uint32_t imageIndex;
         VkResult result = vkAcquireNextImageKHR(logicalDevice->device, logicalDevice->swapchain,
                                                 std::numeric_limits<uint64_t>::max(),
                                                 imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
-
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
             invalidate();
             return;
         } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
             logger.critical("Failed to acquire image {}", errorString(result));
         }
-
         updateUniformBuffer(camera, scene.entities[0], imageIndex);
 
-        VkSubmitInfo submitInfo = {};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-        VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
-        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-        submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = waitSemaphores;
-        submitInfo.pWaitDstStageMask = waitStages;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
-
-        VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = signalSemaphores;
-
-        vkResetFences(logicalDevice->device, 1, &fences[currentFrame]);
-
-        if (vkQueueSubmit(logicalDevice->graphicsQueue, 1, &submitInfo, fences[currentFrame]) != VK_SUCCESS)
-            logger.critical("Failed to submit command to queue");
+        commandBuffers[imageIndex]->submit({imageAvailableSemaphores[currentFrame]},
+                                           {renderFinishedSemaphores[currentFrame]},
+                                           {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT});
 
         VkPresentInfoKHR presentInfo = {};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = signalSemaphores;
-
-        VkSwapchainKHR swapChains[] = {logicalDevice->swapchain};
+        presentInfo.pWaitSemaphores = &renderFinishedSemaphores[currentFrame];
         presentInfo.swapchainCount = 1;
-        presentInfo.pSwapchains = swapChains;
+        presentInfo.pSwapchains = &logicalDevice->swapchain;
         presentInfo.pImageIndices = &imageIndex;
         presentInfo.pResults = nullptr;
 
         vkQueuePresentKHR(logicalDevice->presentQueue, &presentInfo);
-
         currentFrame = (currentFrame + 1) % framesInFlight;
     }
 
@@ -81,17 +61,6 @@ namespace Vixen {
         uniformBuffers[imageIndex]->unmap();
     }
 
-    void Render::createFramebuffers() {
-        framebuffers.reserve(logicalDevice->imageViews.size());
-
-        for (auto &imageView : logicalDevice->imageViews) {
-            framebuffers.emplace_back(logicalDevice, renderPass,
-                                      std::vector<VkImageView>{imageView, depthImageView->getView()},
-                                      logicalDevice->extent.width, logicalDevice->extent.height);
-        }
-        logger.trace("Successfully created frame buffers");
-    }
-
     void Render::destroyFramebuffers() {
         framebuffers.clear();
     }
@@ -100,21 +69,15 @@ namespace Vixen {
         /// Create fences and semaphores
         imageAvailableSemaphores.resize(framesInFlight);
         renderFinishedSemaphores.resize(framesInFlight);
-        fences.resize(framesInFlight);
 
         VkSemaphoreCreateInfo semaphoreCreateInfo = {};
         semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-        VkFenceCreateInfo fenceCreateInfo = {};
-        fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
         for (size_t i = 0; i < framesInFlight; i++)
             if (vkCreateSemaphore(logicalDevice->device, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]) !=
                 VK_SUCCESS ||
                 vkCreateSemaphore(logicalDevice->device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]) !=
-                VK_SUCCESS ||
-                vkCreateFence(logicalDevice->device, &fenceCreateInfo, nullptr, &fences[i]) != VK_SUCCESS)
+                VK_SUCCESS)
                 logger.critical("Failed to create semaphores and fences");
         logger.trace("Successfully created semaphores and fences");
     }
@@ -123,82 +86,67 @@ namespace Vixen {
         for (size_t i = 0; i < framesInFlight; i++) {
             vkDestroySemaphore(logicalDevice->device, imageAvailableSemaphores[i], nullptr);
             vkDestroySemaphore(logicalDevice->device, renderFinishedSemaphores[i], nullptr);
-            vkDestroyFence(logicalDevice->device, fences[i], nullptr);
         }
         logger.trace("Destroyed sync objects");
     }
 
     void Render::createCommandBuffers() {
-        commandBuffers.resize(framebuffers.size());
-        VkCommandBufferAllocateInfo allocateInfo = {};
-        allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocateInfo.commandPool = logicalDevice->commandPool;
-        allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocateInfo.commandBufferCount = commandBuffers.size();
-
-        VK_CHECK_RESULT(vkAllocateCommandBuffers(logicalDevice->device, &allocateInfo, commandBuffers.data()))
-        logger.trace("Successfully allocated command buffers");
-
-        for (std::vector<VkCommandBuffer>::size_type i = 0; i < commandBuffers.size(); i++) {
-            VkCommandBufferBeginInfo beginInfo = {};
-            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-            beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-            beginInfo.pInheritanceInfo = nullptr;
-
-            VK_CHECK_RESULT(vkBeginCommandBuffer(commandBuffers[i], &beginInfo))
+        framebuffers.reserve(logicalDevice->imageViews.size());
+        commandBuffers.reserve(logicalDevice->imageViews.size());
+        for (uint32_t i = 0; i < logicalDevice->imageViews.size(); i++) {
+            framebuffers.push_back(std::make_shared<Framebuffer>(logicalDevice, renderPass,
+                                                                 std::vector<VkImageView>{
+                                                                         logicalDevice->imageViews[i],
+                                                                         depthImage->getView()
+                                                                 },
+                                                                 logicalDevice->extent.width,
+                                                                 logicalDevice->extent.height));
+            commandBuffers.push_back(std::make_shared<CommandBuffer>(logicalDevice));
+            auto &commandBuffer = commandBuffers[i];
+            commandBuffer->recordSimultaneous();
 
             VkRenderPassBeginInfo renderPassBeginInfo = {};
             renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassBeginInfo.renderPass = renderPass;
-            renderPassBeginInfo.framebuffer = framebuffers[i].getFramebuffer();
+            renderPassBeginInfo.framebuffer = framebuffers[i]->getFramebuffer();
             renderPassBeginInfo.renderArea.offset = {0, 0};
             renderPassBeginInfo.renderArea.extent = logicalDevice->extent;
 
             std::array<VkClearValue, 2> clearColors{};
-            clearColors[0].color = {{0.0f, 0.0f, 0.0f, 0.0f}};
+            //clearColors[0].color = {{34.0f, 59.0f, 84.0f, 1.0f}};
+            clearColors[0].color = {{0.13f, 0.23f, 0.33f, 1.0f}};
             clearColors[1].depthStencil = {1.0f, 0};
 
             renderPassBeginInfo.clearValueCount = clearColors.size();
             renderPassBeginInfo.pClearValues = clearColors.data();
 
-            vkCmdBeginRenderPass(commandBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-            vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+            commandBuffer->cmdBeginRenderPass(renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+            commandBuffer->cmdBindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
             for (size_t j = 0; j < scene.entities.size(); j++) {
                 const auto &entity = scene.entities[j];
                 const auto &mesh = entity.mesh;
 
-                vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
-                                        &descriptorSet[i][j], 0, nullptr);
+                commandBuffer->cmdBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0,
+                                                     {descriptorSet[i][j]}, {});
 
-                /// Bind the mesh's buffers
                 const std::vector<VkBuffer> buffers(3, mesh->getBuffer()->getBuffer());
-                std::array<VkDeviceSize, 3> offsets{0, mesh->getVertexCount() * sizeof(glm::vec3),
-                                                    mesh->getVertexCount() * sizeof(glm::vec3) +
-                                                    mesh->getVertexCount() * sizeof(glm::vec2)};
-                vkCmdBindVertexBuffers(commandBuffers[i], 0, buffers.size(), buffers.data(), offsets.data());
-                vkCmdBindIndexBuffer(commandBuffers[i], mesh->getBuffer()->getBuffer(),
-                                     mesh->getVertexCount() * sizeof(glm::vec3) +
-                                     mesh->getVertexCount() * sizeof(glm::vec2) +
-                                     mesh->getVertexCount() * sizeof(glm::vec4),
-                                     VK_INDEX_TYPE_UINT32);
+                std::vector<VkDeviceSize> offsets{0, mesh->getVertexCount() * sizeof(glm::vec3),
+                                                  mesh->getVertexCount() * sizeof(glm::vec3) +
+                                                  mesh->getVertexCount() * sizeof(glm::vec2)};
+                commandBuffer->cmdBindVertexBuffers(0, buffers, offsets);
+                commandBuffer->cmdBindIndexBuffer(mesh->getBuffer()->getBuffer(),
+                                                  mesh->getVertexCount() * sizeof(glm::vec3) +
+                                                  mesh->getVertexCount() * sizeof(glm::vec2) +
+                                                  mesh->getVertexCount() * sizeof(glm::vec4), VK_INDEX_TYPE_UINT32);
 
-                /// Draw the mesh
-                vkCmdDrawIndexed(commandBuffers[i], mesh->getIndexCount(), 1, 0, 0, 0);
+                commandBuffer->cmdDrawIndexed(mesh->getIndexCount(), 1, 0, 0, 0);
             }
 
-            vkCmdEndRenderPass(commandBuffers[i]);
-
-            VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffers[i]))
+            commandBuffer->cmdEndRenderPass();
+            commandBuffer->stop();
         }
         logger.trace("Successfully created command buffers");
-    }
-
-    void Render::destroyCommandBuffers() {
-        vkFreeCommandBuffers(logicalDevice->device, logicalDevice->commandPool, commandBuffers.size(),
-                             commandBuffers.data());
-        logger.trace("Freed command buffers");
     }
 
     void Render::createRenderPass() {
@@ -418,9 +366,8 @@ namespace Vixen {
 
     void Render::createUniformBuffers() {
         VkDeviceSize bufferSize = 3 * sizeof(glm::mat4);
-        uniformBuffers.resize(logicalDevice->images.size());
-
-        for (std::vector<VkImage>::size_type i = 0; i < logicalDevice->images.size(); i++)
+        uniformBuffers.resize(logicalDevice->imageViews.size());
+        for (std::vector<VkImage>::size_type i = 0; i < logicalDevice->imageViews.size(); i++)
             uniformBuffers[i] = std::make_unique<Buffer>(logicalDevice, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                                          VMA_MEMORY_USAGE_CPU_ONLY); // TODO: This VMA usage flag seems sus
         logger.trace("Successfully created uniform buffers");
@@ -430,7 +377,7 @@ namespace Vixen {
         std::vector<VkDescriptorSetLayout> layouts(scene.entities.size(),
                                                    descriptorSetLayout->getDescriptorSetLayout());
 
-        auto sets = std::vector<std::vector<VkDescriptorSet>>(logicalDevice->images.size());
+        auto sets = std::vector<std::vector<VkDescriptorSet>>(logicalDevice->imageViews.size());
         for (size_t i = 0; i < sets.size(); i++) {
             sets[i] = descriptorPool->createSets(layouts);
             for (size_t j = 0; j < sets[i].size(); j++) {
@@ -457,7 +404,7 @@ namespace Vixen {
                             const auto &texture = scene.entities[j].mesh->getTexture();
                             VkDescriptorImageInfo image{};
                             image.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                            image.imageView = texture != nullptr ? texture->getView()->getView() : nullptr;
+                            image.imageView = texture != nullptr ? texture->getImage()->getView() : nullptr;
                             image.sampler = textureSampler;
 
                             write.pImageInfo = &image;
@@ -483,10 +430,9 @@ namespace Vixen {
         createUniformBuffers();
         createSampler();
         descriptorPool = std::make_unique<DescriptorPool>(logicalDevice, shader.get(),
-                                                          logicalDevice->images.size() * scene.entities.size());
+                                                          logicalDevice->imageViews.size() * scene.entities.size());
         descriptorSet = createDescriptorSets();
         createRenderPass();
-        createFramebuffers();
         createPipelineLayout();
         createPipeline();
         createCommandBuffers();
@@ -497,7 +443,6 @@ namespace Vixen {
 
         destroyDepthImage();
         destroyFramebuffers();
-        destroyCommandBuffers();
         destroySampler();
         destroyRenderPass();
         destroyPipelineLayout();
@@ -556,14 +501,14 @@ namespace Vixen {
                 {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
                 VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
-        depthImage = std::make_shared<Image>(logicalDevice, logicalDevice->extent.width, logicalDevice->extent.height,
-                                             depthImageFormat, VK_IMAGE_TILING_OPTIMAL,
-                                             VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
-        depthImageView = std::make_unique<ImageView>(depthImage, VK_IMAGE_ASPECT_DEPTH_BIT);
+        depthImage = std::make_unique<ImageView>(logicalDevice, logicalDevice->extent.width,
+                                                 logicalDevice->extent.height,
+                                                 depthImageFormat, VK_IMAGE_TILING_OPTIMAL,
+                                                 VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                                                 VK_IMAGE_ASPECT_DEPTH_BIT);
     }
 
     void Render::destroyDepthImage() {
-        depthImageView = nullptr;
         depthImage = nullptr;
     }
 }
