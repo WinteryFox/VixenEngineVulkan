@@ -76,7 +76,6 @@ namespace Vixen {
                         material->GetTexture(aiTextureType_DIFFUSE, x, &str);
                         std::string relative = str.C_Str();
                         std::replace(relative.begin(), relative.end(), '\\', '/');
-                        logger.trace("Trying texture at path \"{}\"", relative);
                         try {
                             texture = std::make_shared<Texture>(
                                     logicalDevice,

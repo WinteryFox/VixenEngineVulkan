@@ -16,6 +16,7 @@ inline constexpr int VIXEN_TEST_VERSION_PATCH = 1;
 
 int main() {
     spdlog::set_level(spdlog::level::trace);
+    Vixen::Logger logger = Vixen::Logger("Test");
 
     const auto window = std::make_shared<Vixen::Window>("Vixen Engine Test Application", "../../icon.png");
     const auto instance = std::make_shared<Vixen::Instance>(window, "Vixen Engine Test Application",
@@ -34,11 +35,29 @@ int main() {
     const auto meshStore = std::make_unique<Vixen::MeshStore>(logicalDevice, physicalDevice);
     meshStore->loadMesh("../../test/models/fox/Fox.fbx");
     meshStore->loadMesh("../../test/models/crystal/Crystal.fbx");
+    meshStore->loadMesh("../../test/models/michiru/Meshes/MichiruSkel_v001_002.fbx");
+    meshStore->loadMesh("../../test/models/ruby_rose/Mesh/rubySkel_v001_002.fbx");
 
     Vixen::Scene scene{};
+    // Fox
     //scene.entities.push_back(Vixen::Entity(meshStore->meshes[0], {}, {}, 0.01f));
-    scene.entities.push_back(Vixen::Entity(meshStore->meshes[1], {}, {}, 0.01f));
-    scene.entities.push_back(Vixen::Entity(meshStore->meshes[2], {}, {}, 1.0f));
+    //scene.entities.push_back(Vixen::Entity(meshStore->meshes[1], {}, {}, 0.01f));
+
+    // Crystal
+    //scene.entities.push_back(Vixen::Entity(meshStore->meshes[2], {}, {}, 1.0f));
+
+    // Michiru
+    //scene.entities.push_back(Vixen::Entity(meshStore->meshes[4], {}, {}, 0.01f));
+    //scene.entities.push_back(Vixen::Entity(meshStore->meshes[5], {}, {}, 0.01f));
+
+    // Ruby
+    scene.entities.push_back(Vixen::Entity(meshStore->meshes[8], {}, {}, 0.01f));
+    scene.entities.push_back(Vixen::Entity(meshStore->meshes[9], {}, {}, 0.01f));
+    scene.entities.push_back(Vixen::Entity(meshStore->meshes[10], {}, {}, 0.01f));
+    scene.entities.push_back(Vixen::Entity(meshStore->meshes[11], {}, {}, 0.01f));
+    scene.entities.push_back(Vixen::Entity(meshStore->meshes[12], {}, {}, 0.01f));
+    scene.entities.push_back(Vixen::Entity(meshStore->meshes[13], {}, {}, 0.01f));
+    scene.entities.push_back(Vixen::Entity(meshStore->meshes[14], {}, {}, 0.01f));
 
     std::unique_ptr<Vixen::Render> render(new Vixen::Render(
             logicalDevice,
@@ -66,14 +85,12 @@ int main() {
                                            VK_SHADER_STAGE_FRAGMENT_BIT)
                             .build())));
 
-    Vixen::Logger logger = Vixen::Logger("Test");
-
     int fps = 0;
     double lastTime = 0;
     while (!window->shouldClose()) {
         window->update();
 
-        input->update(camera);
+        input->update(camera, render->getDeltaTime());
         render->render(camera);
 
         double currentTime = glfwGetTime();

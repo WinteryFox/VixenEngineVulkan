@@ -13,7 +13,7 @@ namespace Vixen {
         double horizontal = 3.14, vertical = 0.0;
 
         explicit Camera(const glm::vec3 &position = {}, const glm::vec3 &rotation = {}, const float fieldOfView = 45.0f,
-                        const float nearPlane = 0.1f, const float farPlane = 1000.0f) :
+                        const float nearPlane = 0.01f, const float farPlane = 1000.0f) :
                 fieldOfView(fieldOfView), position(position), rotation(rotation), nearPlane(nearPlane),
                 farPlane(farPlane) {}
 

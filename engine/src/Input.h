@@ -9,7 +9,7 @@
 
 namespace Vixen {
     struct Input {
-        const float speed = 0.0005f;
+        const float speed = 1.38889f;
 
         const std::shared_ptr<Window> &window;
 
@@ -17,7 +17,7 @@ namespace Vixen {
 
         //static void keyInputCallback(GLFWwindow* window, int key, int code, int action, int modifiers);
 
-        void update(const std::unique_ptr<Camera> &camera);
+        void update(const std::unique_ptr<Camera> &camera, double deltaTime);
 
     private:
         double lastX = 0, lastY = 0;

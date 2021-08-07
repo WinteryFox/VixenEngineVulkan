@@ -5,7 +5,7 @@ namespace Vixen {
         glfwGetCursorPos(window->window, &lastX, &lastY);
     }
 
-    void Input::update(const std::unique_ptr<Camera> &camera) {
+    void Input::update(const std::unique_ptr<Camera> &camera, const double deltaTime) {
         if (glfwGetKey(window->window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window->window, GLFW_TRUE); /// Just a shortcut to exit the app
 
@@ -46,6 +46,10 @@ namespace Vixen {
             advance.y += speed;
         if (glfwGetKey(window->window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
             advance.y -= speed;
+
+        advance.x *= deltaTime;
+        advance.y *= deltaTime;
+        advance.z *= deltaTime;
 
         camera->position += advance;
     }

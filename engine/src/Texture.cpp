@@ -3,21 +3,18 @@
 namespace Vixen {
     Texture::Texture(const std::shared_ptr<LogicalDevice> &logicalDevice,
                      const std::shared_ptr<PhysicalDevice> &physicalDevice, const std::string &path) {
-        /// Load texture from disk
         int32_t width, height, channels;
         stbi_uc *pixels = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
         if (!pixels)
             throw std::runtime_error("Failed to open image for Texture creation");
 
-        VkDeviceSize size = width * height * channels;
         VkFormat format;
         if (channels == STBI_rgb_alpha)
-            format = VK_FORMAT_R8G8B8A8_SRGB;
-        else if (channels == STBI_rgb)
-            format = VK_FORMAT_R8G8B8_SRGB;
+            format = VK_FORMAT_R8G8B8A8_UNORM; // TODO
         else
             throw std::runtime_error("Unsupported image format");
 
+        VkDeviceSize size = width * height * channels;
         Buffer staging = Buffer(logicalDevice, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
         staging.write(pixels, size, 0);
         stbi_image_free(pixels);

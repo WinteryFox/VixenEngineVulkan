@@ -94,6 +94,10 @@ namespace Vixen {
 
         const Scene &scene;
 
+        double lastTime = glfwGetTime();
+
+        double deltaTime{};
+
         /**
          * The current frame in relation to the maximum frames in flight
          */
@@ -149,7 +153,8 @@ namespace Vixen {
          * @param[in] framesInFlight The maximum frames in flight to be used by this renderer
          */
         Render(std::shared_ptr<LogicalDevice> device, std::shared_ptr<PhysicalDevice> physicalDevice,
-               const Scene &scene, std::shared_ptr<const Shader>  shader, BufferType bufferType = BufferType::DOUBLE_BUFFER);
+               const Scene &scene, std::shared_ptr<const Shader> shader,
+               BufferType bufferType = BufferType::DOUBLE_BUFFER);
 
         ~Render();
 
@@ -157,5 +162,9 @@ namespace Vixen {
          * Renders the current scene
          */
         void render(const std::unique_ptr<Camera> &camera);
+
+        [[nodiscard]] double getLastTime() const;
+
+        [[nodiscard]] double getDeltaTime() const;
     };
 }

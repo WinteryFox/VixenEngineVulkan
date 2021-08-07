@@ -15,6 +15,9 @@ namespace Vixen {
 
     void Render::render(const std::unique_ptr<Camera> &camera) {
         commandBuffers[currentFrame]->wait();
+        double currentTime = glfwGetTime();
+        deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
 
         uint32_t imageIndex;
         VkResult result = vkAcquireNextImageKHR(logicalDevice->device, logicalDevice->swapchain,
@@ -510,5 +513,13 @@ namespace Vixen {
 
     void Render::destroyDepthImage() {
         depthImage = nullptr;
+    }
+
+    double Render::getLastTime() const {
+        return lastTime;
+    }
+
+    double Render::getDeltaTime() const {
+        return deltaTime;
     }
 }
