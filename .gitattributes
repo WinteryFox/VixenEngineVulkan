@@ -1,1 +1,2 @@
 engine/contrib/* linguist-detectable=false
+test/models/* linguist-detectable=false
