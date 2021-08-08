@@ -1,7 +1,7 @@
 #include "Mesh.h"
 
 namespace Vixen {
-    Mesh::Mesh(const std::shared_ptr<LogicalDevice> &logicalDevice, const std::shared_ptr<Texture> &texture,
+    Mesh::Mesh(const std::shared_ptr<LogicalDevice> &logicalDevice, const std::shared_ptr<ImageView> &texture,
                const std::vector<glm::vec3> &vertices, const std::vector<uint32_t> &indices,
                const std::vector<glm::vec2> &uvs, const std::vector<glm::vec4> &colors)
             : logicalDevice(logicalDevice), vertexCount(vertices.size()), indexCount(indices.size()),
@@ -45,7 +45,7 @@ namespace Vixen {
         return indexCount;
     }
 
-    const std::shared_ptr<const Texture> &Mesh::getTexture() const {
+    const std::shared_ptr<const ImageView> &Mesh::getTexture() const {
         return texture;
     }
 }

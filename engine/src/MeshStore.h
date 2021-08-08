@@ -9,6 +9,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include "Mesh.h"
+#include "ImageView.h"
 
 namespace Vixen {
     struct MeshStore {
@@ -16,7 +17,8 @@ namespace Vixen {
 
         explicit MeshStore(std::shared_ptr<LogicalDevice> logicalDevice,
                            std::shared_ptr<PhysicalDevice> physicalDevice) : logicalDevice(std::move(logicalDevice)),
-                                                                                   physicalDevice(std::move(physicalDevice)) {}
+                                                                             physicalDevice(
+                                                                                     std::move(physicalDevice)) {}
 
         void loadMesh(const std::string &path) {
             Assimp::Importer importer;
@@ -66,7 +68,7 @@ namespace Vixen {
                     indices.push_back(face.mIndices[2]);
                 }
 
-                std::shared_ptr<Texture> texture = nullptr;
+                std::shared_ptr<ImageView> texture = nullptr;
 
                 if (aiMesh->mMaterialIndex >= 0) {
                     const auto &material = aiScene->mMaterials[aiMesh->mMaterialIndex];
@@ -77,13 +79,13 @@ namespace Vixen {
                         std::string relative = str.C_Str();
                         std::replace(relative.begin(), relative.end(), '\\', '/');
                         try {
-                            texture = std::make_shared<Texture>(
-                                    logicalDevice,
-                                    physicalDevice,
-                                    std::filesystem::path(path).remove_filename().append(relative).string()
-                            );
+                            texture = std::make_shared<ImageView>(Image::from(logicalDevice,
+                                                                              std::filesystem::path(
+                                                                                      path).remove_filename().append(
+                                                                                      relative).string()),
+                                                                  VK_IMAGE_ASPECT_COLOR_BIT);
                         } catch (std::runtime_error &error) {
-                            logger.trace("Failed to load texture at path \"{}\" ({})", relative, error.what());
+                            logger.warning("Failed to load texture at path \"{}\" ({})", relative, error.what());
                         }
                     }
                 }

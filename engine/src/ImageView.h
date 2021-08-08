@@ -9,9 +9,7 @@ namespace Vixen {
         VkImageView view{};
 
     public:
-        ImageView(const std::shared_ptr<LogicalDevice> &device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usageFlags, VkImageAspectFlags aspectFlags);
-
-        ImageView() = delete;
+        ImageView(Image &&image, VkImageAspectFlags aspectFlags);
 
         ImageView(const ImageView &) = delete;
 

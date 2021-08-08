@@ -407,7 +407,7 @@ namespace Vixen {
                             const auto &texture = scene.entities[j].mesh->getTexture();
                             VkDescriptorImageInfo image{};
                             image.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                            image.imageView = texture != nullptr ? texture->getImage()->getView() : nullptr;
+                            image.imageView = texture != nullptr ? texture->getView() : nullptr;
                             image.sampler = textureSampler;
 
                             write.pImageInfo = &image;
@@ -504,10 +504,10 @@ namespace Vixen {
                 {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
                 VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
-        depthImage = std::make_unique<ImageView>(logicalDevice, logicalDevice->extent.width,
+        depthImage = std::make_unique<ImageView>(Image(logicalDevice, logicalDevice->extent.width,
                                                  logicalDevice->extent.height,
                                                  depthImageFormat, VK_IMAGE_TILING_OPTIMAL,
-                                                 VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                                                 VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT),
                                                  VK_IMAGE_ASPECT_DEPTH_BIT);
     }
 

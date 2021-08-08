@@ -11,7 +11,6 @@ engine_sources = [
     'src/Shader.cpp',
     'src/ShaderDescriptor.cpp',
     'src/ShaderModule.cpp',
-    'src/Texture.cpp',
     'src/Window.cpp',
     'src/Vulkan.cpp',
     'src/Buffer.cpp',

@@ -47,9 +47,9 @@ namespace Vixen {
         if (glfwGetKey(window->window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
             advance.y -= speed;
 
-        advance.x *= deltaTime;
-        advance.y *= deltaTime;
-        advance.z *= deltaTime;
+        advance.x *= static_cast<float>(deltaTime);
+        advance.y *= static_cast<float>(deltaTime);
+        advance.z *= static_cast<float>(deltaTime);
 
         camera->position += advance;
     }

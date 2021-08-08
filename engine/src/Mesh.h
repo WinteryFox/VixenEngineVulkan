@@ -5,8 +5,8 @@
 #include <vulkan/vulkan.h>
 #include <glm/glm.hpp>
 #include "LogicalDevice.h"
-#include "Texture.h"
 #include "Buffer.h"
+#include "ImageView.h"
 
 namespace Vixen {
     class Mesh {
@@ -18,10 +18,10 @@ namespace Vixen {
 
         const uint32_t indexCount;
 
-        const std::shared_ptr<const Texture> texture;
+        const std::shared_ptr<const ImageView> texture;
 
     public:
-        Mesh(const std::shared_ptr<LogicalDevice> &logicalDevice, const std::shared_ptr<Texture> &texture,
+        Mesh(const std::shared_ptr<LogicalDevice> &logicalDevice, const std::shared_ptr<ImageView> &texture,
              const std::vector<glm::vec3> &vertices, const std::vector<uint32_t> &indices,
              const std::vector<glm::vec2> &uvs, const std::vector<glm::vec4> &colors);
 
@@ -35,6 +35,6 @@ namespace Vixen {
 
         [[nodiscard]] uint32_t getIndexCount() const;
 
-        [[nodiscard]] const std::shared_ptr<const Texture> &getTexture() const;
+        [[nodiscard]] const std::shared_ptr<const ImageView> &getTexture() const;
     };
 }

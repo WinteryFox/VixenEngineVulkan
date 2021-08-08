@@ -1,12 +1,11 @@
 #include "ImageView.h"
 
 namespace Vixen {
-    ImageView::ImageView(const std::shared_ptr<LogicalDevice> &device, uint32_t width, uint32_t height, VkFormat format,
-                         VkImageTiling tiling, VkImageUsageFlags usageFlags, VkImageAspectFlags aspectFlags)
-            : Image(device, width, height, format, tiling, usageFlags) {
+    ImageView::ImageView(Image &&image, VkImageAspectFlags aspectFlags)
+            : Image(std::move(image)) {
         VkImageViewCreateInfo imageViewCreateInfo{};
         imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        imageViewCreateInfo.image = image;
+        imageViewCreateInfo.image = this->image;
         imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
         imageViewCreateInfo.format = format;
         imageViewCreateInfo.subresourceRange.aspectMask = aspectFlags;

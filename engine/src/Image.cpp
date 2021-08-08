@@ -2,9 +2,11 @@
 
 namespace Vixen {
     Image::Image(const std::shared_ptr<LogicalDevice> &device, uint32_t width, uint32_t height, VkFormat format,
-                 VkImageTiling tiling, VkImageUsageFlags usageFlags) : width(width), height(height),
-                                                                  format(format), usageFlags(usageFlags),
-                                                                  device(device) {
+                 VkImageTiling tiling, VkImageUsageFlags usageFlags) : allocation(nullptr), width(width),
+                                                                       height(height),
+                                                                       layout(VK_IMAGE_LAYOUT_UNDEFINED),
+                                                                       usageFlags(usageFlags), device(device),
+                                                                       image(nullptr), format(format) {
         VkImageCreateInfo imageCreateInfo{};
         imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -27,8 +29,32 @@ namespace Vixen {
                                        nullptr))
     }
 
+    Image::Image(Image &&other) noexcept: allocation(std::exchange(other.allocation, nullptr)), width(other.width),
+                                          height(other.height), layout(other.layout), usageFlags(other.usageFlags),
+                                          device(other.device), image(std::exchange(other.image, nullptr)),
+                                          format(other.format) {}
+
     Image::~Image() {
         vmaDestroyImage(device->allocator, image, allocation);
+    }
+
+    Image Image::from(const std::shared_ptr<LogicalDevice> &device, const std::string &path) {
+        int32_t width, height, channels;
+        stbi_uc *pixels = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+        if (!pixels)
+            throw std::runtime_error("Failed to open image");
+
+        VkDeviceSize size = width * height * 4;
+        Buffer staging = Buffer(device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+        staging.write(pixels, size, 0);
+        stbi_image_free(pixels);
+
+        auto image = Image(device, width, height, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
+                           VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+        image.transition(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        image.copyFrom(staging);
+        image.transition(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        return image;
     }
 
     void Image::transition(VkImageLayout newLayout) {
@@ -87,11 +113,7 @@ namespace Vixen {
         region.imageSubresource.layerCount = 1;
 
         region.imageOffset = {0, 0, 0};
-        region.imageExtent = {
-                width,
-                height,
-                1
-        };
+        region.imageExtent = {width, height, 1};
 
         CommandBuffer(device)
                 .recordSingleUsage()
@@ -101,14 +123,6 @@ namespace Vixen {
 
     std::shared_ptr<LogicalDevice> Image::getDevice() const {
         return device;
-    }
-
-    VkImage Image::getImage() const {
-        return image;
-    }
-
-    VmaAllocation Image::getAllocation() const {
-        return allocation;
     }
 
     VkFormat Image::getFormat() const {
