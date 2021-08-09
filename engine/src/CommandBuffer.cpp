@@ -176,4 +176,14 @@ namespace Vixen {
         vkCmdDrawIndexed(buffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
         return *this;
     }
+
+    CommandBuffer &
+    CommandBuffer::cmdPushConstants(VkPipelineLayout layout, VkPipelineStageFlags stages, uint32_t offset,
+                                    uint32_t size, const void *values) {
+        if (!recording)
+            throw std::runtime_error("Command buffer is not recording");
+
+        vkCmdPushConstants(buffer, layout, stages, offset, size, values);
+        return *this;
+    }
 }

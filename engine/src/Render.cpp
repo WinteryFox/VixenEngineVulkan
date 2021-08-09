@@ -13,7 +13,7 @@ namespace Vixen {
         destroy();
     }
 
-    void Render::render(const std::unique_ptr<Camera> &camera) {
+    void Render::render(const Camera &camera) {
         commandBuffers[currentFrame]->wait();
         double currentTime = glfwGetTime();
         deltaTime = currentTime - lastTime;
@@ -48,12 +48,12 @@ namespace Vixen {
         currentFrame = (currentFrame + 1) % framesInFlight;
     }
 
-    void Render::updateUniformBuffer(const std::unique_ptr<Camera> &camera, const Entity &entity, uint32_t imageIndex) {
-        void *data = uniformBuffers[imageIndex]->map();
+    void Render::updateUniformBuffer(const Camera &camera, const Entity &entity, uint32_t imageIndex) {
+        void *data = uniformBuffers[imageIndex].map();
 
         glm::mat4 model = entity.getModelMatrix();
-        glm::mat4 view = camera->getView();
-        glm::mat4 projection = camera->getProjection(static_cast<float>(logicalDevice->extent.width)
+        glm::mat4 view = camera.getView();
+        glm::mat4 projection = camera.getProjection(static_cast<float>(logicalDevice->extent.width)
                                                      / static_cast<float>(logicalDevice->extent.height));
         projection[1][1] *= -1.0f;
 
@@ -61,7 +61,7 @@ namespace Vixen {
         memcpy((glm::mat4 *) data + 1, &view, sizeof(glm::mat4));
         memcpy((glm::mat4 *) data + 2, &projection, sizeof(glm::mat4));
 
-        uniformBuffers[imageIndex]->unmap();
+        uniformBuffers[imageIndex].unmap();
     }
 
     void Render::destroyFramebuffers() {
@@ -369,10 +369,10 @@ namespace Vixen {
 
     void Render::createUniformBuffers() {
         VkDeviceSize bufferSize = 3 * sizeof(glm::mat4);
-        uniformBuffers.resize(logicalDevice->imageViews.size());
+        uniformBuffers.reserve(logicalDevice->imageViews.size());
         for (std::vector<VkImage>::size_type i = 0; i < logicalDevice->imageViews.size(); i++)
-            uniformBuffers[i] = std::make_unique<Buffer>(logicalDevice, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                                         VMA_MEMORY_USAGE_CPU_ONLY); // TODO: This VMA usage flag seems sus
+            uniformBuffers.emplace_back(logicalDevice, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                        VMA_MEMORY_USAGE_CPU_ONLY); // TODO: This VMA usage flag seems sus
         logger.trace("Successfully created uniform buffers");
     }
 
@@ -397,7 +397,7 @@ namespace Vixen {
                     switch (descriptor.getType()) {
                         case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER: {
                             VkDescriptorBufferInfo buffer{};
-                            buffer.buffer = uniformBuffers[i]->getBuffer();
+                            buffer.buffer = uniformBuffers[i].getBuffer();
                             buffer.offset = 0;
                             buffer.range = descriptor.getSize();
 
@@ -408,7 +408,7 @@ namespace Vixen {
                             VkDescriptorImageInfo image{};
                             image.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                             image.imageView = texture != nullptr ? texture->getView() : nullptr;
-                            image.sampler = textureSampler;
+                            image.sampler = textureSampler->getSampler();
 
                             write.pImageInfo = &image;
                         }
@@ -431,7 +431,7 @@ namespace Vixen {
         createSyncObjects();
         descriptorSetLayout = std::make_unique<DescriptorSetLayout>(logicalDevice, *shader);
         createUniformBuffers();
-        createSampler();
+        textureSampler = std::make_unique<ImageSampler>(logicalDevice);
         descriptorPool = std::make_unique<DescriptorPool>(logicalDevice, shader.get(),
                                                           logicalDevice->imageViews.size() * scene.entities.size());
         descriptorSet = createDescriptorSets();
@@ -446,7 +446,6 @@ namespace Vixen {
 
         destroyDepthImage();
         destroyFramebuffers();
-        destroySampler();
         destroyRenderPass();
         destroyPipelineLayout();
         destroyPipeline();
@@ -465,58 +464,20 @@ namespace Vixen {
         logger.trace("Invalidation took {}ms", glfwGetTime() - oldTime);
     }
 
-    void Render::createSampler() {
-        /// Create VkSampler object
-        VkSamplerCreateInfo samplerCreateInfo{};
-        samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-        samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
-        samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
-        samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-
-        if (physicalDevice->deviceFeatures.samplerAnisotropy == VK_TRUE) {
-            samplerCreateInfo.anisotropyEnable = VK_TRUE; // TODO: Make these two options instead of constants
-            samplerCreateInfo.maxAnisotropy = 16;
-        } else {
-            samplerCreateInfo.anisotropyEnable = VK_FALSE;
-            samplerCreateInfo.maxAnisotropy = 1;
-        }
-
-        samplerCreateInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-        samplerCreateInfo.unnormalizedCoordinates = VK_FALSE;
-        samplerCreateInfo.compareEnable = VK_FALSE;
-        samplerCreateInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-        samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        samplerCreateInfo.mipLodBias = 0.0f;
-        samplerCreateInfo.minLod = 0.0f;
-        samplerCreateInfo.maxLod = 0.0f;
-
-        vkCreateSampler(logicalDevice->device, &samplerCreateInfo, nullptr, &textureSampler);
-    }
-
-    void Render::destroySampler() {
-        vkDestroySampler(logicalDevice->device, textureSampler, nullptr);
-    }
-
     void Render::createDepthImage() {
         const auto &depthImageFormat = physicalDevice->findSupportedFormat(
                 {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
                 VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
         depthImage = std::make_unique<ImageView>(Image(logicalDevice, logicalDevice->extent.width,
-                                                 logicalDevice->extent.height,
-                                                 depthImageFormat, VK_IMAGE_TILING_OPTIMAL,
-                                                 VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT),
+                                                       logicalDevice->extent.height,
+                                                       depthImageFormat, VK_IMAGE_TILING_OPTIMAL,
+                                                       VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT),
                                                  VK_IMAGE_ASPECT_DEPTH_BIT);
     }
 
     void Render::destroyDepthImage() {
         depthImage = nullptr;
-    }
-
-    double Render::getLastTime() const {
-        return lastTime;
     }
 
     double Render::getDeltaTime() const {

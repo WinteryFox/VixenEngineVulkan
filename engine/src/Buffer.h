@@ -9,9 +9,9 @@ namespace Vixen {
     class Buffer {
         const std::shared_ptr<LogicalDevice> device;
 
-        VmaAllocation allocation = VK_NULL_HANDLE;
+        VmaAllocation allocation;
 
-        VkBuffer buffer = VK_NULL_HANDLE;
+        VkBuffer buffer;
 
         VkDeviceSize size;
 
@@ -19,7 +19,9 @@ namespace Vixen {
         Buffer(const std::shared_ptr<LogicalDevice> &device, VkDeviceSize size, VkBufferUsageFlags bufferUsage,
                VmaMemoryUsage allocationUsage);
 
-        Buffer(const Buffer &other) = delete;
+        Buffer(const Buffer &) = delete;
+
+        Buffer(Buffer&& other) noexcept;
 
         ~Buffer();
 

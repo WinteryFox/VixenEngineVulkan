@@ -68,5 +68,9 @@ namespace Vixen {
         CommandBuffer &
         cmdDrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset,
                        uint32_t firstInstance);
+
+        CommandBuffer &
+        cmdPushConstants(VkPipelineLayout layout, VkPipelineStageFlags stages, uint32_t offset, uint32_t size,
+                         const void *values);
     };
 }

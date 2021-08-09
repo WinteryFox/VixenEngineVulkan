@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <string>
 
 #ifdef VIXEN_DEBUG
 #include <spdlog/spdlog.h>

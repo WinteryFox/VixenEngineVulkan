@@ -3,7 +3,7 @@
 namespace Vixen {
     Buffer::Buffer(const std::shared_ptr<LogicalDevice> &device, VkDeviceSize size, VkBufferUsageFlags bufferUsage,
                    VmaMemoryUsage allocationUsage)
-            : device(device), size(size) {
+            : device(device), allocation(nullptr), buffer(nullptr), size(size) {
         VkBufferCreateInfo bufferCreateInfo = {};
         bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         bufferCreateInfo.size = size;
@@ -13,8 +13,13 @@ namespace Vixen {
         VmaAllocationCreateInfo allocationCreateInfo = {};
         allocationCreateInfo.usage = allocationUsage;
 
-        vmaCreateBuffer(device->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation, nullptr);
+        VK_CHECK_RESULT(
+                vmaCreateBuffer(device->allocator, &bufferCreateInfo, &allocationCreateInfo, &buffer, &allocation,
+                                nullptr))
     }
+
+    Buffer::Buffer(Buffer &&other) noexcept: device(other.device), allocation(std::exchange(other.allocation, nullptr)),
+                                             buffer(std::exchange(other.buffer, nullptr)), size(other.size) {}
 
     Buffer::~Buffer() {
         vmaDestroyBuffer(device->allocator, buffer, allocation);

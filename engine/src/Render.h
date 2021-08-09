@@ -9,6 +9,7 @@
 #include "Framebuffer.h"
 #include "DescriptorSetLayout.h"
 #include "DescriptorPool.h"
+#include "ImageSampler.h"
 
 namespace Vixen {
     enum class BufferType {
@@ -76,11 +77,11 @@ namespace Vixen {
 
         std::unique_ptr<DescriptorSetLayout> descriptorSetLayout = nullptr;
 
-        std::vector<std::unique_ptr<Buffer>> uniformBuffers;
+        std::vector<Buffer> uniformBuffers;
 
         std::vector<std::vector<VkDescriptorSet>> descriptorSet;
 
-        VkSampler textureSampler{};
+        std::unique_ptr<ImageSampler> textureSampler;
 
         std::unique_ptr<ImageView> depthImage{};
 
@@ -129,10 +130,6 @@ namespace Vixen {
 
         void createUniformBuffers();
 
-        void createSampler();
-
-        void destroySampler();
-
         std::vector<std::vector<VkDescriptorSet>> createDescriptorSets();
 
         void invalidate();
@@ -141,7 +138,7 @@ namespace Vixen {
 
         void destroy();
 
-        void updateUniformBuffer(const std::unique_ptr<Camera> &camera, const Entity &entity, uint32_t imageIndex);
+        void updateUniformBuffer(const Camera &camera, const Entity &entity, uint32_t imageIndex);
 
     public:
         /**
@@ -161,9 +158,7 @@ namespace Vixen {
         /**
          * Renders the current scene
          */
-        void render(const std::unique_ptr<Camera> &camera);
-
-        [[nodiscard]] double getLastTime() const;
+        void render(const Camera &camera);
 
         [[nodiscard]] double getDeltaTime() const;
     };

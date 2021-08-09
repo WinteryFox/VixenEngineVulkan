@@ -17,7 +17,7 @@ namespace Vixen {
 
         //static void keyInputCallback(GLFWwindow* window, int key, int code, int action, int modifiers);
 
-        void update(const std::unique_ptr<Camera> &camera, double deltaTime);
+        void update(Camera &camera, double deltaTime);
 
     private:
         double lastX = 0, lastY = 0;

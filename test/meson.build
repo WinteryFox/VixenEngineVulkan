@@ -1,21 +1,33 @@
+validator = find_program('glslangValidator')
+vertex = custom_target(
+    'vertex_shader',
+    input : ['shaders/test.vert'],
+    output : ['vert.spv'],
+    command : [
+        validator,
+        '-V', '@INPUT@',
+        '-o', '@OUTPUT@'
+    ],
+    build_by_default : true
+)
+fragment = custom_target(
+    'fragment_shader',
+    input : ['shaders/test.frag'],
+    output : ['frag.spv'],
+    command : [
+        validator,
+        '-V', '@INPUT@',
+        '-o', '@OUTPUT@'
+    ],
+    build_by_default : true
+)
+
 test = executable(
     'engine_test',
     'main.cpp',
     dependencies : [
         engine_dep
     ]
-)
-
-validator = find_program('glslangValidator')
-run_command(
-    validator,
-    '-V', 'shaders/test.vert',
-    '-o', meson.current_build_dir() + '/vert.spv'
-)
-run_command(
-    validator,
-    '-V', 'shaders/test.frag',
-    '-o', meson.current_build_dir() + '/frag.spv'
 )
 
 test(
