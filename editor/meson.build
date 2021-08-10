@@ -22,16 +22,10 @@ fragment = custom_target(
     build_by_default : true
 )
 
-test = executable(
-    'engine_test',
+editor = executable(
+    'Vixen Editor',
     'main.cpp',
     dependencies : [
         engine_dep
     ]
-)
-
-test(
-    'engine test',
-    test,
-    workdir : meson.current_build_dir()
 )

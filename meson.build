@@ -10,4 +10,4 @@ if get_option('vixen_debug')
 endif
 
 subdir('engine')
-subdir('test')
+subdir('editor')

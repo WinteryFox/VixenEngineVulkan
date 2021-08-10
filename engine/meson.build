@@ -36,7 +36,7 @@ engine_inc = include_directories(
     'contrib/stb'
 )
 engine_lib = library(
-    'engine',
+    'VixenEngine',
     engine_sources,
     include_directories : engine_inc,
     dependencies : engine_deps

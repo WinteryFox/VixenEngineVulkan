@@ -66,7 +66,7 @@ namespace Vixen {
                 if (!file.is_open())
                     throw std::runtime_error("Failed to open shader");
 
-                size_t fileSize = (size_t) file.tellg();
+                uint32_t fileSize = file.tellg();
                 bytecode.resize(fileSize);
                 file.seekg(0);
                 file.read(bytecode.data(), fileSize);

@@ -16,7 +16,7 @@ namespace Vixen {
     bool Fence::isReady() {
         auto result = vkGetFenceStatus(device->device, fence);
         if (result == VK_SUCCESS) return true;
-        if (result != VK_NOT_READY) VK_CHECK_RESULT(result);
+        if (result != VK_NOT_READY) VK_CHECK_RESULT(result)
 
         return false;
     }

@@ -27,6 +27,9 @@ namespace Vixen {
 
         void write(const void *data, VkDeviceSize dataSize, VkDeviceSize offset);
 
+        template<typename T>
+        void write(const T &data, VkDeviceSize offset);
+
         void *map();
 
         void unmap();

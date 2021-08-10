@@ -128,8 +128,6 @@ namespace Vixen {
 
         void destroyPipelineLayout();
 
-        void createUniformBuffers();
-
         std::vector<std::vector<VkDescriptorSet>> createDescriptorSets();
 
         void invalidate();

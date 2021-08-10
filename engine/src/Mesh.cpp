@@ -16,21 +16,20 @@ namespace Vixen {
         VkDeviceSize colorBufferSize = sizeof(glm::vec4) * vertices.size();
         VkDeviceSize indexBufferSize = sizeof(uint32_t) * indices.size();
         VkDeviceSize size = vertexBufferSize + uvBufferSize + colorBufferSize + indexBufferSize;
-        auto stagingBuffer = Buffer(logicalDevice, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                    VMA_MEMORY_USAGE_CPU_TO_GPU);
-
-        void* data = stagingBuffer.map();
+        auto staging = Buffer(logicalDevice, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                    VMA_MEMORY_USAGE_CPU_ONLY);
+        void* data = staging.map();
         memcpy(data, vertices.data(), vertexBufferSize);
         memcpy(static_cast<char *>(data) + vertexBufferSize, uvs.data(), uvBufferSize);
         memcpy(static_cast<char *>(data) + vertexBufferSize + uvBufferSize, colors.data(), colorBufferSize);
         memcpy(static_cast<char *>(data) + vertexBufferSize + uvBufferSize + colorBufferSize, indices.data(),
                indexBufferSize);
-        stagingBuffer.unmap();
+        staging.unmap();
 
         buffer = std::make_unique<Buffer>(logicalDevice, size,
                                           VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
                                           VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
-        buffer->copyFrom(stagingBuffer);
+        buffer->copyFrom(staging);
     }
 
     const std::unique_ptr<Buffer> &Mesh::getBuffer() const {

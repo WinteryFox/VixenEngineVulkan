@@ -34,9 +34,14 @@ namespace Vixen {
         unmap();
     }
 
+    template<typename T>
+    void Buffer::write(const T &data, VkDeviceSize offset) {
+        write(&data, sizeof(T), offset);
+    }
+
     void *Buffer::map() {
         void *data = nullptr;
-        vmaMapMemory(device->allocator, allocation, &data);
+        VK_CHECK_RESULT(vmaMapMemory(device->allocator, allocation, &data))
         return data;
     }
 

@@ -367,15 +367,6 @@ namespace Vixen {
         logger.trace("Destroyed pipeline layout");
     }
 
-    void Render::createUniformBuffers() {
-        VkDeviceSize bufferSize = 3 * sizeof(glm::mat4);
-        uniformBuffers.reserve(logicalDevice->imageViews.size());
-        for (std::vector<VkImage>::size_type i = 0; i < logicalDevice->imageViews.size(); i++)
-            uniformBuffers.emplace_back(logicalDevice, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                        VMA_MEMORY_USAGE_CPU_ONLY); // TODO: This VMA usage flag seems sus
-        logger.trace("Successfully created uniform buffers");
-    }
-
     std::vector<std::vector<VkDescriptorSet>> Render::createDescriptorSets() {
         std::vector<VkDescriptorSetLayout> layouts(scene.entities.size(),
                                                    descriptorSetLayout->getDescriptorSetLayout());
@@ -430,7 +421,11 @@ namespace Vixen {
         createDepthImage();
         createSyncObjects();
         descriptorSetLayout = std::make_unique<DescriptorSetLayout>(logicalDevice, *shader);
-        createUniformBuffers();
+        for (uint32_t i = 0; i < logicalDevice->imageCount; i++)
+            for (const auto &descriptor : shader->getDescriptors())
+                if (descriptor.getType() == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+                    uniformBuffers.emplace_back(logicalDevice, descriptor.getSize(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                                VMA_MEMORY_USAGE_CPU_ONLY);
         textureSampler = std::make_unique<ImageSampler>(logicalDevice);
         descriptorPool = std::make_unique<DescriptorPool>(logicalDevice, shader.get(),
                                                           logicalDevice->imageViews.size() * scene.entities.size());

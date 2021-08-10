@@ -28,10 +28,10 @@ int main() {
     std::unique_ptr<Vixen::Input> input(new Vixen::Input(window));
 
     const auto meshStore = std::make_unique<Vixen::MeshStore>(logicalDevice, physicalDevice);
-    meshStore->loadMesh("../../test/models/fox/Fox.fbx");
-    meshStore->loadMesh("../../test/models/crystal/Crystal.fbx");
-    meshStore->loadMesh("../../test/models/michiru/Meshes/MichiruSkel_v001_002.fbx");
-    meshStore->loadMesh("../../test/models/ruby_rose/Mesh/rubySkel_v001_002.fbx");
+    meshStore->loadMesh("../../editor/models/fox/Fox.fbx");
+    meshStore->loadMesh("../../editor/models/crystal/Crystal.fbx");
+    meshStore->loadMesh("../../editor/models/michiru/Meshes/MichiruSkel_v001_002.fbx");
+    meshStore->loadMesh("../../editor/models/ruby_rose/Mesh/rubySkel_v001_002.fbx");
 
     Vixen::Scene scene{};
     scene.camera.position = {0, 0, 3};
@@ -59,27 +59,25 @@ int main() {
             logicalDevice,
             physicalDevice,
             scene,
-            std::shared_ptr<Vixen::Shader>(
-                    Vixen::Shader::Builder()
-                            .addModule(Vixen::ShaderModule::Builder(logicalDevice)
-                                               .setShaderStage(VK_SHADER_STAGE_VERTEX_BIT)
-                                               .setBytecode("vert.spv")
-                                               .build())
-                            .addModule(Vixen::ShaderModule::Builder(logicalDevice)
-                                               .setShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT)
-                                               .setBytecode("frag.spv")
-                                               .build())
-                            .addAttribute(0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0)
-                            .addAttribute(1, 1, VK_FORMAT_R32G32_SFLOAT, 0)
-                            .addAttribute(2, 2, VK_FORMAT_R32G32B32A32_SFLOAT, 0)
-                            .addBinding(0, VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec3))
-                            .addBinding(1, VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec2))
-                            .addBinding(2, VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec4))
-                            .addDescriptor(0, 3 * sizeof(glm::mat4),
-                                           VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-                            .addDescriptor(1, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                           VK_SHADER_STAGE_FRAGMENT_BIT)
-                            .build())));
+            Vixen::Shader::Builder()
+                    .addModule(Vixen::ShaderModule::Builder(logicalDevice)
+                                       .setShaderStage(VK_SHADER_STAGE_VERTEX_BIT)
+                                       .setBytecode("vert.spv")
+                                       .build())
+                    .addModule(Vixen::ShaderModule::Builder(logicalDevice)
+                                       .setShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT)
+                                       .setBytecode("frag.spv")
+                                       .build())
+                    .addAttribute(0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0)
+                    .addAttribute(1, 1, VK_FORMAT_R32G32_SFLOAT, 0)
+                    .addAttribute(2, 2, VK_FORMAT_R32G32B32A32_SFLOAT, 0)
+                    .addBinding(0, VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec3))
+                    .addBinding(1, VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec2))
+                    .addBinding(2, VK_VERTEX_INPUT_RATE_VERTEX, sizeof(glm::vec4))
+                    .addDescriptor(0, 3 * sizeof(glm::mat4), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+                    .addDescriptor(1, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                   VK_SHADER_STAGE_FRAGMENT_BIT)
+                    .build()));
 
     int fps = 0;
     double lastTime = 0;

@@ -23,7 +23,7 @@ namespace Vixen {
         imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
         VmaAllocationCreateInfo allocationCreateInfo = {};
-        allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY; // TODO: This looks sus
+        allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
         VK_CHECK_RESULT(vmaCreateImage(device->allocator, &imageCreateInfo, &allocationCreateInfo, &image, &allocation,
                                        nullptr))
@@ -45,7 +45,7 @@ namespace Vixen {
             throw std::runtime_error("Failed to open image");
 
         VkDeviceSize size = width * height * 4;
-        Buffer staging = Buffer(device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+        Buffer staging = Buffer(device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
         staging.write(pixels, size, 0);
         stbi_image_free(pixels);
 

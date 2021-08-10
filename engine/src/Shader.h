@@ -63,8 +63,8 @@ namespace Vixen {
                 return *this;
             }
 
-            [[nodiscard]] Shader *build() const {
-                return new Shader(modules, bindings, attributes, descriptors);
+            [[nodiscard]] std::shared_ptr<Shader> build() const {
+                return std::make_shared<Shader>(modules, bindings, attributes, descriptors);
             }
         };
     };
