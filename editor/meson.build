@@ -26,6 +26,6 @@ editor = executable(
     'Vixen Editor',
     'main.cpp',
     dependencies : [
-        engine
+        engine_dep
     ]
 )
