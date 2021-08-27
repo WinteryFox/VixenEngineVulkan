@@ -1,11 +1,3 @@
-/**
- * This is a simple test executable to test new or experimental functionality.
- * Do not use this in your project.
- *
- * @author Foxie
- * @date 7/7/2019
- */
-
 inline constexpr int VIXEN_TEST_VERSION_MAJOR = 0;
 inline constexpr int VIXEN_TEST_VERSION_MINOR = 0;
 inline constexpr int VIXEN_TEST_VERSION_PATCH = 1;

@@ -41,8 +41,6 @@ namespace Vixen {
 
         ~Instance();
 
-        [[nodiscard]] std::shared_ptr<Window> getWindow() const;
-
         [[nodiscard]] VkInstance getInstance() const;
 
         [[nodiscard]] VkSurfaceKHR getSurface() const;
