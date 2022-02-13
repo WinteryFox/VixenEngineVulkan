@@ -8,7 +8,7 @@ inline constexpr int VIXEN_TEST_VERSION_PATCH = 1;
 int main() {
     spdlog::set_level(spdlog::level::trace);
     Vixen::Logger logger = Vixen::Logger("Test");
-
+po
     const auto window = std::make_shared<Vixen::Window>("Vixen Engine Test Application", "../../icon.png");
     const auto instance = std::make_shared<Vixen::Instance>(window, "Vixen Engine Test Application",
                                                             glm::ivec3(VIXEN_TEST_VERSION_MAJOR,

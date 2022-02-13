@@ -1,3 +1,5 @@
 build/*
 .idea/*
 .git/*
+cmake-build-debug/*
+cmake-build-release/*
