@@ -1,11 +1,19 @@
 find_package(PkgConfig REQUIRED)
 
-#[[pkg_check_modules(VULKAN REQUIRED IMPORTED_TARGET vulkan)]]
-find_package(Vulkan REQUIRED)
+find_package(Vulkan REQUIRED >=1.2)
 pkg_check_modules(GLM REQUIRED IMPORTED_TARGET glm)
 pkg_check_modules(GLFW REQUIRED IMPORTED_TARGET glfw3)
 pkg_check_modules(ASSIMP REQUIRED IMPORTED_TARGET assimp)
 pkg_check_modules(SPDLOG REQUIRED IMPORTED_TARGET spdlog)
+
+add_custom_target(
+        vert glslangValidator -V test.vert -o ${CMAKE_BINARY_DIR}/bin/vert.spv
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/shaders
+)
+add_custom_target(
+        frag glslangValidator -V test.frag -o ${CMAKE_BINARY_DIR}/bin/frag.spv
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/shaders
+)
 
 add_library(
         engine SHARED
@@ -31,6 +39,7 @@ add_library(
         src/Fence.cpp
         src/ImageSampler.cpp
 )
+add_dependencies(engine vert frag)
 target_link_libraries(
         engine
         Vulkan::Vulkan
@@ -38,4 +47,9 @@ target_link_libraries(
         PkgConfig::GLFW
         PkgConfig::ASSIMP
         PkgConfig::SPDLOG
+)
+target_include_directories(
+        engine PUBLIC
+        contrib/VMA/src
+        contrib/stb
 )

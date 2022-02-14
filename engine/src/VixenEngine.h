@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Logger.h"
 #include "Instance.h"
 #include "LogicalDevice.h"
 #include "Mesh.h"
