@@ -1,16 +1,17 @@
-inline constexpr int VIXEN_TEST_VERSION_MAJOR = 0;
-inline constexpr int VIXEN_TEST_VERSION_MINOR = 0;
-inline constexpr int VIXEN_TEST_VERSION_PATCH = 1;
-
 #include <memory>
 #include <VixenEngine.h>
 
+inline constexpr int VIXEN_TEST_VERSION_MAJOR = 0;
+inline constexpr int VIXEN_TEST_VERSION_MINOR = 0;
+inline constexpr int VIXEN_TEST_VERSION_PATCH = 1;
+inline constexpr const char* VIXEN_EDITOR_NAME = "Vixen Editor";
+
 int main() {
     spdlog::set_level(spdlog::level::trace);
-    Vixen::Logger logger = Vixen::Logger("Editor");
+    Vixen::Logger logger = Vixen::Logger(VIXEN_EDITOR_NAME);
 
-    const auto window = std::make_shared<Vixen::Window>("Vixen Engine Test Application", "../../icon.png");
-    const auto instance = std::make_shared<Vixen::Instance>(window, "Vixen Engine Test Application",
+    const auto window = std::make_shared<Vixen::Window>(VIXEN_EDITOR_NAME, "../../icon.png");
+    const auto instance = std::make_shared<Vixen::Instance>(window, VIXEN_EDITOR_NAME,
                                                             glm::ivec3(VIXEN_TEST_VERSION_MAJOR,
                                                                        VIXEN_TEST_VERSION_MINOR,
                                                                        VIXEN_TEST_VERSION_PATCH));

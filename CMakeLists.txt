@@ -16,5 +16,7 @@ endif ()
 
 set(SKIP_INSTALL_ALL ON)
 
+find_package(PkgConfig REQUIRED)
+
 add_subdirectory(engine)
 add_subdirectory(editor)

@@ -1,7 +1,7 @@
 #include "Fence.h"
 
 namespace Vixen {
-    Fence::Fence(const std::shared_ptr<LogicalDevice> &device) : device(device) {
+    Fence::Fence(std::shared_ptr<LogicalDevice> device) : device(device) {
         VkFenceCreateInfo info{};
         info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
@@ -26,22 +26,23 @@ namespace Vixen {
         vkQueueSubmit(queue, 1, &info, fence);
     }
 
-    void Fence::wait() {
+    Fence& Fence::wait() {
         if (isReady())
-            return;
+            return *this;
 
         vkWaitForFences(device->device, 1, &fence, VK_TRUE, std::numeric_limits<uint64_t>::max());
+        return *this;
     }
 
-    void Fence::waitAndReset() {
-        wait();
-        reset();
+    Fence& Fence::waitAndReset() {
+        return wait().reset();
     }
 
-    void Fence::reset() {
+    Fence& Fence::reset() {
         if (!isReady())
-            throw std::runtime_error("Failed to reset fence because it hasn't been signaled yet");
+            return *this;
 
         vkResetFences(device->device, 1, &fence);
+        return *this;
     }
 }

@@ -9,7 +9,7 @@ namespace Vixen {
         VkFence fence{};
 
     public:
-        explicit Fence(const std::shared_ptr<LogicalDevice> &device);
+        explicit Fence(std::shared_ptr<LogicalDevice> device);
 
         Fence(const Fence &) = delete;
 
@@ -21,10 +21,10 @@ namespace Vixen {
 
         void submit(VkQueue queue, const VkSubmitInfo &info);
 
-        void wait();
+        Fence &wait();
 
-        void waitAndReset();
+        Fence &waitAndReset();
 
-        void reset();
+        Fence &reset();
     };
 }

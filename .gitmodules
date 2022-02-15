@@ -7,3 +7,6 @@
 [submodule "engine/contrib/FBXImport"]
 	path = engine/contrib/FBXImport
 	url = https://github.com/WinteryFox/FBXImport
+[submodule "editor/contrib/imgui"]
+	path = editor/contrib/imgui
+	url = https://github.com/ocornut/imgui
