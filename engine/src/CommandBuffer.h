@@ -16,8 +16,6 @@ namespace Vixen {
 
         Fence fence;
 
-        CommandBuffer &record(VkCommandBufferUsageFlags usage);
-
     public:
         explicit CommandBuffer(const std::shared_ptr<LogicalDevice> &device);
 
@@ -34,9 +32,11 @@ namespace Vixen {
 
         void wait();
 
-        CommandBuffer &recordSingleUsage();
+        CommandBuffer &record(VkCommandBufferUsageFlags usage, const std::function<void(VkCommandBuffer)>& commands);
 
-        CommandBuffer &recordSimultaneous();
+        CommandBuffer &recordSingleUsage(const std::function<void(VkCommandBuffer)>& commands);
+
+        CommandBuffer &recordSimultaneous(const std::function<void(VkCommandBuffer)>& commands);
 
         CommandBuffer &stop();
 

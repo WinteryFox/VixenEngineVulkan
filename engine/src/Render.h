@@ -13,9 +13,9 @@
 
 namespace Vixen {
     enum class BufferType {
-        SINGLE_BUFFER = 1,
-        DOUBLE_BUFFER = 2,
-        TRIPLE_BUFFER = 3
+        SINGLE = 1,
+        DOUBLE = 2,
+        TRIPLE = 3
     };
 
     class Render {
@@ -44,11 +44,6 @@ namespace Vixen {
         VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 
         /**
-         * The render pass object used by the renderer pipeline
-         */
-        VkRenderPass renderPass = VK_NULL_HANDLE;
-
-        /**
          * The graphics pipeline
          */
         VkPipeline pipeline = VK_NULL_HANDLE;
@@ -72,8 +67,6 @@ namespace Vixen {
          * A list of all the semaphores for the render finished signal for GPU-GPU synchronization
          */
         std::vector<VkSemaphore> renderFinishedSemaphores = {};
-
-        std::shared_ptr<DescriptorPool> descriptorPool = nullptr;
 
         std::unique_ptr<DescriptorSetLayout> descriptorSetLayout = nullptr;
 
@@ -99,6 +92,8 @@ namespace Vixen {
 
         double deltaTime{};
 
+        std::shared_ptr<CommandBuffer> commandBuffer;
+
         /**
          * The current frame in relation to the maximum frames in flight
          */
@@ -107,8 +102,6 @@ namespace Vixen {
         void createDepthImage();
 
         void destroyDepthImage();
-
-        void createCommandBuffers();
 
         void destroyFramebuffers();
 
@@ -148,7 +141,7 @@ namespace Vixen {
          * @param[in] framesInFlight The maximum frames in flight to be used by this renderer
          */
         Render(std::shared_ptr<LogicalDevice> device, std::shared_ptr<PhysicalDevice> physicalDevice,
-               const Scene &scene, std::shared_ptr<const Shader> shader,
+               const Scene &scene, std::shared_ptr<const Shader> shader, std::shared_ptr<CommandBuffer> &commandBuffer,
                BufferType bufferType = BufferType::DOUBLE_BUFFER);
 
         ~Render();
@@ -159,5 +152,12 @@ namespace Vixen {
         void render(const Camera &camera);
 
         [[nodiscard]] double getDeltaTime() const;
+
+        std::shared_ptr<DescriptorPool> descriptorPool = nullptr;
+
+        /**
+         * The render pass object used by the renderer pipeline
+         */
+        VkRenderPass renderPass = VK_NULL_HANDLE;
     };
 }

@@ -33,4 +33,8 @@ namespace Vixen {
                 return "UNKNOWN_ERROR";
         }
     }
+
+    void checkResult(VkResult result) {
+        VK_CHECK_RESULT(result);
+    }
 }

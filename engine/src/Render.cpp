@@ -1,11 +1,14 @@
 #include "Render.h"
 
+#include <utility>
+
 namespace Vixen {
     Render::Render(std::shared_ptr<LogicalDevice> device, std::shared_ptr<PhysicalDevice> physicalDevice,
-                   const Scene &scene, std::shared_ptr<const Shader> shader, BufferType bufferType)
+                   const Scene &scene, std::shared_ptr<const Shader> shader, std::shared_ptr<CommandBuffer> &commandBuffer,
+                   BufferType bufferType)
             : logicalDevice(std::move(device)), physicalDevice(std::move(physicalDevice)),
               framesInFlight(static_cast<const int>(bufferType)),
-              shader(std::move(shader)), scene(scene) {
+              shader(std::move(shader)), scene(scene), commandBuffer(commandBuffer) {
         create();
     }
 
@@ -54,7 +57,7 @@ namespace Vixen {
         glm::mat4 model = entity.getModelMatrix();
         glm::mat4 view = camera.getView();
         glm::mat4 projection = camera.getProjection(static_cast<float>(logicalDevice->extent.width)
-                                                     / static_cast<float>(logicalDevice->extent.height));
+                                                    / static_cast<float>(logicalDevice->extent.height));
         projection[1][1] *= -1.0f;
 
         memcpy(data, &model, sizeof(glm::mat4));
@@ -91,65 +94,6 @@ namespace Vixen {
             vkDestroySemaphore(logicalDevice->device, renderFinishedSemaphores[i], nullptr);
         }
         logger.trace("Destroyed sync objects");
-    }
-
-    void Render::createCommandBuffers() {
-        framebuffers.reserve(logicalDevice->imageViews.size());
-        commandBuffers.reserve(logicalDevice->imageViews.size());
-        for (uint32_t i = 0; i < logicalDevice->imageViews.size(); i++) {
-            framebuffers.push_back(std::make_shared<Framebuffer>(logicalDevice, renderPass,
-                                                                 std::vector<VkImageView>{
-                                                                         logicalDevice->imageViews[i],
-                                                                         depthImage->getView()
-                                                                 },
-                                                                 logicalDevice->extent.width,
-                                                                 logicalDevice->extent.height));
-            commandBuffers.push_back(std::make_shared<CommandBuffer>(logicalDevice));
-            auto &commandBuffer = commandBuffers[i];
-            commandBuffer->recordSimultaneous();
-
-            VkRenderPassBeginInfo renderPassBeginInfo = {};
-            renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassBeginInfo.renderPass = renderPass;
-            renderPassBeginInfo.framebuffer = framebuffers[i]->getFramebuffer();
-            renderPassBeginInfo.renderArea.offset = {0, 0};
-            renderPassBeginInfo.renderArea.extent = logicalDevice->extent;
-
-            std::array<VkClearValue, 2> clearColors{};
-            //clearColors[0].color = {{34.0f, 59.0f, 84.0f, 1.0f}};
-            clearColors[0].color = {{0.13f, 0.23f, 0.33f, 1.0f}};
-            clearColors[1].depthStencil = {1.0f, 0};
-
-            renderPassBeginInfo.clearValueCount = clearColors.size();
-            renderPassBeginInfo.pClearValues = clearColors.data();
-
-            commandBuffer->cmdBeginRenderPass(renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-            commandBuffer->cmdBindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-
-            for (size_t j = 0; j < scene.entities.size(); j++) {
-                const auto &entity = scene.entities[j];
-                const auto &mesh = entity.mesh;
-
-                commandBuffer->cmdBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0,
-                                                     {descriptorSet[i][j]}, {});
-
-                const std::vector<VkBuffer> buffers(3, mesh->getBuffer()->getBuffer());
-                std::vector<VkDeviceSize> offsets{0, mesh->getVertexCount() * sizeof(glm::vec3),
-                                                  mesh->getVertexCount() * sizeof(glm::vec3) +
-                                                  mesh->getVertexCount() * sizeof(glm::vec2)};
-                commandBuffer->cmdBindVertexBuffers(0, buffers, offsets);
-                commandBuffer->cmdBindIndexBuffer(mesh->getBuffer()->getBuffer(),
-                                                  mesh->getVertexCount() * sizeof(glm::vec3) +
-                                                  mesh->getVertexCount() * sizeof(glm::vec2) +
-                                                  mesh->getVertexCount() * sizeof(glm::vec4), VK_INDEX_TYPE_UINT32);
-
-                commandBuffer->cmdDrawIndexed(mesh->getIndexCount(), 1, 0, 0, 0);
-            }
-
-            commandBuffer->cmdEndRenderPass();
-            commandBuffer->stop();
-        }
-        logger.trace("Successfully created command buffers");
     }
 
     void Render::createRenderPass() {
@@ -221,7 +165,7 @@ namespace Vixen {
         std::vector<VkPipelineShaderStageCreateInfo> s{};
 
         s.reserve(shader->getModules().size());
-        for (const auto &sh : shader->getModules()) {
+        for (const auto &sh: shader->getModules()) {
             VkPipelineShaderStageCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
             createInfo.stage = sh->getStage();
@@ -376,7 +320,7 @@ namespace Vixen {
             sets[i] = descriptorPool->createSets(layouts);
             for (size_t j = 0; j < sets[i].size(); j++) {
                 std::vector<VkWriteDescriptorSet> writes{};
-                for (const auto &descriptor : shader->getDescriptors()) {
+                for (const auto &descriptor: shader->getDescriptors()) {
                     VkWriteDescriptorSet write{};
                     write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     write.dstSet = sets[i][j];
@@ -422,7 +366,7 @@ namespace Vixen {
         createSyncObjects();
         descriptorSetLayout = std::make_unique<DescriptorSetLayout>(logicalDevice, *shader);
         for (uint32_t i = 0; i < logicalDevice->imageCount; i++)
-            for (const auto &descriptor : shader->getDescriptors())
+            for (const auto &descriptor: shader->getDescriptors())
                 if (descriptor.getType() == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
                     uniformBuffers.emplace_back(logicalDevice, descriptor.getSize(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                                 VMA_MEMORY_USAGE_CPU_ONLY);
@@ -433,7 +377,6 @@ namespace Vixen {
         createRenderPass();
         createPipelineLayout();
         createPipeline();
-        createCommandBuffers();
     }
 
     void Render::destroy() {

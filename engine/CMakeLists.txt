@@ -36,7 +36,7 @@ add_library(
         src/CommandBuffer.cpp
         src/Fence.cpp
         src/ImageSampler.cpp
-)
+        src/RenderPass.cpp src/RenderPass.h)
 add_dependencies(engine vert frag)
 target_link_libraries(
         engine

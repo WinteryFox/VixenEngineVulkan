@@ -13,4 +13,6 @@
 
 namespace Vixen {
     std::string errorString(VkResult result);
+
+    void checkResult(VkResult result);
 }

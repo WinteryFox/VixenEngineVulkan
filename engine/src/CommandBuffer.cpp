@@ -1,5 +1,7 @@
 #include "CommandBuffer.h"
 
+#include <utility>
+
 namespace Vixen {
     CommandBuffer::CommandBuffer(const std::shared_ptr<LogicalDevice> &device) : device(device), fence(device) {
         VkCommandBufferAllocateInfo allocateInfo = {};
@@ -50,7 +52,7 @@ namespace Vixen {
         fence.wait();
     }
 
-    CommandBuffer &CommandBuffer::record(VkCommandBufferUsageFlags usage) {
+    CommandBuffer &CommandBuffer::record(VkCommandBufferUsageFlags usage, const std::function<void(VkCommandBuffer)>& commands) {
         if (recording)
             throw std::runtime_error("Already recording");
 
@@ -59,16 +61,16 @@ namespace Vixen {
         beginInfo.flags = usage;
 
         VK_CHECK_RESULT(vkBeginCommandBuffer(buffer, &beginInfo))
-        recording = true;
+        commands(buffer);
         return *this;
     }
 
-    CommandBuffer &CommandBuffer::recordSingleUsage() {
-        return record(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+    CommandBuffer &CommandBuffer::recordSingleUsage(const std::function<void(VkCommandBuffer)>& commands) {
+        return record(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, commands);
     }
 
-    CommandBuffer &CommandBuffer::recordSimultaneous() {
-        return record(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+    CommandBuffer &CommandBuffer::recordSimultaneous(const std::function<void(VkCommandBuffer)>& commands) {
+        return record(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT, commands);
     }
 
     CommandBuffer &CommandBuffer::stop() {
