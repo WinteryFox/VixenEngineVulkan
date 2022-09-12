@@ -142,7 +142,7 @@ namespace Vixen {
          */
         Render(std::shared_ptr<LogicalDevice> device, std::shared_ptr<PhysicalDevice> physicalDevice,
                const Scene &scene, std::shared_ptr<const Shader> shader, std::shared_ptr<CommandBuffer> &commandBuffer,
-               BufferType bufferType = BufferType::DOUBLE_BUFFER);
+               BufferType bufferType = BufferType::DOUBLE);
 
         ~Render();
 

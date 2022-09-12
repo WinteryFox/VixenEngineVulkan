@@ -94,8 +94,9 @@ namespace Vixen {
         }
 
         CommandBuffer(device)
-                .recordSingleUsage()
-                .cmdPipelineBarrier(source, destination, {}, {}, {}, {barrier})
+                .recordSingleUsage([&destination, &barrier](auto commandBuffer) {
+                    vkCmdPipelineBarrier(commandBuffer, 0, destination, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+                })
                 .submit();
 
         layout = newLayout;
@@ -116,8 +117,9 @@ namespace Vixen {
         region.imageExtent = {width, height, 1};
 
         CommandBuffer(device)
-                .recordSingleUsage()
-                .cmdCopyBufferToImage(buffer.getBuffer(), image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, {region})
+                .recordSingleUsage([this, &buffer, &region](auto commandBuffer) {
+                    vkCmdCopyBufferToImage(commandBuffer, buffer.getBuffer(), image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+                })
                 .submit();
     }
 

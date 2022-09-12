@@ -49,14 +49,19 @@ namespace Vixen {
         vmaUnmapMemory(device->allocator, allocation);
     }
 
-    void Buffer::copyFrom(const Buffer &other) const {
+    void Buffer::copyFrom(VkBuffer other) const {
         VkBufferCopy copyRegion = {};
         copyRegion.size = size;
 
         CommandBuffer(device)
-                .recordSingleUsage()
-                .cmdCopyBuffer(other.getBuffer(), buffer, std::vector<VkBufferCopy>{copyRegion})
+                .recordSingleUsage([other, copyRegion, this](auto b) {
+                    vkCmdCopyBuffer(b, other, buffer, 1, &copyRegion);
+                })
                 .submit();
+    }
+
+    void Buffer::copyFrom(const Buffer &other) const {
+        copyFrom(other.buffer);
     }
 
     VkBuffer Buffer::getBuffer() const {

@@ -1,7 +1,5 @@
 #include "CommandBuffer.h"
 
-#include <utility>
-
 namespace Vixen {
     CommandBuffer::CommandBuffer(const std::shared_ptr<LogicalDevice> &device) : device(device), fence(device) {
         VkCommandBufferAllocateInfo allocateInfo = {};
@@ -84,108 +82,7 @@ namespace Vixen {
         return *this;
     }
 
-    CommandBuffer &CommandBuffer::cmdCopyBuffer(VkBuffer source, VkBuffer destination,
-                                                const std::vector<VkBufferCopy> &regions) {
-        if (!recording)
-            throw std::runtime_error("Command buffer is not recording");
-
-        vkCmdCopyBuffer(buffer, source, destination, regions.size(), regions.data());
-        return *this;
-    }
-
-    CommandBuffer &CommandBuffer::cmdCopyBufferToImage(VkBuffer source, VkImage destination, VkImageLayout layout,
-                                                       const std::vector<VkBufferImageCopy> &regions) {
-        if (!recording)
-            throw std::runtime_error("Command buffer is not recording");
-
-        vkCmdCopyBufferToImage(buffer, source, destination, layout, regions.size(), regions.data());
-        return *this;
-    }
-
-    CommandBuffer &
-    CommandBuffer::cmdPipelineBarrier(VkPipelineStageFlags sourceStages, VkPipelineStageFlags destinationStages,
-                                      VkDependencyFlags dependencies, const std::vector<VkMemoryBarrier> &barriers,
-                                      const std::vector<VkBufferMemoryBarrier> &bufferBarriers,
-                                      const std::vector<VkImageMemoryBarrier> &imageBarriers) {
-        if (!recording)
-            throw std::runtime_error("Command buffer is not recording");
-
-        vkCmdPipelineBarrier(buffer, sourceStages, destinationStages, dependencies, barriers.size(), barriers.data(),
-                             bufferBarriers.size(), bufferBarriers.data(), imageBarriers.size(), imageBarriers.data());
-        return *this;
-    }
-
-    CommandBuffer &CommandBuffer::cmdBeginRenderPass(const VkRenderPassBeginInfo &info, VkSubpassContents contents) {
-        if (!recording)
-            throw std::runtime_error("Command buffer is not recording");
-
-        vkCmdBeginRenderPass(buffer, &info, contents);
-        return *this;
-    }
-
-    CommandBuffer &CommandBuffer::cmdEndRenderPass() {
-        if (!recording)
-            throw std::runtime_error("Command buffer is not recording");
-
-        vkCmdEndRenderPass(buffer);
-        return *this;
-    }
-
-    CommandBuffer &CommandBuffer::cmdBindPipeline(VkPipelineBindPoint point, VkPipeline pipeline) {
-        if (!recording)
-            throw std::runtime_error("Command buffer is not recording");
-
-        vkCmdBindPipeline(buffer, point, pipeline);
-        return *this;
-    }
-
-    CommandBuffer &
-    CommandBuffer::cmdBindDescriptorSets(VkPipelineBindPoint point, VkPipelineLayout layout, uint32_t firstSet,
-                                         const std::vector<VkDescriptorSet> &sets,
-                                         const std::vector<uint32_t> &offsets) {
-        if (!recording)
-            throw std::runtime_error("Command buffer is not recording");
-
-        vkCmdBindDescriptorSets(buffer, point, layout, firstSet, sets.size(), sets.data(), offsets.size(),
-                                offsets.data());
-        return *this;
-    }
-
-    CommandBuffer &CommandBuffer::cmdBindVertexBuffers(uint32_t first, const std::vector<VkBuffer> &buffers,
-                                                       const std::vector<VkDeviceSize> &offsets) {
-        if (!recording)
-            throw std::runtime_error("Command buffer is not recording");
-        if (buffers.size() != offsets.size())
-            throw std::runtime_error("Buffers size must be the same as offsets size");
-
-        vkCmdBindVertexBuffers(buffer, first, buffers.size(), buffers.data(), offsets.data());
-        return *this;
-    }
-
-    CommandBuffer &CommandBuffer::cmdBindIndexBuffer(VkBuffer indexBuffer, VkDeviceSize offset, VkIndexType type) {
-        if (!recording)
-            throw std::runtime_error("Command buffer is not recording");
-
-        vkCmdBindIndexBuffer(buffer, indexBuffer, offset, type);
-        return *this;
-    }
-
-    CommandBuffer &CommandBuffer::cmdDrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex,
-                                                 int32_t vertexOffset, uint32_t firstInstance) {
-        if (!recording)
-            throw std::runtime_error("Command buffer is not recording");
-
-        vkCmdDrawIndexed(buffer, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
-        return *this;
-    }
-
-    CommandBuffer &
-    CommandBuffer::cmdPushConstants(VkPipelineLayout layout, VkPipelineStageFlags stages, uint32_t offset,
-                                    uint32_t size, const void *values) {
-        if (!recording)
-            throw std::runtime_error("Command buffer is not recording");
-
-        vkCmdPushConstants(buffer, layout, stages, offset, size, values);
-        return *this;
+    VkCommandBuffer CommandBuffer::getBuffer() const {
+        return buffer;
     }
 }

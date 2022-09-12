@@ -34,6 +34,8 @@ namespace Vixen {
 
         void unmap();
 
+        void copyFrom(VkBuffer other) const;
+
         void copyFrom(const Buffer &other) const;
 
         [[nodiscard]] VkBuffer getBuffer() const;

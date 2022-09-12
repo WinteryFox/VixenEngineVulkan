@@ -20,11 +20,11 @@ int main() {
                                                                        VIXEN_TEST_VERSION_MINOR,
                                                                        VIXEN_TEST_VERSION_PATCH));
     const auto physicalDevice = std::make_shared<Vixen::PhysicalDevice>(instance);
-    const auto logicalDevice = std::make_shared<Vixen::LogicalDevice>(instance, window, physicalDevice);
+    const auto device = std::make_shared<Vixen::LogicalDevice>(instance, window, physicalDevice);
 
     std::unique_ptr<Vixen::Input> input(new Vixen::Input(window));
 
-    const auto meshStore = std::make_unique<Vixen::MeshStore>(logicalDevice, physicalDevice);
+    const auto meshStore = std::make_unique<Vixen::MeshStore>(device, physicalDevice);
     meshStore->loadMesh("../../editor/models/fox/Fox.fbx");
     meshStore->loadMesh("../../editor/models/crystal/Crystal.fbx");
     //meshStore->loadMesh("../../editor/models/michiru/Meshes/MichiruSkel_v001_002.fbx");
@@ -113,9 +113,9 @@ int main() {
 
     const auto depthImage = std::make_unique<Vixen::ImageView>(
             Vixen::Image(
-                    logicalDevice,
-                    logicalDevice->extent.width,
-                    logicalDevice->extent.height,
+                    device,
+                    device->extent.width,
+                    device->extent.height,
                     physicalDevice->findSupportedFormat(
                             {
                                     VK_FORMAT_D32_SFLOAT,
@@ -132,7 +132,7 @@ int main() {
     );
 
     VkAttachmentDescription colorAttachment{};
-    colorAttachment.format = logicalDevice->surfaceFormat.format;
+    colorAttachment.format = device->surfaceFormat.format;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -166,76 +166,92 @@ int main() {
     opaquePass.pDepthStencilAttachment = &depthAttachmentReference;
 
     auto attachments = std::vector<VkAttachmentDescription>{colorAttachment, depthAttachment};
-    auto renderPass = std::make_shared<Vixen::RenderPass>(logicalDevice, std::vector{opaquePass}, attachments);
+    auto renderPass = std::make_shared<Vixen::RenderPass>(device, std::vector{opaquePass}, attachments);
 
     auto bufferType = Vixen::BufferType::DOUBLE;
     auto frameBuffers = std::vector<std::shared_ptr<Vixen::Framebuffer>>(static_cast<int>(bufferType));
     auto commandBuffers = std::vector<std::shared_ptr<Vixen::CommandBuffer>>(static_cast<int>(bufferType));
     for (size_t i = 0; i < static_cast<int>(bufferType); i++) {
-        auto commandBuffer = std::make_shared<Vixen::CommandBuffer>(logicalDevice);
+        auto commandBuffer = std::make_shared<Vixen::CommandBuffer>(device);
         commandBuffers[i] = commandBuffer;
         auto frameBuffer = std::make_shared<Vixen::Framebuffer>(
-                logicalDevice,
+                device,
                 renderPass,
-                logicalDevice->imageViews,
-                logicalDevice->extent.width,
-                logicalDevice->extent.height
+                device->imageViews,
+                device->extent.width,
+                device->extent.height
         );
         frameBuffers[i] = frameBuffer;
-        commandBuffer->recordSimultaneous([i, scene, logicalDevice, commandBuffer, renderPass, frameBuffers](VkCommandBuffer buffer) {
-            VkRenderPassBeginInfo renderPassBeginInfo = {};
-            renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassBeginInfo.renderPass = renderPass->renderPass;
-            renderPassBeginInfo.framebuffer = frameBuffers[i]->getFramebuffer();
-            renderPassBeginInfo.renderArea.offset = {0, 0};
-            renderPassBeginInfo.renderArea.extent = logicalDevice->extent;
+        commandBuffer->recordSimultaneous(
+                [&i, &scene, &device, &commandBuffer, &renderPass, &frameBuffers](auto buffer) {
+                    VkRenderPassBeginInfo renderPassBeginInfo = {};
+                    renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+                    renderPassBeginInfo.renderPass = renderPass->renderPass;
+                    renderPassBeginInfo.framebuffer = frameBuffers[i]->getFramebuffer();
+                    renderPassBeginInfo.renderArea.offset = {0, 0};
+                    renderPassBeginInfo.renderArea.extent = device->extent;
 
-            std::array<VkClearValue, 2> clearColors{};
-            //clearColors[0].color = {{34.0f, 59.0f, 84.0f, 1.0f}};
-            clearColors[0].color = {{0.13f, 0.23f, 0.33f, 1.0f}};
-            clearColors[1].depthStencil = {1.0f, 0};
+                    std::array<VkClearValue, 2> clearColors{};
+                    //clearColors[0].color = {{34.0f, 59.0f, 84.0f, 1.0f}};
+                    clearColors[0].color = {{0.13f, 0.23f, 0.33f, 1.0f}};
+                    clearColors[1].depthStencil = {1.0f, 0};
 
-            renderPassBeginInfo.clearValueCount = clearColors.size();
-            renderPassBeginInfo.pClearValues = clearColors.data();
+                    renderPassBeginInfo.clearValueCount = clearColors.size();
+                    renderPassBeginInfo.pClearValues = clearColors.data();
 
-            commandBuffer->cmdBeginRenderPass(renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-            commandBuffer->cmdBindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+                    //commandBuffer->cmdBeginRenderPass(renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+                    //commandBuffer->cmdBindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+                    vkCmdBeginRenderPass(buffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+                    vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-            for (size_t j = 0; j < scene.entities.size(); j++) {
-                const auto &entity = scene.entities[j];
-                const auto &mesh = entity.mesh;
+                    for (size_t j = 0; j < scene.entities.size(); j++) {
+                        const auto &entity = scene.entities[j];
+                        const auto &mesh = entity.mesh;
 
-                commandBuffer->cmdBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0,
-                                                     {descriptorSet[i][j]}, {});
+                        //commandBuffer->cmdBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0,
+                        //                                     {descriptorSet[i][j]}, {});
+                        vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
+                                                &descriptorSet[i][j], 0, nullptr);
 
-                const std::vector<VkBuffer> buffers(3, mesh->getBuffer()->getBuffer());
-                std::vector<VkDeviceSize> offsets{0, mesh->getVertexCount() * sizeof(glm::vec3),
-                                                  mesh->getVertexCount() * sizeof(glm::vec3) +
-                                                  mesh->getVertexCount() * sizeof(glm::vec2)};
-                commandBuffer->cmdBindVertexBuffers(0, buffers, offsets);
-                commandBuffer->cmdBindIndexBuffer(mesh->getBuffer()->getBuffer(),
-                                                  mesh->getVertexCount() * sizeof(glm::vec3) +
-                                                  mesh->getVertexCount() * sizeof(glm::vec2) +
-                                                  mesh->getVertexCount() * sizeof(glm::vec4), VK_INDEX_TYPE_UINT32);
+                        const std::vector<VkBuffer> buffers(3, mesh->getBuffer()->getBuffer());
+                        std::vector<VkDeviceSize> offsets{0, mesh->getVertexCount() * sizeof(glm::vec3),
+                                                          mesh->getVertexCount() * sizeof(glm::vec3) +
+                                                          mesh->getVertexCount() * sizeof(glm::vec2)};
+                        vkCmdBindVertexBuffers(buffer, 0, buffers.size(), buffers.data(), offsets.data());
+                        //commandBuffer->cmdBindVertexBuffers(0, buffers, offsets);
+                        vkCmdBindIndexBuffer(
+                                buffer,
+                                mesh->getBuffer()->getBuffer(),
+                                mesh->getVertexCount() * sizeof(glm::vec3) +
+                                mesh->getVertexCount() * sizeof(glm::vec2) +
+                                mesh->getVertexCount() * sizeof(glm::vec4),
+                                VK_INDEX_TYPE_UINT32
+                        );
+                        //commandBuffer->cmdBindIndexBuffer(mesh->getBuffer()->getBuffer(),
+                        //                                  mesh->getVertexCount() * sizeof(glm::vec3) +
+                        //                                  mesh->getVertexCount() * sizeof(glm::vec2) +
+                        //                                  mesh->getVertexCount() * sizeof(glm::vec4), VK_INDEX_TYPE_UINT32);
 
-                commandBuffer->cmdDrawIndexed(mesh->getIndexCount(), 1, 0, 0, 0);
-            }
+                        vkCmdDrawIndexed(buffer, mesh->getIndexCount(), 1, 0, 0, 0);
+                        //commandBuffer->cmdDrawIndexed(mesh->getIndexCount(), 1, 0, 0, 0);
+                    }
 
-            commandBuffer->cmdEndRenderPass();
-            commandBuffer->stop();
-        });
+                    vkCmdEndRenderPass(buffer);
+                    //commandBuffer->cmdEndRenderPass();
+                    commandBuffer->stop();
+                });
     }
 
     std::unique_ptr<Vixen::Render> render(new Vixen::Render(
-            logicalDevice,
+            device,
             physicalDevice,
             scene,
             Vixen::Shader::Builder()
-                    .addModule(Vixen::ShaderModule::Builder(logicalDevice)
+                    .addModule(Vixen::ShaderModule::Builder(device)
                                        .setShaderStage(VK_SHADER_STAGE_VERTEX_BIT)
                                        .setBytecode("vert.spv")
                                        .build())
-                    .addModule(Vixen::ShaderModule::Builder(logicalDevice)
+                    .addModule(Vixen::ShaderModule::Builder(device)
                                        .setShaderStage(VK_SHADER_STAGE_FRAGMENT_BIT)
                                        .setBytecode("frag.spv")
                                        .build())
@@ -250,7 +266,7 @@ int main() {
                     .addDescriptor(1, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                                    VK_SHADER_STAGE_FRAGMENT_BIT)
                     .build(),
-            commandBuffer));
+            commandBuffers));
 
     std::vector<VkDescriptorPoolSize> sizes = {
             {VK_DESCRIPTOR_TYPE_SAMPLER,                1000},
@@ -265,7 +281,7 @@ int main() {
             {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
             {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,       1000},
     };
-    auto imGuiPool = Vixen::DescriptorPool(logicalDevice, sizes, 1);
+    auto imGuiPool = Vixen::DescriptorPool(device, sizes, 1);
 
     IMGUI_CHECKVERSION();
 
@@ -275,97 +291,47 @@ int main() {
     ImGui_ImplGlfw_InitForVulkan(window
                                          ->window, true);
     ImGui_ImplVulkan_InitInfo info{};
-    info.Instance = logicalDevice->instance->getInstance();
-    info.
-            PhysicalDevice = physicalDevice->device;
-    info.
-            Device = logicalDevice->device;
-    info.
-            QueueFamily = physicalDevice->graphicsFamilyIndex;
-    info.
-            Queue = logicalDevice->graphicsQueue;
-    info.
-            PipelineCache = VK_NULL_HANDLE;
-    info.
-            DescriptorPool = imGuiPool.getPool();
-    info.
-            Subpass = 0;
-    info.
-            MinImageCount = logicalDevice->imageCount;
-    info.
-            ImageCount = logicalDevice->imageCount;
-    info.
-            MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-    info.
-            Allocator = VK_NULL_HANDLE;
-    info.
-            CheckVkResultFn = Vixen::checkResult;
-    ImGui_ImplVulkan_Init(&info, render
-            ->renderPass);
+    info.Instance = device->instance->getInstance();
+    info.PhysicalDevice = physicalDevice->device;
+    info.Device = device->device;
+    info.QueueFamily = physicalDevice->graphicsFamilyIndex;
+    info.Queue = device->graphicsQueue;
+    info.PipelineCache = VK_NULL_HANDLE;
+    info.DescriptorPool = imGuiPool.getPool();
+    info.Subpass = 0;
+    info.MinImageCount = device->imageCount;
+    info.ImageCount = device->imageCount;
+    info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+    info.Allocator = VK_NULL_HANDLE;
+    info.CheckVkResultFn = Vixen::checkResult;
+    ImGui_ImplVulkan_Init(&info, render->renderPass);
 
     {
-        auto buffer = Vixen::CommandBuffer(logicalDevice);
-        buffer.
-
-                recordSingleUsage();
-
-        ImGui_ImplVulkan_CreateFontsTexture(buffer
-                                                    .buffer);
-        buffer.
-
-                stop();
-
-        buffer.
-
-                submit();
-        VK_CHECK_RESULT(vkDeviceWaitIdle(logicalDevice->device));
-
+        Vixen::CommandBuffer(device).recordSingleUsage([](auto buffer) {
+            ImGui_ImplVulkan_CreateFontsTexture(buffer);
+        }).submit();
+        VK_CHECK_RESULT(vkDeviceWaitIdle(device->device));
         ImGui_ImplVulkan_DestroyFontUploadObjects();
-
     }
 
     int fps = 0;
     double lastTime = 0;
-    while (!window->
+    while (!window->shouldClose()) {
+        scene.entities[0].rotation.y += 5 * static_cast<float>(render->getDeltaTime());
+        window->update();
 
-            shouldClose()
-
-            ) {
-        scene.entities[0].rotation.y += 5 * static_cast
-                <float>(render
-                        ->
-
-                                getDeltaTime()
-
-        );
-        window->
-
-                update();
-
-        input->
-                update(scene
-                               .camera, render->
-
-                getDeltaTime()
-
-        );
-
+        input->update(scene.camera, render->getDeltaTime());
         ImGui_ImplVulkan_NewFrame();
-
         ImGui_ImplGlfw_NewFrame();
-
         ImGui::NewFrame();
 
         ImGui::Begin("Position");
         ImGui::Text("Hello");
 
         ImGui::End();
-
         ImGui::Render();
 
-        render->
-                render(scene
-                               .camera);
+        render->render(scene.camera);
 
         double currentTime = glfwGetTime();
         fps++;
@@ -376,13 +342,9 @@ int main() {
         }
     }
 
-    vkDeviceWaitIdle(logicalDevice
-                             ->device);
-
+    vkDeviceWaitIdle(device->device);
     ImGui_ImplVulkan_Shutdown();
-
     ImGui_ImplGlfw_Shutdown();
-
     ImGui::DestroyContext();
 
     return EXIT_SUCCESS;
