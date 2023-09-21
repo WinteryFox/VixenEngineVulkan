@@ -23,7 +23,7 @@ int main() {
     const auto meshStore = std::make_unique<Vixen::MeshStore>(logicalDevice, physicalDevice);
     meshStore->loadMesh("../../editor/models/fox/Fox.fbx");
     meshStore->loadMesh("../../editor/models/crystal/Crystal.fbx");
-    meshStore->loadMesh("../../editor/models/michiru/Meshes/MichiruSkel_v001_002.fbx");
+    //meshStore->loadMesh("../../editor/models/michiru/Meshes/MichiruSkel_v001_002.fbx");
     meshStore->loadMesh("../../editor/models/ruby_rose/Mesh/rubySkel_v001_002.fbx");
 
     Vixen::Scene scene{};
@@ -40,13 +40,13 @@ int main() {
     //scene.entities.push_back(Vixen::Entity(meshStore->meshes[5], {}, {}, 0.01f));
 
     // Ruby
+    scene.entities.push_back(Vixen::Entity(meshStore->meshes[3], {}, {}, 0.01f));
+    scene.entities.push_back(Vixen::Entity(meshStore->meshes[4], {}, {}, 0.01f));
+    scene.entities.push_back(Vixen::Entity(meshStore->meshes[5], {}, {}, 0.01f));
+    scene.entities.push_back(Vixen::Entity(meshStore->meshes[6], {}, {}, 0.01f));
+    scene.entities.push_back(Vixen::Entity(meshStore->meshes[7], {}, {}, 0.01f));
     scene.entities.push_back(Vixen::Entity(meshStore->meshes[8], {}, {}, 0.01f));
     scene.entities.push_back(Vixen::Entity(meshStore->meshes[9], {}, {}, 0.01f));
-    scene.entities.push_back(Vixen::Entity(meshStore->meshes[10], {}, {}, 0.01f));
-    scene.entities.push_back(Vixen::Entity(meshStore->meshes[11], {}, {}, 0.01f));
-    scene.entities.push_back(Vixen::Entity(meshStore->meshes[12], {}, {}, 0.01f));
-    scene.entities.push_back(Vixen::Entity(meshStore->meshes[13], {}, {}, 0.01f));
-    scene.entities.push_back(Vixen::Entity(meshStore->meshes[14], {}, {}, 0.01f));
 
     std::unique_ptr<Vixen::Render> render(new Vixen::Render(
             logicalDevice,

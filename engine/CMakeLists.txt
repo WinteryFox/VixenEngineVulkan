@@ -1,4 +1,4 @@
-find_package(Vulkan REQUIRED >=1.2)
+find_package(Vulkan REQUIRED)
 pkg_check_modules(GLM REQUIRED IMPORTED_TARGET glm)
 pkg_check_modules(GLFW REQUIRED IMPORTED_TARGET glfw3)
 pkg_check_modules(ASSIMP REQUIRED IMPORTED_TARGET assimp)

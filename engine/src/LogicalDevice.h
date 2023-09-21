@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdio>
 #include <vk_mem_alloc.h>
 #include <set>
 #include <memory>

@@ -152,8 +152,8 @@ namespace Vixen {
             extent = actualExtent;
         }
 
-        logger.trace("Using swap surface format {} ({}) with present mode {} ({}, {})", surfaceFormat.format,
-                     surfaceFormat.colorSpace, presentMode, extent.width, extent.height);
+        logger.trace("Using swap surface format {} ({}) with present mode {} ({}, {})", string_VkFormat(surfaceFormat.format),
+                     string_VkColorSpaceKHR(surfaceFormat.colorSpace), string_VkPresentModeKHR(presentMode), extent.width, extent.height);
     }
 
     void LogicalDevice::createImageViews() {
