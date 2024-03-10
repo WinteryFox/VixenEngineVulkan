@@ -1,7 +1,7 @@
 find_package(Vulkan REQUIRED)
-pkg_check_modules(GLM REQUIRED IMPORTED_TARGET glm)
-pkg_check_modules(GLFW REQUIRED IMPORTED_TARGET glfw3)
-pkg_check_modules(ASSIMP REQUIRED IMPORTED_TARGET assimp)
+find_package(glm REQUIRED)
+find_package(GLFW3 3.3 REQUIRED)
+find_package(assimp REQUIRED)
 pkg_check_modules(SPDLOG REQUIRED IMPORTED_TARGET spdlog)
 
 add_custom_target(
@@ -41,9 +41,9 @@ add_dependencies(engine vert frag)
 target_link_libraries(
         engine
         Vulkan::Vulkan
-        PkgConfig::GLM
-        PkgConfig::GLFW
-        PkgConfig::ASSIMP
+        glm::glm
+        glfw
+        assimp::assimp
         PkgConfig::SPDLOG
 )
 target_include_directories(

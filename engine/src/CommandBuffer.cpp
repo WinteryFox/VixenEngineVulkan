@@ -108,8 +108,18 @@ namespace Vixen {
         if (!recording)
             throw std::runtime_error("Command buffer is not recording");
 
-        vkCmdPipelineBarrier(buffer, sourceStages, destinationStages, dependencies, barriers.size(), barriers.data(),
-                             bufferBarriers.size(), bufferBarriers.data(), imageBarriers.size(), imageBarriers.data());
+        vkCmdPipelineBarrier(
+            buffer,
+            sourceStages,
+            destinationStages,
+            dependencies,
+            barriers.size(),
+            barriers.data(),
+            bufferBarriers.size(),
+            bufferBarriers.data(),
+            imageBarriers.size(),
+            imageBarriers.data()
+        );
         return *this;
     }
 

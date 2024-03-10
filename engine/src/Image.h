@@ -1,6 +1,7 @@
+#pragma once
+
 #include "Vulkan.h"
 #include "Buffer.h"
-#include "CommandBuffer.h"
 #include "LogicalDevice.h"
 
 namespace Vixen {
